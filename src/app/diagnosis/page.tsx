@@ -1,17 +1,40 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Chip } from "@/components/chip";
 import { DIAGNOSIS_STEPS } from "@/lib/mock-data";
+import { getSessionId, trackEvent } from "@/lib/track-event";
+
+// ---------- value mappings (UI label → backend key) ----------
 
 const EXPERIENCES = ["1년 미만", "1-3년", "3-5년", "5년 이상"];
+const EXPERIENCE_MAP: Record<string, string> = {
+  "1년 ��만": "less_1_year",
+  "1-3년": "1_3_years",
+  "3-5년": "3_5_years",
+  "5년 이상": "5_plus_years",
+};
+
 const FREQUENCIES = ["주 1-2회 레저", "주 2-3회 클럽/레슨", "주 3회+ 시합 포함"];
+const FREQUENCY_MAP: Record<string, string> = {
+  "주 1-2회 레저": "once_weekly",
+  "주 2-3회 클럽/레슨": "2_3_weekly",
+  "주 3회+ 시합 포함": "4_5_weekly",
+};
+
 const PLAY_STYLES = [
   "안정적인 컨트롤",
   "강한 파워/스핀",
   "균형 잡힌 올라운드",
 ];
+const PLAY_STYLE_MAP: Record<string, string> = {
+  "안정��인 컨트롤": "control_oriented",
+  "강한 파워/��핀": "power_spin",
+  "균형 잡힌 올라운드": "all_round",
+};
+
 const PAIN_POINTS = [
   "팔꿈치/손목 통증",
   "공이 짧게 떨어짐",
@@ -22,23 +45,51 @@ const PAIN_POINTS = [
   "발리가 불안정함",
   "특별히 없음 — 업그레이드",
 ];
-const PRIORITIES = ["파워", "컨트롤", "스핀", "편안함 (팔 보호)", "안정성 (미스 허용)"];
+const PAIN_POINT_MAP: Record<string, string> = {
+  "팔꿈치/손목 ��증": "elbow_pain",
+  "공이 짧게 떨어짐": "short_shots",
+  "컨��롤이 안됨": "inconsistent_serve",
+  "스핀이 부족함": "low_spin",
+  "라켓이 너무 무거움": "heavy_racket",
+  "라켓이 너무 가벼움": "light_racket",
+  "발리가 불안정함": "unstable_volley",
+  "특별히 없음 — 업그레이드": "upgrade_only",
+};
 
-const POPULAR_RACKETS = [
-  "Babolat Pure Drive",
-  "Wilson Blade 98",
-  "Yonex EZONE 100",
-  "Head Speed MP",
-  "Prince Textreme Tour 100P",
-  "Wilson Pro Staff 97",
-  "Babolat Pure Aero",
-  "Head Gravity MP",
-];
+const PRIORITIES = ["파워", "컨트롤", "스핀", "편안함 (팔 보호)", "안정성 (미스 허용)"];
+const PRIORITY_MAP: Record<string, string> = {
+  파워: "power",
+  컨트롤: "control",
+  스핀: "spin",
+  "편안함 (팔 보호)": "comfort",
+  "안정성 (미스 허용)": "stability",
+};
+
+// ---------- racket search types ----------
+
+type RacketSearchResult = {
+  racketModelId: string;
+  displayName: string;
+  displayNameKo: string | null;
+  brandName: string;
+  brandNameKo: string | null;
+  segment: string | null;
+  thumbnailUrl: string | null;
+};
+
+// ---------- component ----------
 
 export default function DiagnosisPage() {
+  const router = useRouter();
+  const startTime = useRef(Date.now());
+
+  // diagnosis state
   const [step, setStep] = useState(1);
   const [currentRacket, setCurrentRacket] = useState<string | null>(null);
+  const [selectedRacketId, setSelectedRacketId] = useState<string | null>(null);
   const [racketSearch, setRacketSearch] = useState("");
+  const [searchResults, setSearchResults] = useState<RacketSearchResult[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
   const [experience, setExperience] = useState<string | null>(null);
   const [frequency, setFrequency] = useState<string | null>(null);
   const [swingSpeed, setSwingSpeed] = useState(50);
@@ -46,8 +97,57 @@ export default function DiagnosisPage() {
   const [painPoints, setPainPoints] = useState<string[]>([]);
   const [priorities, setPriorities] = useState<string[]>([]);
 
+  // submission state
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [runId, setRunId] = useState<string | null>(null);
+
   const totalSteps = 6;
   const stepInfo = DIAGNOSIS_STEPS[step - 1];
+
+  // track diagnosis_start on mount
+  useEffect(() => {
+    trackEvent("diagnosis_start", { entryPoint: "diagnosis_page" });
+  }, []);
+
+  // debounced racket search
+  const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleRacketSearch = useCallback((query: string) => {
+    setRacketSearch(query);
+
+    if (searchTimer.current) clearTimeout(searchTimer.current);
+
+    if (!query.trim() || query.trim().length < 1) {
+      setSearchResults([]);
+      setIsSearching(false);
+      return;
+    }
+
+    setIsSearching(true);
+    searchTimer.current = setTimeout(async () => {
+      try {
+        const res = await fetch(
+          `/api/diagnosis/racket-search?q=${encodeURIComponent(query.trim())}&limit=8`,
+        );
+        if (res.ok) {
+          const data = await res.json();
+          setSearchResults(data.results ?? []);
+        }
+      } catch {
+        // silently fail
+      } finally {
+        setIsSearching(false);
+      }
+    }, 300);
+  }, []);
+
+  function selectRacket(name: string, id: string | null) {
+    setCurrentRacket(name);
+    setSelectedRacketId(id);
+    setRacketSearch("");
+    setSearchResults([]);
+  }
 
   function togglePainPoint(p: string) {
     setPainPoints((prev) =>
@@ -62,12 +162,6 @@ export default function DiagnosisPage() {
       return [...prev, p];
     });
   }
-
-  const filteredRackets = racketSearch
-    ? POPULAR_RACKETS.filter((r) =>
-        r.toLowerCase().includes(racketSearch.toLowerCase()),
-      )
-    : POPULAR_RACKETS;
 
   function canNext(): boolean {
     switch (step) {
@@ -86,14 +180,123 @@ export default function DiagnosisPage() {
     }
   }
 
+  // track step completion + advance
+  function advanceStep() {
+    const questionKeys = [
+      "current_racket",
+      "play_profile",
+      "swing_style",
+      "pain_points",
+      "priority_tradeoffs",
+    ];
+    trackEvent("diagnosis_step_complete", {
+      stepNumber: step,
+      questionKey: questionKeys[step - 1] ?? `step_${step}`,
+      answerValue: getStepAnswer(step),
+    });
+    setStep(step + 1);
+  }
+
+  function getStepAnswer(s: number): unknown {
+    switch (s) {
+      case 1:
+        return { racket: currentRacket, racketModelId: selectedRacketId };
+      case 2:
+        return { experience, frequency };
+      case 3:
+        return { swingSpeed, playStyle };
+      case 4:
+        return painPoints;
+      case 5:
+        return priorities;
+      default:
+        return null;
+    }
+  }
+
+  // build answers and submit
+  async function submitDiagnosis() {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+    setSubmitError(null);
+
+    const sessionId = getSessionId();
+
+    // determine current racket selection type
+    let selection: "search" | "unknown" | "first_purchase" = "search";
+    if (currentRacket === "unknown") selection = "unknown";
+    else if (currentRacket === "first") selection = "first_purchase";
+
+    const answers = {
+      current_racket: {
+        racketModelId: selectedRacketId ?? null,
+        selection,
+      },
+      play_profile: {
+        experience: EXPERIENCE_MAP[experience ?? ""] ?? experience,
+        frequency: FREQUENCY_MAP[frequency ?? ""] ?? frequency,
+      },
+      swing_style: {
+        swingSpeed: swingSpeed / 100, // normalize to 0-1
+        playStyle: PLAY_STYLE_MAP[playStyle ?? ""] ?? playStyle,
+      },
+      pain_points: painPoints.map((p) => PAIN_POINT_MAP[p] ?? p),
+      priority_tradeoffs: {
+        first: PRIORITY_MAP[priorities[0]] ?? priorities[0],
+        second: PRIORITY_MAP[priorities[1]] ?? priorities[1],
+      },
+      confirmation: true,
+    };
+
+    try {
+      const res = await fetch("/api/diagnosis/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sessionId, answers }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        throw new Error(data?.error ?? `Server error (${res.status})`);
+      }
+
+      const data = await res.json();
+      const recRunId = data.recommendationRunId as string;
+      setRunId(recRunId);
+
+      // track completion
+      trackEvent("diagnosis_complete", {
+        profileId: data.playerProfile?.id ?? "",
+        totalSteps: 5,
+        durationMs: Date.now() - startTime.current,
+      });
+
+      // navigate to real results
+      router.push(`/results/${recRunId}`);
+    } catch (err) {
+      setSubmitError(
+        err instanceof Error ? err.message : "추천 생성에 실패했습니다",
+      );
+      setIsSubmitting(false);
+    }
+  }
+
+  // auto-submit when reaching step 6
+  useEffect(() => {
+    if (step === 6 && !isSubmitting && !runId) {
+      submitDiagnosis();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step]);
+
   return (
     <main className="min-h-screen flex flex-col bg-white">
       {/* Header */}
       <header className="sticky top-0 bg-white/95 backdrop-blur border-b border-gray-100 px-6 py-3 z-10">
         <div className="max-w-lg mx-auto flex items-center justify-between">
           <button
-            onClick={() => step > 1 && setStep(step - 1)}
-            className={`text-sm ${step > 1 ? "text-gray-600" : "text-transparent pointer-events-none"}`}
+            onClick={() => step > 1 && step < 6 && setStep(step - 1)}
+            className={`text-sm ${step > 1 && step < 6 ? "text-gray-600" : "text-transparent pointer-events-none"}`}
           >
             ← 이전
           </button>
@@ -109,7 +312,7 @@ export default function DiagnosisPage() {
           <div className="h-1 bg-gray-100 rounded-full overflow-hidden">
             <div
               className="h-full bg-blue-500 rounded-full transition-all duration-300"
-              style={{ width: `${(step / (totalSteps - 1)) * 100}%` }}
+              style={{ width: `${(Math.min(step, 5) / 5) * 100}%` }}
             />
           </div>
         </div>
@@ -118,14 +321,18 @@ export default function DiagnosisPage() {
       {/* Content */}
       <div className="flex-1 px-6 pt-8 pb-32">
         <div className="max-w-lg mx-auto">
-          <h2 className="text-xl font-bold text-gray-900 mb-1">
-            {stepInfo.description}
-          </h2>
-          {stepInfo.helpText && (
-            <p className="text-sm text-gray-400 mb-6 flex items-start gap-1.5">
-              <span className="text-blue-400">💡</span>
-              {stepInfo.helpText}
-            </p>
+          {step < totalSteps && (
+            <>
+              <h2 className="text-xl font-bold text-gray-900 mb-1">
+                {stepInfo.description}
+              </h2>
+              {stepInfo.helpText && (
+                <p className="text-sm text-gray-400 mb-6 flex items-start gap-1.5">
+                  <span className="text-blue-400">����</span>
+                  {stepInfo.helpText}
+                </p>
+              )}
+            </>
           )}
 
           {/* Step 1: Current Racket */}
@@ -136,36 +343,84 @@ export default function DiagnosisPage() {
                   type="text"
                   placeholder="라켓 이름 검색..."
                   value={racketSearch}
-                  onChange={(e) => setRacketSearch(e.target.value)}
+                  onChange={(e) => handleRacketSearch(e.target.value)}
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
+                {isSearching && (
+                  <div className="absolute right-3 top-3">
+                    <div className="w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
+                  </div>
+                )}
               </div>
-              <div className="space-y-1.5">
-                {filteredRackets.map((r) => (
-                  <button
-                    key={r}
-                    type="button"
-                    onClick={() => setCurrentRacket(r)}
-                    className={`w-full text-left px-4 py-3 rounded-xl text-sm transition-all border ${
-                      currentRacket === r
-                        ? "bg-blue-50 border-blue-200 text-blue-700 font-medium"
-                        : "bg-white border-gray-100 text-gray-700 active:bg-gray-50"
-                    }`}
-                  >
-                    {r}
-                  </button>
-                ))}
-              </div>
+
+              {/* API search results */}
+              {searchResults.length > 0 && (
+                <div className="space-y-1.5">
+                  {searchResults.map((r) => (
+                    <button
+                      key={r.racketModelId}
+                      type="button"
+                      onClick={() =>
+                        selectRacket(
+                          `${r.brandName} ${r.displayName}`,
+                          r.racketModelId,
+                        )
+                      }
+                      className={`w-full text-left px-4 py-3 rounded-xl text-sm transition-all border ${
+                        selectedRacketId === r.racketModelId
+                          ? "bg-blue-50 border-blue-200 text-blue-700 font-medium"
+                          : "bg-white border-gray-100 text-gray-700 active:bg-gray-50"
+                      }`}
+                    >
+                      <span className="text-gray-400 text-xs">
+                        {r.brandNameKo ?? r.brandName}
+                      </span>
+                      <br />
+                      {r.displayNameKo ?? r.displayName}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {/* Selected racket indicator */}
+              {currentRacket &&
+                currentRacket !== "unknown" &&
+                currentRacket !== "first" &&
+                searchResults.length === 0 &&
+                !racketSearch && (
+                  <div className="flex items-center gap-2 px-4 py-3 bg-blue-50 border border-blue-200 rounded-xl text-sm text-blue-700 font-medium">
+                    <span>🎾</span>
+                    <span>{currentRacket}</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setCurrentRacket(null);
+                        setSelectedRacketId(null);
+                      }}
+                      className="ml-auto text-blue-400 hover:text-blue-600"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                )}
+
+              {/* No search, no selection — show prompt */}
+              {!racketSearch && !currentRacket && (
+                <p className="text-xs text-gray-400">
+                  브랜드나 모델명을 검색하세요 (예: Wilson Blade, 바볼랏)
+                </p>
+              )}
+
               <div className="flex gap-2 pt-2">
                 <Chip
                   label="잘 모르겠어요"
                   selected={currentRacket === "unknown"}
-                  onClick={() => setCurrentRacket("unknown")}
+                  onClick={() => selectRacket("unknown", null)}
                 />
                 <Chip
                   label="처음 구매합니다"
                   selected={currentRacket === "first"}
-                  onClick={() => setCurrentRacket("first")}
+                  onClick={() => selectRacket("first", null)}
                 />
               </div>
             </div>
@@ -295,49 +550,50 @@ export default function DiagnosisPage() {
             </div>
           )}
 
-          {/* Step 6: Complete - redirect */}
+          {/* Step 6: Submitting / Complete */}
           {step === 6 && (
             <div className="text-center py-8">
-              <div className="text-4xl mb-4">🎾</div>
-              <h3 className="text-lg font-bold mb-2">진단 완료!</h3>
-              <p className="text-sm text-gray-500 mb-6">
-                당신에게 맞는 라켓을 찾았습니다
-              </p>
-              <div className="bg-gray-50 rounded-xl p-4 text-left text-sm space-y-1 mb-6">
-                <div className="text-gray-500">
-                  현재 라켓:{" "}
-                  <span className="text-gray-800 font-medium">
-                    {currentRacket === "unknown"
-                      ? "모름"
-                      : currentRacket === "first"
-                        ? "첫 구매"
-                        : currentRacket || "미선택"}
-                  </span>
-                </div>
-                <div className="text-gray-500">
-                  경력:{" "}
-                  <span className="text-gray-800 font-medium">
-                    {experience}
-                  </span>{" "}
-                  / {frequency}
-                </div>
-                <div className="text-gray-500">
-                  스타일:{" "}
-                  <span className="text-gray-800 font-medium">{playStyle}</span>
-                </div>
-                <div className="text-gray-500">
-                  우선순위:{" "}
-                  <span className="text-gray-800 font-medium">
-                    {priorities.join(" > ")}
-                  </span>
-                </div>
-              </div>
-              <Link
-                href="/results"
-                className="inline-flex items-center justify-center w-full px-6 py-4 bg-blue-600 text-white font-semibold rounded-2xl text-base hover:bg-blue-700 transition-colors"
-              >
-                추천 결과 보기 →
-              </Link>
+              {isSubmitting && (
+                <>
+                  <div className="w-12 h-12 mx-auto mb-4 border-4 border-blue-200 border-t-blue-500 rounded-full animate-spin" />
+                  <h3 className="text-lg font-bold mb-2">
+                    맞춤 라켓을 찾고 있습니다...
+                  </h3>
+                  <p className="text-sm text-gray-500">
+                    AI가 80개 이상의 라켓을 분석하고 있습니다
+                  </p>
+                </>
+              )}
+
+              {submitError && (
+                <>
+                  <div className="text-4xl mb-4">⚠️</div>
+                  <h3 className="text-lg font-bold mb-2 text-red-600">
+                    추천 생성 실패
+                  </h3>
+                  <p className="text-sm text-gray-500 mb-4">{submitError}</p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSubmitError(null);
+                      submitDiagnosis();
+                    }}
+                    className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-colors"
+                  >
+                    다시 시도
+                  </button>
+                </>
+              )}
+
+              {runId && !isSubmitting && !submitError && (
+                <>
+                  <div className="text-4xl mb-4">🎾</div>
+                  <h3 className="text-lg font-bold mb-2">진단 완료!</h3>
+                  <p className="text-sm text-gray-500 mb-6">
+                    결과 페이지로 이동합니다...
+                  </p>
+                </>
+              )}
             </div>
           )}
         </div>
@@ -349,7 +605,7 @@ export default function DiagnosisPage() {
           <div className="max-w-lg mx-auto">
             <button
               type="button"
-              onClick={() => setStep(step + 1)}
+              onClick={advanceStep}
               disabled={!canNext()}
               className={`w-full px-6 py-3.5 rounded-xl text-sm font-semibold transition-colors ${
                 canNext()

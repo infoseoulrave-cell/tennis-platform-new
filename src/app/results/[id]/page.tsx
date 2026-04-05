@@ -6,17 +6,63 @@ import {
   recommendationResults,
   playerProfiles,
   racketModels,
+  racketSpecs,
   brands,
 } from "@/db/schema";
 import { eq, asc } from "drizzle-orm";
 import { RecommendationCard } from "@/components/recommendation-card";
 import { TrustBadge } from "@/components/trust-badge";
 import { NeutralityDisclaimer } from "@/components/neutrality-disclaimer";
+import { track } from "@/events/track";
 
 type ExplanationFragment = {
   type: "positive" | "tradeoff";
   textKo: string;
 };
+
+/**
+ * Suggest string pairing based on racket specs and tier.
+ * MVP heuristic — will be replaced by data-driven module later.
+ */
+function suggestString(specs: {
+  stiffnessRa: string | null;
+  weightG: string | null;
+  stringPattern: string | null;
+}): { name: string; tension: string; reason: string } {
+  const stiffness = specs.stiffnessRa ? Number(specs.stiffnessRa) : 63;
+  const weight = specs.weightG ? Number(specs.weightG) : 300;
+
+  // Stiff + heavy → soft multifilament for comfort
+  if (stiffness >= 67 && weight >= 300) {
+    return {
+      name: "Wilson NXT Power",
+      tension: "50-52lbs",
+      reason: "높은 강성을 부드러운 멀티필라멘트로 보완",
+    };
+  }
+  // Flexible + control-oriented
+  if (stiffness < 63) {
+    return {
+      name: "Luxilon ALU Power",
+      tension: "48-50lbs",
+      reason: "유연한 프레임에 탄력 있는 폴리로 파워 보충",
+    };
+  }
+  // Spin-friendly (open pattern)
+  if (specs.stringPattern && specs.stringPattern.includes("16x19")) {
+    return {
+      name: "Babolat RPM Blast",
+      tension: "50-52lbs",
+      reason: "오픈 패턴과 궁합이 좋은 스핀 폴리스트링",
+    };
+  }
+  // Default balanced choice
+  return {
+    name: "Yonex Poly Tour Pro",
+    tension: "50lbs",
+    reason: "밸런스 잡힌 폴리스트링으로 폭넓은 호환성",
+  };
+}
 
 export default async function ResultsPage({
   params,
@@ -48,11 +94,15 @@ export default async function ResultsPage({
     .where(eq(recommendationResults.recommendationRunId, id))
     .orderBy(asc(recommendationResults.rank));
 
-  // Fetch racket info for each result
+  // Fetch racket info + specs for each result
   const racketIds = results.map((r) => r.racketModelId);
   const racketInfo = new Map<
     string,
     { name: string; nameKo: string | null; brandName: string | null; imageUrl: string | null }
+  >();
+  const racketSpecsMap = new Map<
+    string,
+    { stiffnessRa: string | null; weightG: string | null; stringPattern: string | null }
   >();
 
   for (const racketId of racketIds) {
@@ -70,7 +120,26 @@ export default async function ResultsPage({
     if (racket) {
       racketInfo.set(racketId, racket);
     }
+
+    const [spec] = await db
+      .select({
+        stiffnessRa: racketSpecs.stiffnessRa,
+        weightG: racketSpecs.weightG,
+        stringPattern: racketSpecs.stringPattern,
+      })
+      .from(racketSpecs)
+      .where(eq(racketSpecs.racketModelId, racketId));
+
+    if (spec) {
+      racketSpecsMap.set(racketId, spec);
+    }
   }
+
+  // Track recommendation_view event (server-side, fire-and-forget)
+  track(run.playerProfileId ?? "unknown", "recommendation_view", {
+    runId: id,
+    resultCount: results.length,
+  }).catch(() => {});
 
   // Build compare IDs string (all result IDs)
   const allResultIds = results.map((r) => r.id).join(",");
@@ -132,6 +201,56 @@ export default async function ResultsPage({
                 />
               );
             })}
+          </div>
+
+          {/* String & Grip follow-on hooks */}
+          <div className="mt-8">
+            <h3 className="text-base font-bold mb-3">추천 스트링 조합</h3>
+            <p className="text-xs text-gray-400 mb-3">
+              라켓 특성에 맞는 스트링을 매칭했습니다
+            </p>
+            <div className="space-y-2">
+              {results.map((result) => {
+                const racket = racketInfo.get(result.racketModelId);
+                const specs = racketSpecsMap.get(result.racketModelId);
+                const suggestion = suggestString(
+                  specs ?? {
+                    stiffnessRa: null,
+                    weightG: null,
+                    stringPattern: null,
+                  },
+                );
+                return (
+                  <div
+                    key={`string-${result.id}`}
+                    className="border border-gray-100 rounded-xl p-4"
+                  >
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <span className="text-sm font-semibold text-gray-800">
+                        {racket?.name ?? "Unknown"}
+                      </span>
+                      <span className="text-xs text-gray-400">+</span>
+                      <span className="text-sm font-medium text-blue-600">
+                        {suggestion.name}
+                      </span>
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      추천 텐션: {suggestion.tension} · {suggestion.reason}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Grip hook teaser */}
+            <div className="mt-4 border border-dashed border-gray-200 rounded-xl p-4 text-center">
+              <p className="text-sm text-gray-500">
+                🤚 그립 사이즈 추천은 곧 출시됩니다
+              </p>
+              <p className="text-xs text-gray-400 mt-1">
+                손 크기 기반 그립 추천 · 오버그립 조합 안내
+              </p>
+            </div>
           </div>
 
           {/* Next steps */}

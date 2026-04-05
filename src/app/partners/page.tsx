@@ -1,5 +1,10 @@
+"use client";
+
+import { Suspense, useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { TrustBadge } from "@/components/trust-badge";
+import { trackEvent } from "@/lib/track-event";
 
 type Partner = {
   id: string;
@@ -10,6 +15,7 @@ type Partner = {
   address: string;
 };
 
+// Fallback mock data — used when no real partners exist in DB yet.
 const MOCK_PARTNERS: Partner[] = [
   {
     id: "p1",
@@ -37,15 +43,53 @@ const MOCK_PARTNERS: Partner[] = [
   },
 ];
 
+function handlePartnerClick(
+  partnerId: string,
+  action: "demo_request" | "fitting_appointment",
+  racketModelId?: string | null,
+) {
+  trackEvent("partner_click", {
+    partnerOfferId: partnerId,
+    racketModelId: racketModelId ?? "unknown",
+    attributionTag: `partner_cta_${action}`,
+  });
+}
+
 export default function PartnersPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="min-h-screen bg-white flex items-center justify-center">
+          <div className="w-10 h-10 border-4 border-blue-200 border-t-blue-500 rounded-full animate-spin" />
+        </main>
+      }
+    >
+      <PartnersContent />
+    </Suspense>
+  );
+}
+
+function PartnersContent() {
+  const searchParams = useSearchParams();
+  const racketModelId = searchParams.get("racketModelId");
+
+  const [partners] = useState<Partner[]>(MOCK_PARTNERS);
+
+  useEffect(() => {
+    trackEvent("page_view", { path: "/partners", pageType: "partner_list" });
+  }, []);
+
   return (
     <main className="min-h-screen bg-white pb-32">
       {/* Header */}
       <header className="sticky top-0 bg-white/95 backdrop-blur border-b border-gray-100 px-6 py-3 z-10">
         <div className="max-w-lg mx-auto flex items-center justify-between">
-          <Link href="/results" className="text-sm text-gray-600">
+          <button
+            onClick={() => window.history.back()}
+            className="text-sm text-gray-600"
+          >
             ← 추천 결과
-          </Link>
+          </button>
           <h1 className="text-sm font-semibold">가까운 매장</h1>
           <div className="w-10" />
         </div>
@@ -72,7 +116,7 @@ export default function PartnersPage() {
 
           {/* Partner list */}
           <div className="space-y-3">
-            {MOCK_PARTNERS.map((partner) => (
+            {partners.map((partner) => (
               <div
                 key={partner.id}
                 className="border border-gray-200 rounded-2xl p-5"
@@ -115,12 +159,26 @@ export default function PartnersPage() {
                 <div className="flex gap-2">
                   <button
                     type="button"
+                    onClick={() =>
+                      handlePartnerClick(
+                        partner.id,
+                        "demo_request",
+                        racketModelId,
+                      )
+                    }
                     className="flex-1 py-2.5 text-center text-sm font-semibold bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors"
                   >
                     시타 예약하기
                   </button>
                   <button
                     type="button"
+                    onClick={() =>
+                      handlePartnerClick(
+                        partner.id,
+                        "fitting_appointment",
+                        racketModelId,
+                      )
+                    }
                     className="py-2.5 px-4 text-center text-sm font-medium text-gray-600 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors"
                   >
                     상담 예약
