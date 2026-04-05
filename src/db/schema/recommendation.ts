@@ -55,6 +55,7 @@ export const playerProfiles = pgTable("player_profiles", {
   sessionId: varchar("session_id", { length: 100 }).notNull(),
   answers: jsonb("answers").notNull(),
   playstyleArchetype: varchar("playstyle_archetype", { length: 100 }),
+  summaryKo: text("summary_ko"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
@@ -67,6 +68,7 @@ export const recommendationRuns = pgTable("recommendation_runs", {
   scoringVersion: varchar("scoring_version", { length: 20 }).notNull(),
   inputSnapshot: jsonb("input_snapshot").notNull(),
   rankedResults: jsonb("ranked_results").notNull(),
+  shareToken: text("share_token"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -82,5 +84,9 @@ export const recommendationResults = pgTable("recommendation_results", {
   totalScore: numeric("total_score", { precision: 5, scale: 2 }).notNull(),
   axisScores: jsonb("axis_scores").notNull(),
   explanationFragments: jsonb("explanation_fragments").notNull(),
+  tier: text("tier"),
+  antiRecommendationKo: text("anti_recommendation_ko"),
+  confidenceLevel: text("confidence_level"),
+  confidenceReasonKo: text("confidence_reason_ko"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });

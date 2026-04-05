@@ -19,6 +19,12 @@ export const ingestionStateEnum = pgEnum("ingestion_state", [
   "rejected",
 ]);
 
+export const aliasTypeEnum = pgEnum("alias_type", [
+  "community",
+  "official",
+  "abbreviation",
+]);
+
 export const brands = pgTable("brands", {
   id: uuid("id").primaryKey().defaultRandom(),
   name: varchar("name", { length: 255 }).notNull().unique(),
@@ -40,8 +46,20 @@ export const racketModels = pgTable("racket_models", {
   segment: varchar("segment", { length: 100 }),
   releaseYear: integer("release_year"),
   discontinued: boolean("discontinued").default(false).notNull(),
+  imageUrl: text("image_url"),
+  thumbnailUrl: text("thumbnail_url"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const racketAliases = pgTable("racket_aliases", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  racketModelId: uuid("racket_model_id")
+    .references(() => racketModels.id)
+    .notNull(),
+  alias: varchar("alias", { length: 255 }).notNull(),
+  aliasType: aliasTypeEnum("alias_type").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 export const racketVariants = pgTable("racket_variants", {

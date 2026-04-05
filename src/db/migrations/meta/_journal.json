@@ -15,6 +15,13 @@
       "when": 1775403089017,
       "tag": "0001_lovely_nova",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1775404147538,
+      "tag": "0002_luxuriant_quicksilver",
+      "breakpoints": true
     }
   ]
 }
