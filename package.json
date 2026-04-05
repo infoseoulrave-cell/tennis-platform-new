@@ -12,6 +12,7 @@
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
     "db:seed": "tsx src/db/seed.ts",
+    "db:seed-rackets": "tsx src/db/seed-rackets.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

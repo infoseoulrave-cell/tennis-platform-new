@@ -8,6 +8,13 @@
       "when": 1775398390624,
       "tag": "0000_equal_wilson_fisk",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1775403089017,
+      "tag": "0001_lovely_nova",
+      "breakpoints": true
     }
   ]
 }

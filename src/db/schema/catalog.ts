@@ -82,11 +82,26 @@ export const racketSpecs = pgTable("racket_specs", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+export const ingestionBatches = pgTable("ingestion_batches", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  filename: varchar("filename", { length: 255 }),
+  sourceDescription: text("source_description"),
+  totalRows: integer("total_rows").notNull(),
+  successCount: integer("success_count").default(0).notNull(),
+  errorCount: integer("error_count").default(0).notNull(),
+  skippedCount: integer("skipped_count").default(0).notNull(),
+  errors: jsonb("errors"),
+  importedBy: varchar("imported_by", { length: 255 }).notNull(),
+  completedAt: timestamp("completed_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 export const specSources = pgTable("spec_sources", {
   id: uuid("id").primaryKey().defaultRandom(),
   racketSpecsId: uuid("racket_specs_id")
     .references(() => racketSpecs.id)
     .notNull(),
+  batchId: uuid("batch_id").references(() => ingestionBatches.id),
   sourceUrl: text("source_url"),
   sourceType: varchar("source_type", { length: 50 }).notNull(),
   rawValues: jsonb("raw_values").notNull(),
