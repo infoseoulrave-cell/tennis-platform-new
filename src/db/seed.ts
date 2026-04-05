@@ -30,7 +30,7 @@ async function seed() {
         axisName: "Power",
         axisNameKo: "파워",
         description:
-          "How much inherent power the racket adds to shots. Derived from head size, weight distribution, and stiffness.",
+          "How much inherent power the racket adds to shots. Derived from head size, swing weight, stiffness, and mass.",
         scoringFormula:
           "0.35 * norm(headSize) + 0.30 * norm(swingWeight) + 0.20 * norm(stiffness) + 0.15 * norm(weight)",
         weightDefault: "0.20",
@@ -41,9 +41,9 @@ async function seed() {
         axisName: "Control",
         axisNameKo: "컨트롤",
         description:
-          "Precision and placement ability. Inversely related to power for most rackets. Tighter string patterns, smaller heads, and lower stiffness contribute.",
+          "Precision and placement ability. Smaller heads, denser string patterns, heavier mass, and lower stiffness contribute.",
         scoringFormula:
-          "0.30 * inv_norm(headSize) + 0.25 * norm(stringDensity) + 0.25 * inv_norm(stiffness) + 0.20 * norm(weight)",
+          "0.35 * inv_norm(headSize) + 0.30 * norm(stringDensity) + 0.20 * norm(weight) + 0.15 * inv_norm(stiffness)",
         weightDefault: "0.20",
       },
       {
@@ -52,9 +52,9 @@ async function seed() {
         axisName: "Comfort",
         axisNameKo: "편안함",
         description:
-          "Vibration dampening and arm-friendliness. Lower stiffness, moderate weight, and wider beam profiles contribute.",
+          "Arm-friendliness and reduced fatigue. Lower stiffness, wider beam profiles, and lighter weight contribute.",
         scoringFormula:
-          "0.40 * inv_norm(stiffness) + 0.30 * norm(weight) + 0.30 * norm(beamWidth)",
+          "0.45 * inv_norm(stiffness) + 0.35 * norm(beamWidth) + 0.20 * inv_norm(weight)",
         weightDefault: "0.20",
       },
       {
@@ -63,20 +63,20 @@ async function seed() {
         axisName: "Spin Potential",
         axisNameKo: "스핀",
         description:
-          "Ability to generate topspin and slice. Open string patterns, larger heads, and aerodynamic profiles contribute.",
+          "Ability to generate topspin and slice. Open string patterns, larger heads, and head-heavy balance contribute.",
         scoringFormula:
-          "0.40 * inv_norm(stringDensity) + 0.30 * norm(headSize) + 0.30 * norm(swingWeight)",
+          "0.45 * inv_norm(stringDensity) + 0.30 * norm(headSize) + 0.25 * norm(balance)",
         weightDefault: "0.20",
       },
       {
         version: "v1",
-        axisKey: "maneuverability",
-        axisName: "Maneuverability",
-        axisNameKo: "조작성",
+        axisKey: "stability",
+        axisName: "Stability",
+        axisNameKo: "안정성",
         description:
-          "Ease of swinging and handling at the net. Lower swing weight, lighter mass, and head-light balance contribute.",
+          "Resistance to twisting on off-center hits and solid plowthrough feel. Higher weight, swing weight, and head size contribute.",
         scoringFormula:
-          "0.40 * inv_norm(swingWeight) + 0.35 * inv_norm(weight) + 0.25 * inv_norm(balance)",
+          "0.35 * norm(weight) + 0.35 * norm(swingWeight) + 0.30 * norm(headSize)",
         weightDefault: "0.20",
       },
     ])

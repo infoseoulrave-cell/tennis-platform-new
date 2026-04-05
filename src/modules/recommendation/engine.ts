@@ -28,7 +28,6 @@ const AXIS_LABEL_KO_FALLBACK: Record<string, string> = {
   power: "파워",
   comfort: "편안함",
   spin: "스핀",
-  maneuverability: "조작성",
   stability: "안정성",
 };
 
@@ -43,11 +42,11 @@ const PAIN_POINT_KO: Record<string, string> = {
 
 // Axis keys associated with each pain point for comfort/control threshold checks
 const PAIN_POINT_AXIS_MAP: Record<string, { axisKey: string; threshold: number }> = {
-  elbow_pain: { axisKey: "comfort", threshold: 70 },
-  wrist_pain: { axisKey: "comfort", threshold: 70 },
-  short_shots: { axisKey: "control", threshold: 70 },
-  inconsistent_serve: { axisKey: "control", threshold: 65 },
-  heavy_racket: { axisKey: "maneuverability", threshold: 65 },
+  elbow_pain: { axisKey: "comfort", threshold: 45 },
+  wrist_pain: { axisKey: "comfort", threshold: 45 },
+  short_shots: { axisKey: "control", threshold: 50 },
+  inconsistent_serve: { axisKey: "control", threshold: 45 },
+  heavy_racket: { axisKey: "comfort", threshold: 50 },
 };
 
 // Anti-recommendation templates by tier
@@ -162,7 +161,6 @@ function generateSummaryKo(answers: DiagnosisAnswers): string {
     power: "파워",
     comfort: "편안함",
     spin: "스핀",
-    maneuverability: "조작성",
     stability: "안정성",
   };
 
@@ -220,14 +218,14 @@ function buildExplanationFragments(
   const secondPriority = answers.priority_tradeoffs?.second;
   const painPoints = answers.pain_points ?? [];
 
-  // High priority axis check (>80)
-  if (firstPriority && (racketAxes[firstPriority] ?? 0) > 80) {
+  // High priority axis check (>55)
+  if (firstPriority && (racketAxes[firstPriority] ?? 0) > 55) {
     const labelKo = axisKeyToLabelKo.get(firstPriority) ?? AXIS_LABEL_KO_FALLBACK[firstPriority] ?? firstPriority;
     fragments.push(templates.highPriority(labelKo));
   }
 
-  // Second priority axis check (>70)
-  if (secondPriority && (racketAxes[secondPriority] ?? 0) > 70) {
+  // Second priority axis check (>45)
+  if (secondPriority && (racketAxes[secondPriority] ?? 0) > 45) {
     const labelKo = axisKeyToLabelKo.get(secondPriority) ?? AXIS_LABEL_KO_FALLBACK[secondPriority] ?? secondPriority;
     fragments.push(templates.secondPriority(labelKo));
   }

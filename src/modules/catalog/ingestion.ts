@@ -10,6 +10,7 @@ import {
 } from "@/db/schema";
 import { eq, and, sql } from "drizzle-orm";
 import type { ImportRow } from "./validation";
+import { computeScoresForRacket } from "@/modules/recommendation/scoring";
 
 type IngestionState = "raw" | "normalized" | "review" | "published" | "rejected";
 
@@ -68,6 +69,18 @@ export async function transitionSpecState(
   }
 
   await db.update(racketSpecs).set(updates).where(eq(racketSpecs.id, specId));
+
+  // Auto-compute axis scores when transitioning to published
+  if (targetState === "published") {
+    const [specRow] = await db
+      .select({ racketModelId: racketSpecs.racketModelId })
+      .from(racketSpecs)
+      .where(eq(racketSpecs.id, specId))
+      .limit(1);
+    if (specRow) {
+      await computeScoresForRacket(specRow.racketModelId);
+    }
+  }
 
   return { ok: true };
 }
