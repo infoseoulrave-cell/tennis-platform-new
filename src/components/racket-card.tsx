@@ -5,13 +5,13 @@ export type RacketCardData = {
   slug: string;
   brand: string;
   model: string;
-  year?: number;
-  weight?: string;
-  headSize?: string;
-  pattern?: string;
-  priceKrw?: number;
-  imageUrl?: string;
-  scores?: Scores;
+  year?: number | null;
+  weight?: string | null;
+  headSize?: string | null;
+  pattern?: string | null;
+  priceKrw?: number | null;
+  imageUrl?: string | null;
+  scores?: Scores | null;
 };
 
 function formatPrice(price: number): string {
