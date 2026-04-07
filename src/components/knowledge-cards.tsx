@@ -1,0 +1,31 @@
+import Link from "next/link";
+import { knowledgeFacts } from "@/data/knowledge";
+
+export function KnowledgeCards() {
+  return (
+    <section className="py-12">
+      <div className="flex items-end justify-between mb-6">
+        <h2 className="text-xl font-bold flex items-center gap-2">
+          <span>💡</span>
+          <span>알면 달라지는 테니스 상식</span>
+        </h2>
+        <Link href="/knowledge" className="text-xs text-[var(--color-text-muted)] hover:text-[var(--color-text)]">
+          전체 보기 →
+        </Link>
+      </div>
+
+      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {knowledgeFacts.map((fact, i) => (
+          <article
+            key={i}
+            className="border border-[var(--color-border)] rounded-xl p-5 hover:border-[var(--color-text-muted)] transition-colors"
+          >
+            <div className="text-3xl mb-3">{fact.emoji}</div>
+            <h3 className="font-semibold text-sm mb-2">{fact.title}</h3>
+            <p className="text-xs text-[var(--color-text-secondary)] leading-relaxed">{fact.description}</p>
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}
