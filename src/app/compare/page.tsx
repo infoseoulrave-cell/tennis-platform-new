@@ -1,432 +1,156 @@
-"use client";
-
-import { Suspense, useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { RadarChart } from "@/components/radar-chart";
-import { trackEvent } from "@/lib/track-event";
+import { getRacketBySlug, type RacketDetail } from "@/lib/queries";
+import { RadarChart, type Scores } from "@/components/radar-chart";
 
-// ---------- types ----------
+const CHART_COLORS = ["#111", "#3b82f6", "#10b981"];
 
-type AxisScores = Record<string, number>;
-
-type CompareRacket = {
-  recommendationResultId: string;
-  racketModelId: string;
-  name: string | null;
-  nameKo: string | null;
-  segment: string | null;
-  imageUrl: string | null;
-  brand: { name: string; nameKo: string | null } | null;
-  specs: {
-    headSizeSqIn: number | null;
-    weightG: number | null;
-    balanceMm: number | null;
-    swingWeightKgCm2: number | null;
-    stiffnessRa: number | null;
-    stringPattern: string | null;
-    composition: string | null;
-  } | null;
-  retailPriceKrw: number | null;
-  recommendation: {
-    rank: number;
-    tier: string;
-    totalScore: number;
-    axisScores: AxisScores;
-    explanationFragments: unknown;
-    confidence: { level: string; reasonKo: string | null };
-  };
-};
-
-type Verdict = {
-  axisKey: string;
-  winnerRacketModelId: string;
-  winnerName: string | null;
-  scores: Array<{ racketModelId: string; score: number }>;
-};
-
-type KeyDifference = {
-  racketModelId: string;
-  name: string | null;
-  totalScore: number;
-  rank: number;
-  strengthAxisKey: string | null;
-  summaryLine: string;
-};
-
-type CompareData = {
-  rackets: CompareRacket[];
-  playerPriorities: { first: string | null; second: string | null };
-  verdicts: Verdict[];
-  keyDifferences: KeyDifference[];
-};
-
-const AXIS_LABELS: Record<string, string> = {
-  power: "파워",
-  control: "컨트롤",
-  spin: "스핀",
-  comfort: "편안함",
-  stability: "안정성",
-};
-
-const AXES = ["power", "control", "spin", "comfort", "stability"];
-
-const TIER_EMOJI: Record<string, string> = {
-  best_fit: "🏆",
-  safe_alternative: "💚",
-  adventurous_choice: "🔥",
-};
-
-// ---------- component ----------
-
-export default function ComparePage() {
-  return (
-    <Suspense
-      fallback={
-        <main className="min-h-screen bg-white flex items-center justify-center">
-          <div className="w-10 h-10 border-4 border-blue-200 border-t-blue-500 rounded-full animate-spin" />
-        </main>
-      }
-    >
-      <CompareContent />
-    </Suspense>
-  );
+function formatPrice(price: number | null): string {
+  if (!price) return "—";
+  return `₩${price.toLocaleString()}`;
 }
 
-function CompareContent() {
-  const searchParams = useSearchParams();
-  const idsParam = searchParams.get("ids");
+export default async function ComparePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ slugs?: string }>;
+}) {
+  const params = await searchParams;
+  const slugs = params.slugs?.split(",").filter(Boolean) ?? [];
 
-  const [data, setData] = useState<CompareData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!idsParam) {
-      setError("비교할 추천 결과가 없습니다");
-      setLoading(false);
-      return;
-    }
-
-    async function fetchCompare() {
-      try {
-        const res = await fetch(
-          `/api/recommendations/compare?ids=${encodeURIComponent(idsParam!)}`,
-        );
-        if (!res.ok) {
-          const body = await res.json().catch(() => null);
-          throw new Error(body?.error ?? `서버 오류 (${res.status})`);
-        }
-        const result = await res.json();
-        setData(result);
-
-        trackEvent("compare_view", {
-          racketModelIds: result.rackets.map(
-            (r: CompareRacket) => r.racketModelId,
-          ),
-        });
-      } catch (err) {
-        setError(
-          err instanceof Error ? err.message : "비교 데이터를 불러오지 못했습니다",
-        );
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchCompare();
-  }, [idsParam]);
-
-  if (loading) {
+  if (slugs.length === 0) {
     return (
-      <main className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-10 h-10 mx-auto mb-3 border-4 border-blue-200 border-t-blue-500 rounded-full animate-spin" />
-          <p className="text-sm text-gray-500">비교 데이터 로딩 중...</p>
-        </div>
-      </main>
+      <div className="max-w-4xl mx-auto px-6 py-20 text-center">
+        <h1 className="text-2xl font-bold mb-4">라켓 비교</h1>
+        <p className="text-sm text-[var(--color-text-secondary)] mb-8">
+          비교할 라켓을 선택해 주세요. 라켓 페이지에서 비교 담기 버튼을 눌러 추가할 수 있습니다.
+        </p>
+        <Link
+          href="/rackets"
+          className="inline-block px-5 py-2.5 bg-[var(--color-text)] text-white text-sm font-medium rounded-lg"
+        >
+          라켓 찾기 →
+        </Link>
+      </div>
     );
   }
 
-  if (error || !data) {
+  const rackets: RacketDetail[] = [];
+  for (const slug of slugs.slice(0, 3)) {
+    try {
+      const r = await getRacketBySlug(slug);
+      if (r) rackets.push(r);
+    } catch {
+      // skip
+    }
+  }
+
+  if (rackets.length === 0) {
     return (
-      <main className="min-h-screen bg-white flex items-center justify-center px-6">
-        <div className="text-center max-w-sm">
-          <p className="text-4xl mb-3">⚠️</p>
-          <p className="text-sm text-gray-600 mb-4">
-            {error ?? "데이터를 불러올 수 없습니다"}
-          </p>
-          <Link
-            href="/diagnosis"
-            className="text-sm text-blue-600 font-medium hover:underline"
-          >
-            진단 다시 하기 →
-          </Link>
-        </div>
-      </main>
+      <div className="max-w-4xl mx-auto px-6 py-20 text-center text-[var(--color-text-muted)]">
+        선택한 라켓을 찾을 수 없습니다.
+      </div>
     );
   }
 
-  const rackets = data.rackets;
+  // Combine all scores into a single radar chart with multiple polygons
+  const racketsWithScores = rackets.filter((r): r is RacketDetail & { scores: Scores } => r.scores !== null);
 
   return (
-    <main className="min-h-screen bg-white pb-32">
-      {/* Header */}
-      <header className="sticky top-0 bg-white/95 backdrop-blur border-b border-gray-100 px-6 py-3 z-10">
-        <div className="max-w-lg mx-auto flex items-center justify-between">
-          <button
-            onClick={() => window.history.back()}
-            className="text-sm text-gray-600"
-          >
-            ← 추천 결과
-          </button>
-          <h1 className="text-sm font-semibold">라켓 비교</h1>
-          <div className="w-10" />
-        </div>
+    <div className="max-w-6xl mx-auto px-6 py-12">
+      <header className="mb-10">
+        <h1 className="text-3xl font-bold">라켓 비교</h1>
+        <p className="text-sm text-[var(--color-text-secondary)] mt-2">
+          {rackets.length}개의 라켓을 5축 점수와 스펙으로 나란히 비교합니다.
+        </p>
       </header>
 
-      <div className="px-6 pt-6">
-        <div className="max-w-lg mx-auto">
-          {/* Racket headers */}
-          <div
-            className="grid gap-2 mb-6"
-            style={{
-              gridTemplateColumns: `repeat(${rackets.length}, minmax(0, 1fr))`,
-            }}
-          >
-            {rackets.map((r) => (
-              <div key={r.recommendationResultId} className="text-center">
-                <div className="w-12 h-12 bg-gray-100 rounded-xl mx-auto flex items-center justify-center text-xl mb-2">
-                  {TIER_EMOJI[r.recommendation.tier] ?? "🎾"}
+      {/* Racket headers row */}
+      <div className="grid gap-6 mb-10" style={{ gridTemplateColumns: `repeat(${rackets.length}, minmax(0, 1fr))` }}>
+        {rackets.map((r, i) => (
+          <div key={r.id} className="text-center">
+            <div className="aspect-square bg-[var(--color-bg-subtle)] rounded-xl flex items-center justify-center mb-3">
+              {r.imageUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={r.imageUrl} alt={r.model} className="object-contain w-full h-full p-4" />
+              ) : (
+                <span className="text-4xl opacity-20">🎾</span>
+              )}
+            </div>
+            <p className="text-xs text-[var(--color-text-muted)]">{r.brand}</p>
+            <Link href={`/rackets/${r.slug}`} className="font-semibold text-sm hover:underline block">
+              {r.model}{r.year ? ` (${r.year})` : ""}
+            </Link>
+            <span className="inline-block w-3 h-3 rounded-full mt-2" style={{ backgroundColor: CHART_COLORS[i] }} />
+          </div>
+        ))}
+      </div>
+
+      {/* Overlapping radar chart */}
+      {racketsWithScores.length > 0 && (
+        <section className="border border-[var(--color-border)] rounded-2xl p-8 mb-10">
+          <h2 className="text-base font-semibold mb-6 text-center">5축 비교</h2>
+          <div className="flex justify-center">
+            <div className="relative" style={{ width: 280, height: 280 }}>
+              {racketsWithScores.map((r, i) => (
+                <div key={r.id} className="absolute inset-0">
+                  <RadarChart
+                    scores={r.scores}
+                    size={280}
+                    color={CHART_COLORS[i]}
+                  />
                 </div>
-                <div className="text-xs text-gray-400">
-                  {r.brand?.nameKo ?? r.brand?.name}
-                </div>
-                <div className="text-sm font-semibold text-gray-800 leading-tight">
-                  {r.nameKo ?? r.name}
-                </div>
-                <div className="text-xs font-bold text-blue-600 mt-1">
-                  {Math.round(r.recommendation.totalScore)}점
-                </div>
+              ))}
+            </div>
+          </div>
+          <div className="flex justify-center gap-6 mt-6">
+            {racketsWithScores.map((r, i) => (
+              <div key={r.id} className="flex items-center gap-2">
+                <span className="w-3 h-3 rounded-full" style={{ backgroundColor: CHART_COLORS[i] }} />
+                <span className="text-xs text-[var(--color-text-secondary)]">{r.model}</span>
               </div>
             ))}
           </div>
+        </section>
+      )}
 
-          {/* 5-axis comparison */}
-          <section className="mb-8">
-            <h3 className="text-base font-bold mb-4">5축 비교</h3>
-            <div className="space-y-3">
-              {AXES.map((axis) => (
-                <div key={axis}>
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-sm text-gray-600">
-                      {AXIS_LABELS[axis] ?? axis}
-                    </span>
-                  </div>
-                  <div
-                    className="grid gap-2"
-                    style={{
-                      gridTemplateColumns: `repeat(${rackets.length}, minmax(0, 1fr))`,
-                    }}
-                  >
-                    {rackets.map((r) => {
-                      const val = r.recommendation.axisScores[axis] ?? 0;
-                      const maxVal = Math.max(
-                        ...rackets.map(
-                          (x) => x.recommendation.axisScores[axis] ?? 0,
-                        ),
-                      );
-                      const isMax = val === maxVal;
-                      return (
-                        <div
-                          key={r.recommendationResultId}
-                          className="text-center"
-                        >
-                          <div className="h-2 bg-gray-100 rounded-full overflow-hidden mb-1">
-                            <div
-                              className={`h-full rounded-full ${isMax ? "bg-blue-500" : "bg-gray-300"}`}
-                              style={{ width: `${val}%` }}
-                            />
-                          </div>
-                          <span
-                            className={`text-xs font-medium ${isMax ? "text-blue-600" : "text-gray-500"}`}
-                          >
-                            {Math.round(val)}
-                          </span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          {/* Key differences */}
-          <section className="mb-8">
-            <h3 className="text-base font-bold mb-3">핵심 차이</h3>
-            <div className="space-y-2">
-              {data.keyDifferences.map((kd) => (
-                <div
-                  key={kd.racketModelId}
-                  className="flex items-start gap-2 text-sm"
-                >
-                  <span className="shrink-0">
-                    {TIER_EMOJI[
-                      rackets.find((r) => r.racketModelId === kd.racketModelId)
-                        ?.recommendation.tier ?? ""
-                    ] ?? "•"}
-                  </span>
-                  <div>
-                    <span className="font-medium text-gray-800">
-                      {kd.name}:
-                    </span>{" "}
-                    <span className="text-gray-600">{kd.summaryLine}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          {/* Priority verdicts */}
-          {data.verdicts.length > 0 && (
-            <section className="mb-8 bg-blue-50 rounded-2xl p-5">
-              <h3 className="text-base font-bold mb-3 text-blue-900">
-                나의 우선순위 기준
-              </h3>
-              {data.verdicts.map((v, idx) => (
-                <div
-                  key={v.axisKey}
-                  className="flex items-center gap-2 text-sm mb-2"
-                >
-                  <span className="font-semibold text-blue-800">
-                    {idx + 1}순위 {AXIS_LABELS[v.axisKey] ?? v.axisKey}
-                  </span>
-                  <span className="text-blue-600">→</span>
-                  <span className="font-bold text-blue-900">
-                    {v.winnerName} 승
-                  </span>
-                  <span className="text-blue-400 text-xs">
-                    (
-                    {Math.round(
-                      v.scores.find(
-                        (s) => s.racketModelId === v.winnerRacketModelId,
-                      )?.score ?? 0,
-                    )}
-                    )
-                  </span>
-                </div>
-              ))}
-            </section>
-          )}
-
-          {/* Specs table */}
-          <section className="mb-8">
-            <h3 className="text-base font-bold mb-3">사양 비교</h3>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-gray-100">
-                    <th className="text-left py-2 text-gray-400 font-normal">
-                      항목
-                    </th>
-                    {rackets.map((r) => (
-                      <th
-                        key={r.recommendationResultId}
-                        className="text-center py-2 text-gray-600 font-medium"
-                      >
-                        {(r.nameKo ?? r.name ?? "").split(" ")[0]}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="text-gray-700">
-                  <tr className="border-b border-gray-50">
-                    <td className="py-2 text-gray-400">헤드</td>
-                    {rackets.map((r) => (
-                      <td
-                        key={r.recommendationResultId}
-                        className="text-center py-2"
-                      >
-                        {r.specs?.headSizeSqIn ?? "—"}
-                      </td>
-                    ))}
-                  </tr>
-                  <tr className="border-b border-gray-50">
-                    <td className="py-2 text-gray-400">무게</td>
-                    {rackets.map((r) => (
-                      <td
-                        key={r.recommendationResultId}
-                        className="text-center py-2"
-                      >
-                        {r.specs?.weightG ? `${r.specs.weightG}g` : "—"}
-                      </td>
-                    ))}
-                  </tr>
-                  <tr className="border-b border-gray-50">
-                    <td className="py-2 text-gray-400">밸런스</td>
-                    {rackets.map((r) => (
-                      <td
-                        key={r.recommendationResultId}
-                        className="text-center py-2"
-                      >
-                        {r.specs?.balanceMm ? `${r.specs.balanceMm}mm` : "—"}
-                      </td>
-                    ))}
-                  </tr>
-                  <tr className="border-b border-gray-50">
-                    <td className="py-2 text-gray-400">강성</td>
-                    {rackets.map((r) => (
-                      <td
-                        key={r.recommendationResultId}
-                        className="text-center py-2"
-                      >
-                        {r.specs?.stiffnessRa ?? "—"}
-                      </td>
-                    ))}
-                  </tr>
-                  <tr className="border-b border-gray-50">
-                    <td className="py-2 text-gray-400">스트링 패턴</td>
-                    {rackets.map((r) => (
-                      <td
-                        key={r.recommendationResultId}
-                        className="text-center py-2"
-                      >
-                        {r.specs?.stringPattern ?? "—"}
-                      </td>
-                    ))}
-                  </tr>
-                  <tr>
-                    <td className="py-2 text-gray-400">가격</td>
-                    {rackets.map((r) => (
-                      <td
-                        key={r.recommendationResultId}
-                        className="text-center py-2"
-                      >
-                        {r.retailPriceKrw
-                          ? `₩${r.retailPriceKrw.toLocaleString()}`
-                          : "—"}
-                      </td>
-                    ))}
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </section>
+      {/* Spec comparison table */}
+      <section>
+        <h2 className="text-base font-semibold mb-4">스펙 비교</h2>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <tbody>
+              <SpecCompareRow label="무게" rackets={rackets} get={(r) => r.weight} />
+              <SpecCompareRow label="헤드사이즈" rackets={rackets} get={(r) => r.headSize} />
+              <SpecCompareRow label="스트링 패턴" rackets={rackets} get={(r) => r.pattern} />
+              <SpecCompareRow label="강성 (RA)" rackets={rackets} get={(r) => r.stiffness?.toString() ?? null} />
+              <SpecCompareRow label="밸런스" rackets={rackets} get={(r) => (r.balanceMm ? `${r.balanceMm}mm` : null)} />
+              <SpecCompareRow label="스윙웨이트" rackets={rackets} get={(r) => r.swingWeight?.toString() ?? null} />
+              <SpecCompareRow label="가격" rackets={rackets} get={(r) => formatPrice(r.priceKrw)} />
+            </tbody>
+          </table>
         </div>
-      </div>
+      </section>
+    </div>
+  );
+}
 
-      {/* Sticky CTA */}
-      <div className="fixed bottom-0 inset-x-0 bg-white border-t border-gray-100 px-6 py-4 safe-bottom">
-        <div className="max-w-lg mx-auto">
-          <Link
-            href="/partners"
-            className="flex items-center justify-center w-full py-3 text-sm font-semibold bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors"
-          >
-            📍 이 라켓 시타해보기
-          </Link>
-        </div>
-      </div>
-    </main>
+function SpecCompareRow({
+  label,
+  rackets,
+  get,
+}: {
+  label: string;
+  rackets: RacketDetail[];
+  get: (r: RacketDetail) => string | null | undefined;
+}) {
+  return (
+    <tr className="border-b border-[var(--color-border)]">
+      <th className="text-left py-3 pr-6 font-normal text-[var(--color-text-muted)] whitespace-nowrap">{label}</th>
+      {rackets.map((r) => (
+        <td key={r.id} className="text-center py-3 px-2 font-medium">
+          {get(r) ?? "—"}
+        </td>
+      ))}
+    </tr>
   );
 }
