@@ -1,8 +1,25 @@
+import { HeroCarousel } from "@/components/hero-carousel";
+import { QuickLinks } from "@/components/quick-links";
+import { TopRacketsList } from "@/components/top-rackets-list";
+import { NewsFeed } from "@/components/news-feed";
+import { PlayerSynergySection } from "@/components/player-synergy-card";
+import { KnowledgeCards } from "@/components/knowledge-cards";
+import { StringGuide } from "@/components/string-guide";
+
 export default function Home() {
   return (
-    <div className="max-w-6xl mx-auto px-6 py-20 text-center">
-      <h1 className="text-3xl font-bold">racketlab</h1>
-      <p className="mt-4 text-[var(--color-text-secondary)]">홈페이지 재구축 중...</p>
-    </div>
+    <>
+      <HeroCarousel />
+      <div className="max-w-6xl mx-auto px-6">
+        <QuickLinks />
+        <TopRacketsList />
+        <NewsFeed />
+      </div>
+      <PlayerSynergySection />
+      <div className="max-w-6xl mx-auto px-6">
+        <KnowledgeCards />
+        <StringGuide />
+      </div>
+    </>
   );
 }
