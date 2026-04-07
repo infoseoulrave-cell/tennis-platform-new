@@ -6,6 +6,8 @@ import { PlayerSynergySection } from "@/components/player-synergy-card";
 import { KnowledgeCards } from "@/components/knowledge-cards";
 import { StringGuide } from "@/components/string-guide";
 
+export const dynamic = "force-dynamic";
+
 export default function Home() {
   return (
     <>

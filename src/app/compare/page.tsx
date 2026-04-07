@@ -2,6 +2,8 @@ import Link from "next/link";
 import { getRacketBySlug, type RacketDetail } from "@/lib/queries";
 import { RadarChart, type Scores } from "@/components/radar-chart";
 
+export const dynamic = "force-dynamic";
+
 const CHART_COLORS = ["#111", "#3b82f6", "#10b981"];
 
 function formatPrice(price: number | null): string {

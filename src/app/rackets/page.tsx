@@ -2,6 +2,8 @@ import { Suspense } from "react";
 import { getRackets, getAllBrands } from "@/lib/queries";
 import { RacketCard } from "@/components/racket-card";
 
+export const dynamic = "force-dynamic";
+
 type SearchParams = {
   brand?: string | string[];
   sort?: string;

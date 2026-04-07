@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import { getRacketBySlug } from "@/lib/queries";
 import { RadarBarCombo } from "@/components/radar-bar-combo";
 
+export const dynamic = "force-dynamic";
+
 function formatPrice(price: number | null): string {
   if (!price) return "가격 정보 없음";
   return `₩${price.toLocaleString()}`;
