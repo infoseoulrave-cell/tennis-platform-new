@@ -10,3 +10,9 @@ next-env.d.ts
 .gstack/
 .superpowers/
 .vercel/
+*.sql
+*.py
+seed_via_api.py
+generate_seed_sql.py
+src/db/seed-via-api.ts
+src/db/test-conn.ts
