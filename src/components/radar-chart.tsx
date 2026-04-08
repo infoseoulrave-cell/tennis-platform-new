@@ -16,8 +16,11 @@ export const AXIS_LABELS: Record<keyof Scores, string> = {
 
 const AXES: (keyof Scores)[] = ["power", "control", "spin", "comfort", "stability"];
 
+const ACTIVE_COLOR = "#A8D400";
+const GRID_COLOR = "#E8E8D8";
+const LABEL_COLOR = "#5A5A4A";
+
 function scoreToFraction(score: number): number {
-  // score: -5 to +5 → 0 to 1
   return (score + 5) / 10;
 }
 
@@ -37,9 +40,9 @@ function polygon(scores: Scores, cx: number, cy: number, r: number): string {
 export function RadarChart({
   scores,
   compareScores,
-  size = 160,
+  size = 220,
   className = "",
-  color = "#111",
+  color = ACTIVE_COLOR,
   compareColor = "#9ca3af",
 }: {
   scores: Scores;
@@ -53,28 +56,34 @@ export function RadarChart({
   const cy = size / 2;
   const r = size * 0.38;
 
-  const gridLevels = [0.25, 0.5, 0.75, 1];
+  const gridLevels = [0, 0.5, 1];
 
   return (
-    <svg viewBox={`0 0 ${size} ${size}`} className={className} style={{ width: size, height: size }}>
+    <svg
+      width={size}
+      height={size}
+      viewBox={`0 0 ${size} ${size}`}
+      className={className}
+    >
       {/* Grid rings */}
-      {gridLevels.map((level) => (
+      {gridLevels.map((level, li) => (
         <polygon
           key={level}
           points={AXES.map((_, i) => {
-            const p = getPoint(cx, cy, r, i, level);
+            const p = getPoint(cx, cy, r, i, level === 0 ? 0.001 : level);
             return `${p.x},${p.y}`;
           }).join(" ")}
           fill="none"
-          stroke="#e5e7eb"
-          strokeWidth={level === 1 ? 1 : 0.5}
+          stroke={GRID_COLOR}
+          strokeWidth={li === gridLevels.length - 1 ? 1 : 0.5}
+          strokeDasharray={li === 1 ? "3,3" : undefined}
         />
       ))}
 
       {/* Axis lines */}
       {AXES.map((_, i) => {
         const p = getPoint(cx, cy, r, i, 1);
-        return <line key={i} x1={cx} y1={cy} x2={p.x} y2={p.y} stroke="#f0f0f0" strokeWidth={0.5} />;
+        return <line key={i} x1={cx} y1={cy} x2={p.x} y2={p.y} stroke={GRID_COLOR} strokeWidth={0.5} />;
       })}
 
       {/* Compare polygon */}
@@ -93,35 +102,50 @@ export function RadarChart({
       <polygon
         points={polygon(scores, cx, cy, r)}
         fill={color}
-        fillOpacity={0.06}
+        fillOpacity={0.2}
         stroke={color}
-        strokeWidth={1.5}
+        strokeWidth={2}
       />
 
       {/* Data dots */}
       {AXES.map((axis, i) => {
         const p = getPoint(cx, cy, r, i, scoreToFraction(scores[axis]));
-        return <circle key={i} cx={p.x} cy={p.y} r={2.5} fill={color} />;
+        return <circle key={i} cx={p.x} cy={p.y} r={3} fill={color} />;
       })}
 
-      {/* Labels */}
+      {/* Axis labels + score */}
       {AXES.map((axis, i) => {
-        const labelR = r + 16;
+        const labelR = r + 18;
         const angle = (Math.PI * 2 * i) / 5 - Math.PI / 2;
         const lx = cx + labelR * Math.cos(angle);
         const ly = cy + labelR * Math.sin(angle);
+        const score = scores[axis];
+        const sign = score > 0 ? "+" : "";
+        const scoreColor = score > 0 ? color : "#aaaaaa";
+
         return (
-          <text
-            key={i}
-            x={lx}
-            y={ly}
-            textAnchor="middle"
-            dominantBaseline="middle"
-            fontSize={10}
-            fill="#666"
-          >
-            {AXIS_LABELS[axis]}
-          </text>
+          <g key={i}>
+            <text
+              x={lx}
+              y={ly - 6}
+              textAnchor="middle"
+              className="text-[10px] fill-[#5A5A4A]"
+              dominantBaseline="middle"
+              style={{ fill: LABEL_COLOR, fontSize: 10 }}
+            >
+              {AXIS_LABELS[axis]}
+            </text>
+            <text
+              x={lx}
+              y={ly + 7}
+              textAnchor="middle"
+              className="text-[10px] font-bold"
+              dominantBaseline="middle"
+              style={{ fill: scoreColor, fontSize: 10, fontWeight: "bold" }}
+            >
+              {sign}{score.toFixed ? score.toFixed(0) : score}
+            </text>
+          </g>
         );
       })}
     </svg>
