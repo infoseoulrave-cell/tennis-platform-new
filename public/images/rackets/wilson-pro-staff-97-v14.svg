@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 400" width="300" height="400">
+  <defs>
+    <linearGradient id="wps-frame" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ED1C24"/>
+      <stop offset="50%" stop-color="#A0131A"/>
+      <stop offset="100%" stop-color="#ED1C24"/>
+    </linearGradient>
+    <linearGradient id="wps-handle" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#2A2A2A"/>
+      <stop offset="100%" stop-color="#1A1A1A"/>
+    </linearGradient>
+  </defs>
+  <ellipse cx="150" cy="380" rx="45" ry="6" fill="#e0e0e0" opacity="0.5"/>
+  <g transform="translate(150,200)">
+    <!-- Head 97sq.in NARROW (rx=44) - Pro Staff classic -->
+    <ellipse cx="0" cy="-72" rx="44" ry="68" fill="none" stroke="url(#wps-frame)" stroke-width="4"/>
+    <ellipse cx="0" cy="-72" rx="41" ry="65" fill="none" stroke="#ED1C24" stroke-width="0.8" opacity="0.25"/>
+    <!-- Minimal bumper -->
+    <path d="M -26,-138 Q 0,-144 26,-138" fill="none" stroke="#1A1A1A" stroke-width="2" stroke-linecap="round"/>
+    <!-- Strings 16x19 - vertical (16 mains) -->
+    <line x1="-36" y1="-120" x2="-36" y2="-24" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="-30" y1="-128" x2="-30" y2="-16" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="-24" y1="-133" x2="-24" y2="-11" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="-18" y1="-136" x2="-18" y2="-8" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="-12" y1="-138" x2="-12" y2="-6" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="-6" y1="-139" x2="-6" y2="-5" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="0" y1="-139" x2="0" y2="-5" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="6" y1="-139" x2="6" y2="-5" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="12" y1="-138" x2="12" y2="-6" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="18" y1="-136" x2="18" y2="-8" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="24" y1="-133" x2="24" y2="-11" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="30" y1="-128" x2="30" y2="-16" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="36" y1="-120" x2="36" y2="-24" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="-41" y1="-110" x2="-41" y2="-34" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="41" y1="-110" x2="41" y2="-34" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="-43" y1="-102" x2="-43" y2="-42" stroke="#d0d0d0" stroke-width="0.6"/>
+    <!-- Crosses 19 -->
+    <line x1="-40" y1="-131" x2="40" y2="-131" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="-42" y1="-124" x2="42" y2="-124" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="-43" y1="-117" x2="43" y2="-117" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="-44" y1="-110" x2="44" y2="-110" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="-44" y1="-103" x2="44" y2="-103" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="-44" y1="-96" x2="44" y2="-96" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="-44" y1="-89" x2="44" y2="-89" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="-44" y1="-82" x2="44" y2="-82" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="-44" y1="-75" x2="44" y2="-75" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="-44" y1="-68" x2="44" y2="-68" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="-44" y1="-61" x2="44" y2="-61" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="-44" y1="-54" x2="44" y2="-54" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="-43" y1="-47" x2="43" y2="-47" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="-42" y1="-40" x2="42" y2="-40" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="-40" y1="-33" x2="40" y2="-33" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="-37" y1="-26" x2="37" y2="-26" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="-33" y1="-19" x2="33" y2="-19" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="-26" y1="-12" x2="26" y2="-12" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="-16" y1="-6" x2="16" y2="-6" stroke="#d0d0d0" stroke-width="0.6"/>
+    <!-- Slim classic throat - Pro Staff refined -->
+    <path d="M -32,0 Q -24,14 -14,30 L -5,48" fill="none" stroke="url(#wps-frame)" stroke-width="3.5" stroke-linecap="round"/>
+    <path d="M 32,0 Q 24,14 14,30 L 5,48" fill="none" stroke="url(#wps-frame)" stroke-width="3.5" stroke-linecap="round"/>
+    <line x1="-20" y1="20" x2="20" y2="20" stroke="#1A1A1A" stroke-width="2" stroke-linecap="round"/>
+    <!-- Shaft -->
+    <rect x="-3.5" y="48" width="7" height="48" rx="2" fill="#1A1A1A" opacity="0.9"/>
+    <rect x="-2" y="50" width="1.5" height="44" rx="1" fill="#ED1C24" opacity="0.15"/>
+    <!-- Handle -->
+    <rect x="-6" y="96" width="12" height="60" rx="3" fill="url(#wps-handle)"/>
+    <line x1="-4" y1="104" x2="4" y2="104" stroke="#444" stroke-width="0.7"/>
+    <line x1="-4" y1="112" x2="4" y2="112" stroke="#444" stroke-width="0.7"/>
+    <line x1="-4" y1="120" x2="4" y2="120" stroke="#444" stroke-width="0.7"/>
+    <line x1="-4" y1="128" x2="4" y2="128" stroke="#444" stroke-width="0.7"/>
+    <line x1="-4" y1="136" x2="4" y2="136" stroke="#444" stroke-width="0.7"/>
+    <line x1="-4" y1="144" x2="4" y2="144" stroke="#444" stroke-width="0.7"/>
+    <rect x="-7" y="153" width="14" height="6" rx="2.5" fill="#1A1A1A"/>
+    <rect x="-6" y="96" width="12" height="5" rx="2" fill="#ED1C24" opacity="0.8"/>
+    <text x="0" y="103" text-anchor="middle" font-family="Arial,sans-serif" font-size="4" font-weight="bold" fill="#ED1C24" letter-spacing="1">W</text>
+  </g>
+</svg>

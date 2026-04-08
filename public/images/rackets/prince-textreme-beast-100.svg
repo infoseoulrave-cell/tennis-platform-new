@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 400" width="300" height="400">
+  <defs>
+    <linearGradient id="ptb-frame" x1="0" y1="0" x2="0.5" y2="1">
+      <stop offset="0%" stop-color="#6B2D8B"/>
+      <stop offset="100%" stop-color="#3D1A50"/>
+    </linearGradient>
+  </defs>
+  <ellipse cx="150" cy="380" rx="45" ry="6" fill="#e0e0e0" opacity="0.5"/>
+  <g transform="translate(150,200)">
+    <!-- Head 100sq.in standard -->
+    <ellipse cx="0" cy="-72" rx="50" ry="70" fill="none" stroke="url(#ptb-frame)" stroke-width="5.5"/>
+    <ellipse cx="0" cy="-72" rx="47" ry="67" fill="none" stroke="#6B2D8B" stroke-width="0.8" opacity="0.2"/>
+    <!-- Red Textreme accent -->
+    <path d="M -48,-90 Q -52,-72 -48,-54" fill="none" stroke="#FF3333" stroke-width="2" stroke-linecap="round"/>
+    <path d="M 48,-90 Q 52,-72 48,-54" fill="none" stroke="#FF3333" stroke-width="2" stroke-linecap="round"/>
+    <path d="M -32,-140 Q 0,-146 32,-140" fill="none" stroke="#6B2D8B" stroke-width="2.5" stroke-linecap="round"/>
+    <!-- Strings 16x19 -->
+    <line x1="-40" y1="-120" x2="-40" y2="-24" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="-34" y1="-129" x2="-34" y2="-15" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="-28" y1="-134" x2="-28" y2="-10" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="-22" y1="-137" x2="-22" y2="-7" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="-16" y1="-139" x2="-16" y2="-5" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="-10" y1="-140" x2="-10" y2="-4" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="-4" y1="-141" x2="-4" y2="-3" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="2" y1="-141" x2="2" y2="-3" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="8" y1="-141" x2="8" y2="-3" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="14" y1="-140" x2="14" y2="-4" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="20" y1="-139" x2="20" y2="-5" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="26" y1="-137" x2="26" y2="-7" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="32" y1="-134" x2="32" y2="-10" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="38" y1="-129" x2="38" y2="-15" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="44" y1="-120" x2="44" y2="-24" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="-47" y1="-110" x2="-47" y2="-34" stroke="#d0d0d0" stroke-width="0.6"/>
+    <!-- Crosses 19 -->
+    <line x1="-46" y1="-132" x2="46" y2="-132" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="-48" y1="-125" x2="48" y2="-125" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="-49" y1="-118" x2="49" y2="-118" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="-50" y1="-111" x2="50" y2="-111" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="-50" y1="-104" x2="50" y2="-104" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="-50" y1="-97" x2="50" y2="-97" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="-50" y1="-90" x2="50" y2="-90" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="-50" y1="-83" x2="50" y2="-83" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="-50" y1="-76" x2="50" y2="-76" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="-50" y1="-69" x2="50" y2="-69" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="-50" y1="-62" x2="50" y2="-62" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="-50" y1="-55" x2="50" y2="-55" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="-49" y1="-48" x2="49" y2="-48" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="-48" y1="-41" x2="48" y2="-41" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="-47" y1="-34" x2="47" y2="-34" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="-44" y1="-27" x2="44" y2="-27" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="-40" y1="-20" x2="40" y2="-20" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="-34" y1="-13" x2="34" y2="-13" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="-24" y1="-6" x2="24" y2="-6" stroke="#d0d0d0" stroke-width="0.6"/>
+    <!-- O-Port throat (Beast) -->
+    <path d="M -36,0 Q -28,16 -6,48" fill="none" stroke="url(#ptb-frame)" stroke-width="4.5" stroke-linecap="round"/>
+    <path d="M 36,0 Q 28,16 6,48" fill="none" stroke="url(#ptb-frame)" stroke-width="4.5" stroke-linecap="round"/>
+    <!-- O-port holes -->
+    <ellipse cx="-20" cy="14" rx="5" ry="7" fill="none" stroke="#FF3333" stroke-width="2"/>
+    <ellipse cx="20" cy="14" rx="5" ry="7" fill="none" stroke="#FF3333" stroke-width="2"/>
+    <line x1="-12" y1="20" x2="12" y2="20" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
+    <!-- Shaft -->
+    <rect x="-4" y="48" width="8" height="46" rx="2" fill="#6B2D8B" opacity="0.9"/>
+    <rect x="-2" y="50" width="1.5" height="42" rx="1" fill="#FF3333" opacity="0.2"/>
+    <!-- Handle - white -->
+    <rect x="-6" y="94" width="12" height="60" rx="3" fill="#FFFFFF" stroke="#ddd" stroke-width="0.5"/>
+    <line x1="-4" y1="102" x2="4" y2="102" stroke="#ddd" stroke-width="0.7"/>
+    <line x1="-4" y1="110" x2="4" y2="110" stroke="#ddd" stroke-width="0.7"/>
+    <line x1="-4" y1="118" x2="4" y2="118" stroke="#ddd" stroke-width="0.7"/>
+    <line x1="-4" y1="126" x2="4" y2="126" stroke="#ddd" stroke-width="0.7"/>
+    <line x1="-4" y1="134" x2="4" y2="134" stroke="#ddd" stroke-width="0.7"/>
+    <line x1="-4" y1="142" x2="4" y2="142" stroke="#ddd" stroke-width="0.7"/>
+    <rect x="-7" y="151" width="14" height="6" rx="2.5" fill="#6B2D8B"/>
+    <rect x="-6" y="94" width="12" height="5" rx="2" fill="#FF3333" opacity="0.7"/>
+    <text x="0" y="101" text-anchor="middle" font-family="Arial,sans-serif" font-size="4" font-weight="bold" fill="#fff" letter-spacing="0.5">P</text>
+  </g>
+</svg>

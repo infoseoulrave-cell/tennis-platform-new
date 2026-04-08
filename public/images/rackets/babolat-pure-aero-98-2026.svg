@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 400" width="300" height="400">
+  <defs>
+    <linearGradient id="ba26-frame" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#003DA5"/>
+      <stop offset="40%" stop-color="#002D7A"/>
+      <stop offset="100%" stop-color="#003DA5"/>
+    </linearGradient>
+  </defs>
+  <ellipse cx="150" cy="380" rx="45" ry="6" fill="#e0e0e0" opacity="0.5"/>
+  <g transform="translate(150,200)">
+    <!-- Head 98sq.in narrow -->
+    <ellipse cx="0" cy="-72" rx="46" ry="68" fill="none" stroke="url(#ba26-frame)" stroke-width="5.5"/>
+    <ellipse cx="0" cy="-72" rx="43" ry="65" fill="none" stroke="#003DA5" stroke-width="1" opacity="0.25"/>
+    <!-- Aero bumper with more yellow accent (2026 refresh) -->
+    <path d="M -44,-100 Q -50,-72 -44,-44" fill="none" stroke="#FFD700" stroke-width="3.5" stroke-linecap="round"/>
+    <path d="M 44,-100 Q 50,-72 44,-44" fill="none" stroke="#FFD700" stroke-width="3.5" stroke-linecap="round"/>
+    <path d="M -30,-138 Q 0,-146 30,-138" fill="none" stroke="#FFD700" stroke-width="3" stroke-linecap="round"/>
+    <!-- Yellow accent stripe at 3 and 9 o'clock -->
+    <path d="M -46,-85 L -46,-60" fill="none" stroke="#FFD700" stroke-width="1.5" opacity="0.6"/>
+    <path d="M 46,-85 L 46,-60" fill="none" stroke="#FFD700" stroke-width="1.5" opacity="0.6"/>
+    <!-- Strings 16x19 -->
+    <line x1="-36" y1="-122" x2="-36" y2="-22" stroke="#c8c8c8" stroke-width="0.6"/>
+    <line x1="-30" y1="-130" x2="-30" y2="-14" stroke="#c8c8c8" stroke-width="0.6"/>
+    <line x1="-24" y1="-134" x2="-24" y2="-10" stroke="#c8c8c8" stroke-width="0.6"/>
+    <line x1="-18" y1="-136" x2="-18" y2="-8" stroke="#c8c8c8" stroke-width="0.6"/>
+    <line x1="-12" y1="-138" x2="-12" y2="-6" stroke="#c8c8c8" stroke-width="0.6"/>
+    <line x1="-6" y1="-139" x2="-6" y2="-5" stroke="#c8c8c8" stroke-width="0.6"/>
+    <line x1="0" y1="-139" x2="0" y2="-5" stroke="#c8c8c8" stroke-width="0.6"/>
+    <line x1="6" y1="-139" x2="6" y2="-5" stroke="#c8c8c8" stroke-width="0.6"/>
+    <line x1="12" y1="-138" x2="12" y2="-6" stroke="#c8c8c8" stroke-width="0.6"/>
+    <line x1="18" y1="-136" x2="18" y2="-8" stroke="#c8c8c8" stroke-width="0.6"/>
+    <line x1="24" y1="-134" x2="24" y2="-10" stroke="#c8c8c8" stroke-width="0.6"/>
+    <line x1="30" y1="-130" x2="30" y2="-14" stroke="#c8c8c8" stroke-width="0.6"/>
+    <line x1="36" y1="-122" x2="36" y2="-22" stroke="#c8c8c8" stroke-width="0.6"/>
+    <line x1="-41" y1="-114" x2="-41" y2="-30" stroke="#c8c8c8" stroke-width="0.6"/>
+    <line x1="41" y1="-114" x2="41" y2="-30" stroke="#c8c8c8" stroke-width="0.6"/>
+    <line x1="-44" y1="-104" x2="-44" y2="-40" stroke="#c8c8c8" stroke-width="0.6"/>
+    <!-- Crosses 19 -->
+    <line x1="-42" y1="-130" x2="42" y2="-130" stroke="#c8c8c8" stroke-width="0.6"/>
+    <line x1="-44" y1="-123" x2="44" y2="-123" stroke="#c8c8c8" stroke-width="0.6"/>
+    <line x1="-45" y1="-116" x2="45" y2="-116" stroke="#c8c8c8" stroke-width="0.6"/>
+    <line x1="-46" y1="-109" x2="46" y2="-109" stroke="#c8c8c8" stroke-width="0.6"/>
+    <line x1="-46" y1="-102" x2="46" y2="-102" stroke="#c8c8c8" stroke-width="0.6"/>
+    <line x1="-46" y1="-95" x2="46" y2="-95" stroke="#c8c8c8" stroke-width="0.6"/>
+    <line x1="-46" y1="-88" x2="46" y2="-88" stroke="#c8c8c8" stroke-width="0.6"/>
+    <line x1="-46" y1="-81" x2="46" y2="-81" stroke="#c8c8c8" stroke-width="0.6"/>
+    <line x1="-46" y1="-74" x2="46" y2="-74" stroke="#c8c8c8" stroke-width="0.6"/>
+    <line x1="-46" y1="-67" x2="46" y2="-67" stroke="#c8c8c8" stroke-width="0.6"/>
+    <line x1="-46" y1="-60" x2="46" y2="-60" stroke="#c8c8c8" stroke-width="0.6"/>
+    <line x1="-45" y1="-53" x2="45" y2="-53" stroke="#c8c8c8" stroke-width="0.6"/>
+    <line x1="-44" y1="-46" x2="44" y2="-46" stroke="#c8c8c8" stroke-width="0.6"/>
+    <line x1="-43" y1="-39" x2="43" y2="-39" stroke="#c8c8c8" stroke-width="0.6"/>
+    <line x1="-41" y1="-32" x2="41" y2="-32" stroke="#c8c8c8" stroke-width="0.6"/>
+    <line x1="-38" y1="-25" x2="38" y2="-25" stroke="#c8c8c8" stroke-width="0.6"/>
+    <line x1="-34" y1="-18" x2="34" y2="-18" stroke="#c8c8c8" stroke-width="0.6"/>
+    <line x1="-28" y1="-11" x2="28" y2="-11" stroke="#c8c8c8" stroke-width="0.6"/>
+    <line x1="-18" y1="-5" x2="18" y2="-5" stroke="#c8c8c8" stroke-width="0.6"/>
+    <!-- Wide aerodynamic throat -->
+    <path d="M -34,-2 Q -32,8 -28,18 C -24,28 -16,38 -6,48" fill="none" stroke="url(#ba26-frame)" stroke-width="4.5" stroke-linecap="round"/>
+    <path d="M 34,-2 Q 32,8 28,18 C 24,28 16,38 6,48" fill="none" stroke="url(#ba26-frame)" stroke-width="4.5" stroke-linecap="round"/>
+    <path d="M -28,16 Q 0,24 28,16" fill="none" stroke="#FFD700" stroke-width="3" stroke-linecap="round"/>
+    <!-- Shaft -->
+    <rect x="-4" y="48" width="8" height="46" rx="2" fill="#003DA5" opacity="0.9"/>
+    <rect x="-2" y="50" width="1.5" height="42" rx="1" fill="#FFD700" opacity="0.35"/>
+    <!-- Handle -->
+    <rect x="-6" y="94" width="12" height="60" rx="3" fill="#1A1A1A"/>
+    <line x1="-4" y1="102" x2="4" y2="102" stroke="#333" stroke-width="0.7"/>
+    <line x1="-4" y1="110" x2="4" y2="110" stroke="#333" stroke-width="0.7"/>
+    <line x1="-4" y1="118" x2="4" y2="118" stroke="#333" stroke-width="0.7"/>
+    <line x1="-4" y1="126" x2="4" y2="126" stroke="#333" stroke-width="0.7"/>
+    <line x1="-4" y1="134" x2="4" y2="134" stroke="#333" stroke-width="0.7"/>
+    <line x1="-4" y1="142" x2="4" y2="142" stroke="#333" stroke-width="0.7"/>
+    <rect x="-7" y="151" width="14" height="6" rx="2.5" fill="#111"/>
+    <rect x="-6" y="94" width="12" height="5" rx="2" fill="#FFD700" opacity="0.9"/>
+    <text x="0" y="101" text-anchor="middle" font-family="Arial,sans-serif" font-size="4" font-weight="bold" fill="#FFD700" letter-spacing="0.5">B</text>
+  </g>
+</svg>

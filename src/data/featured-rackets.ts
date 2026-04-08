@@ -19,7 +19,7 @@ export const featuredRackets: FeaturedRacket[] = [
       { icon: "◇", label: "에어로", value: "GEN 9" },
     ],
     specs: ["300g", "100sq.in", "16x19"],
-    imageUrl: "",
+    imageUrl: "/images/rackets/babolat-pure-aero-2026.png",
     slug: "babolat-pure-aero-2026-300g",
   },
   {
@@ -32,7 +32,7 @@ export const featuredRackets: FeaturedRacket[] = [
       { icon: "◎", label: "컨트롤", value: "+4" },
     ],
     specs: ["300g", "100sq.in", "16x19"],
-    imageUrl: "",
+    imageUrl: "/images/rackets/head-speed-mp-2026.png",
     slug: "head-speed-mp-2026",
   },
   {
@@ -45,7 +45,7 @@ export const featuredRackets: FeaturedRacket[] = [
       { icon: "◇", label: "이소메트릭", value: "NEW" },
     ],
     specs: ["300g", "100sq.in", "16x19"],
-    imageUrl: "",
+    imageUrl: "/images/rackets/yonex-vcore-100-2026.png",
     slug: "yonex-vcore-100-2026",
   },
 ];

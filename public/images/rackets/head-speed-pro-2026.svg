@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 400" width="300" height="400">
+  <defs>
+    <linearGradient id="hs-frame" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FF6600"/>
+      <stop offset="50%" stop-color="#CC5200"/>
+      <stop offset="100%" stop-color="#FF6600"/>
+    </linearGradient>
+  </defs>
+  <ellipse cx="150" cy="380" rx="45" ry="6" fill="#e0e0e0" opacity="0.5"/>
+  <g transform="translate(150,200)">
+    <!-- Head 100sq.in standard -->
+    <ellipse cx="0" cy="-72" rx="50" ry="70" fill="none" stroke="url(#hs-frame)" stroke-width="5"/>
+    <ellipse cx="0" cy="-72" rx="47" ry="67" fill="none" stroke="#FF6600" stroke-width="0.8" opacity="0.25"/>
+    <!-- Angular bumper - Speed series -->
+    <path d="M -35,-140 L -15,-142 L 0,-143 L 15,-142 L 35,-140" fill="none" stroke="#1A1A1A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <!-- Dense strings 18x20 - vertical (18 mains, tighter spacing) -->
+    <line x1="-42" y1="-116" x2="-42" y2="-28" stroke="#c8c8c8" stroke-width="0.5"/>
+    <line x1="-37" y1="-124" x2="-37" y2="-20" stroke="#c8c8c8" stroke-width="0.5"/>
+    <line x1="-32" y1="-130" x2="-32" y2="-14" stroke="#c8c8c8" stroke-width="0.5"/>
+    <line x1="-27" y1="-134" x2="-27" y2="-10" stroke="#c8c8c8" stroke-width="0.5"/>
+    <line x1="-22" y1="-136" x2="-22" y2="-8" stroke="#c8c8c8" stroke-width="0.5"/>
+    <line x1="-17" y1="-138" x2="-17" y2="-6" stroke="#c8c8c8" stroke-width="0.5"/>
+    <line x1="-12" y1="-140" x2="-12" y2="-4" stroke="#c8c8c8" stroke-width="0.5"/>
+    <line x1="-7" y1="-141" x2="-7" y2="-3" stroke="#c8c8c8" stroke-width="0.5"/>
+    <line x1="-2" y1="-141" x2="-2" y2="-3" stroke="#c8c8c8" stroke-width="0.5"/>
+    <line x1="3" y1="-141" x2="3" y2="-3" stroke="#c8c8c8" stroke-width="0.5"/>
+    <line x1="8" y1="-141" x2="8" y2="-3" stroke="#c8c8c8" stroke-width="0.5"/>
+    <line x1="13" y1="-140" x2="13" y2="-4" stroke="#c8c8c8" stroke-width="0.5"/>
+    <line x1="18" y1="-138" x2="18" y2="-6" stroke="#c8c8c8" stroke-width="0.5"/>
+    <line x1="23" y1="-136" x2="23" y2="-8" stroke="#c8c8c8" stroke-width="0.5"/>
+    <line x1="28" y1="-134" x2="28" y2="-10" stroke="#c8c8c8" stroke-width="0.5"/>
+    <line x1="33" y1="-130" x2="33" y2="-14" stroke="#c8c8c8" stroke-width="0.5"/>
+    <line x1="38" y1="-124" x2="38" y2="-20" stroke="#c8c8c8" stroke-width="0.5"/>
+    <line x1="43" y1="-116" x2="43" y2="-28" stroke="#c8c8c8" stroke-width="0.5"/>
+    <!-- Crosses 20 (dense) -->
+    <line x1="-46" y1="-133" x2="46" y2="-133" stroke="#c8c8c8" stroke-width="0.5"/>
+    <line x1="-48" y1="-127" x2="48" y2="-127" stroke="#c8c8c8" stroke-width="0.5"/>
+    <line x1="-49" y1="-121" x2="49" y2="-121" stroke="#c8c8c8" stroke-width="0.5"/>
+    <line x1="-50" y1="-115" x2="50" y2="-115" stroke="#c8c8c8" stroke-width="0.5"/>
+    <line x1="-50" y1="-109" x2="50" y2="-109" stroke="#c8c8c8" stroke-width="0.5"/>
+    <line x1="-50" y1="-103" x2="50" y2="-103" stroke="#c8c8c8" stroke-width="0.5"/>
+    <line x1="-50" y1="-97" x2="50" y2="-97" stroke="#c8c8c8" stroke-width="0.5"/>
+    <line x1="-50" y1="-91" x2="50" y2="-91" stroke="#c8c8c8" stroke-width="0.5"/>
+    <line x1="-50" y1="-85" x2="50" y2="-85" stroke="#c8c8c8" stroke-width="0.5"/>
+    <line x1="-50" y1="-79" x2="50" y2="-79" stroke="#c8c8c8" stroke-width="0.5"/>
+    <line x1="-50" y1="-73" x2="50" y2="-73" stroke="#c8c8c8" stroke-width="0.5"/>
+    <line x1="-50" y1="-67" x2="50" y2="-67" stroke="#c8c8c8" stroke-width="0.5"/>
+    <line x1="-50" y1="-61" x2="50" y2="-61" stroke="#c8c8c8" stroke-width="0.5"/>
+    <line x1="-49" y1="-55" x2="49" y2="-55" stroke="#c8c8c8" stroke-width="0.5"/>
+    <line x1="-48" y1="-49" x2="48" y2="-49" stroke="#c8c8c8" stroke-width="0.5"/>
+    <line x1="-47" y1="-43" x2="47" y2="-43" stroke="#c8c8c8" stroke-width="0.5"/>
+    <line x1="-45" y1="-37" x2="45" y2="-37" stroke="#c8c8c8" stroke-width="0.5"/>
+    <line x1="-42" y1="-31" x2="42" y2="-31" stroke="#c8c8c8" stroke-width="0.5"/>
+    <line x1="-36" y1="-25" x2="36" y2="-25" stroke="#c8c8c8" stroke-width="0.5"/>
+    <line x1="-26" y1="-19" x2="26" y2="-19" stroke="#c8c8c8" stroke-width="0.5"/>
+    <!-- Angular modern throat - Speed series sleek -->
+    <path d="M -38,0 L -22,20 L -5,48" fill="none" stroke="url(#hs-frame)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M 38,0 L 22,20 L 5,48" fill="none" stroke="url(#hs-frame)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+    <line x1="-22" y1="20" x2="22" y2="20" stroke="#FF6600" stroke-width="2.5" stroke-linecap="round"/>
+    <!-- Shaft -->
+    <rect x="-4" y="48" width="8" height="46" rx="2" fill="#1A1A1A" opacity="0.9"/>
+    <rect x="-2" y="50" width="1.5" height="42" rx="1" fill="#FF6600" opacity="0.2"/>
+    <!-- Handle -->
+    <rect x="-6" y="94" width="12" height="60" rx="3" fill="#1A1A1A"/>
+    <line x1="-4" y1="102" x2="4" y2="102" stroke="#333" stroke-width="0.7"/>
+    <line x1="-4" y1="110" x2="4" y2="110" stroke="#333" stroke-width="0.7"/>
+    <line x1="-4" y1="118" x2="4" y2="118" stroke="#333" stroke-width="0.7"/>
+    <line x1="-4" y1="126" x2="4" y2="126" stroke="#333" stroke-width="0.7"/>
+    <line x1="-4" y1="134" x2="4" y2="134" stroke="#333" stroke-width="0.7"/>
+    <line x1="-4" y1="142" x2="4" y2="142" stroke="#333" stroke-width="0.7"/>
+    <rect x="-7" y="151" width="14" height="6" rx="2.5" fill="#111"/>
+    <rect x="-6" y="94" width="12" height="5" rx="2" fill="#FF6600" opacity="0.8"/>
+    <text x="0" y="101" text-anchor="middle" font-family="Arial,sans-serif" font-size="4" font-weight="bold" fill="#FF6600" letter-spacing="0.5">H</text>
+  </g>
+</svg>

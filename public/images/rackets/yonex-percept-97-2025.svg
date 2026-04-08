@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 400" width="300" height="400">
+  <defs>
+    <linearGradient id="ypr-frame" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1A2744"/>
+      <stop offset="50%" stop-color="#0F1A30"/>
+      <stop offset="100%" stop-color="#1A2744"/>
+    </linearGradient>
+  </defs>
+  <ellipse cx="150" cy="380" rx="45" ry="6" fill="#e0e0e0" opacity="0.5"/>
+  <g transform="translate(150,200)">
+    <!-- Yonex ISOMETRIC squared head 97sq.in VERY NARROW (rx=43) -->
+    <rect x="-43" y="-140" width="86" height="136" rx="24" ry="24" fill="none" stroke="url(#ypr-frame)" stroke-width="4"/>
+    <rect x="-40" y="-137" width="80" height="130" rx="22" ry="22" fill="none" stroke="#1A2744" stroke-width="0.6" opacity="0.25"/>
+    <!-- Teal accents -->
+    <path d="M -43,-112 L -43,-28" fill="none" stroke="#008B8B" stroke-width="1.8" stroke-linecap="round"/>
+    <path d="M 43,-112 L 43,-28" fill="none" stroke="#008B8B" stroke-width="1.8" stroke-linecap="round"/>
+    <path d="M -24,-140 L 24,-140" fill="none" stroke="#008B8B" stroke-width="1.8" stroke-linecap="round"/>
+    <!-- Strings 16x19 -->
+    <line x1="-34" y1="-130" x2="-34" y2="-14" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="-28" y1="-134" x2="-28" y2="-10" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="-22" y1="-136" x2="-22" y2="-8" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="-16" y1="-137" x2="-16" y2="-7" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="-10" y1="-138" x2="-10" y2="-6" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="-4" y1="-138" x2="-4" y2="-6" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="2" y1="-139" x2="2" y2="-5" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="8" y1="-138" x2="8" y2="-6" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="14" y1="-138" x2="14" y2="-6" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="20" y1="-137" x2="20" y2="-7" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="26" y1="-136" x2="26" y2="-8" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="32" y1="-134" x2="32" y2="-10" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="38" y1="-128" x2="38" y2="-16" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="-40" y1="-124" x2="-40" y2="-20" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="40" y1="-124" x2="40" y2="-20" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="-42" y1="-116" x2="-42" y2="-28" stroke="#d0d0d0" stroke-width="0.6"/>
+    <!-- Crosses 19 -->
+    <line x1="-42" y1="-132" x2="42" y2="-132" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="-42" y1="-125" x2="42" y2="-125" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="-43" y1="-118" x2="43" y2="-118" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="-43" y1="-111" x2="43" y2="-111" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="-43" y1="-104" x2="43" y2="-104" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="-43" y1="-97" x2="43" y2="-97" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="-43" y1="-90" x2="43" y2="-90" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="-43" y1="-83" x2="43" y2="-83" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="-43" y1="-76" x2="43" y2="-76" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="-43" y1="-69" x2="43" y2="-69" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="-43" y1="-62" x2="43" y2="-62" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="-43" y1="-55" x2="43" y2="-55" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="-43" y1="-48" x2="43" y2="-48" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="-42" y1="-41" x2="42" y2="-41" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="-42" y1="-34" x2="42" y2="-34" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="-41" y1="-27" x2="41" y2="-27" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="-38" y1="-20" x2="38" y2="-20" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="-34" y1="-13" x2="34" y2="-13" stroke="#d0d0d0" stroke-width="0.6"/>
+    <line x1="-26" y1="-6" x2="26" y2="-6" stroke="#d0d0d0" stroke-width="0.6"/>
+    <!-- Yonex throat - slim -->
+    <path d="M -30,0 Q -22,18 -6,48" fill="none" stroke="url(#ypr-frame)" stroke-width="4" stroke-linecap="round"/>
+    <path d="M 30,0 Q 22,18 6,48" fill="none" stroke="url(#ypr-frame)" stroke-width="4" stroke-linecap="round"/>
+    <path d="M -22,14 Q 0,20 22,14" fill="none" stroke="#008B8B" stroke-width="1.8" stroke-linecap="round"/>
+    <!-- Shaft -->
+    <rect x="-3.5" y="48" width="7" height="46" rx="2" fill="#1A2744" opacity="0.9"/>
+    <rect x="-2" y="50" width="1.5" height="42" rx="1" fill="#008B8B" opacity="0.15"/>
+    <!-- Handle -->
+    <rect x="-6" y="94" width="12" height="60" rx="3" fill="#1A1A1A"/>
+    <line x1="-4" y1="102" x2="4" y2="102" stroke="#333" stroke-width="0.7"/>
+    <line x1="-4" y1="110" x2="4" y2="110" stroke="#333" stroke-width="0.7"/>
+    <line x1="-4" y1="118" x2="4" y2="118" stroke="#333" stroke-width="0.7"/>
+    <line x1="-4" y1="126" x2="4" y2="126" stroke="#333" stroke-width="0.7"/>
+    <line x1="-4" y1="134" x2="4" y2="134" stroke="#333" stroke-width="0.7"/>
+    <line x1="-4" y1="142" x2="4" y2="142" stroke="#333" stroke-width="0.7"/>
+    <rect x="-7" y="151" width="14" height="6" rx="2.5" fill="#111"/>
+    <rect x="-6" y="94" width="12" height="5" rx="2" fill="#008B8B" opacity="0.7"/>
+    <text x="0" y="101" text-anchor="middle" font-family="Arial,sans-serif" font-size="4" font-weight="bold" fill="#008B8B" letter-spacing="0.5">Y</text>
+  </g>
+</svg>
