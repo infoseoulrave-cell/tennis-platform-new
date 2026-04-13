@@ -1,13 +1,25 @@
 import { Suspense } from "react";
 import { getRackets, getAllBrands } from "@/lib/queries";
 import { RacketCard } from "@/components/racket-card";
+import { RacketFiltersPanel } from "@/components/racket-filters";
+import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "라켓 찾기",
+  description: "한국에서 실제 판매 중인 80개 이상의 테니스 라켓을 5축 점수와 스펙으로 비교해 보세요.",
+};
 
 type SearchParams = {
   brand?: string | string[];
   sort?: string;
   page?: string;
+  minWeight?: string;
+  maxWeight?: string;
+  minHead?: string;
+  maxHead?: string;
+  segment?: string;
 };
 
 async function RacketGrid({ searchParams }: { searchParams: SearchParams }) {
@@ -23,13 +35,18 @@ async function RacketGrid({ searchParams }: { searchParams: SearchParams }) {
     [result, brandsList] = await Promise.all([
       getRackets({
         brand: brandFilter,
-        sort: (searchParams.sort as "popular" | "price_asc" | "price_desc") ?? "popular",
+        sort: (searchParams.sort as "popular" | "price_asc" | "price_desc" | "newest" | "lightest" | "heaviest") ?? "popular",
         page: searchParams.page ? Number(searchParams.page) : 1,
-        limit: 24,
+        limit: 80,
+        minWeight: searchParams.minWeight ? Number(searchParams.minWeight) : undefined,
+        maxWeight: searchParams.maxWeight ? Number(searchParams.maxWeight) : undefined,
+        minHead: searchParams.minHead ? Number(searchParams.minHead) : undefined,
+        maxHead: searchParams.maxHead ? Number(searchParams.maxHead) : undefined,
+        segment: searchParams.segment,
       }),
       getAllBrands(),
     ]);
-  } catch (e) {
+  } catch {
     return (
       <div className="text-center py-20 text-[var(--color-text-muted)]">
         라켓 정보를 불러올 수 없습니다.
@@ -37,37 +54,78 @@ async function RacketGrid({ searchParams }: { searchParams: SearchParams }) {
     );
   }
 
+  const sortOptions = [
+    { value: "popular", label: "인기순" },
+    { value: "newest", label: "최신순" },
+    { value: "price_asc", label: "가격 낮은순" },
+    { value: "price_desc", label: "가격 높은순" },
+    { value: "lightest", label: "가벼운순" },
+    { value: "heaviest", label: "무거운순" },
+  ];
+
   return (
-    <div className="grid lg:grid-cols-[240px_1fr] gap-8">
-      {/* Filter sidebar */}
+    <div className="grid lg:grid-cols-[260px_1fr] gap-8">
       <aside className="hidden lg:block">
-        <div className="sticky top-20">
-          <h3 className="font-semibold text-sm mb-4">브랜드</h3>
-          <ul className="space-y-2">
-            {brandsList.map((brand) => (
-              <li key={brand.name}>
+        <div className="sticky top-20 space-y-8">
+          <div>
+            <h3 className="font-semibold text-sm mb-3">브랜드</h3>
+            <ul className="space-y-1.5">
+              <li>
                 <a
-                  href={`/rackets?brand=${encodeURIComponent(brand.name)}`}
+                  href="/rackets"
                   className={`text-sm block py-1 ${
-                    brandFilter?.includes(brand.name)
+                    !brandFilter
                       ? "text-[var(--color-text)] font-semibold"
                       : "text-[var(--color-text-secondary)] hover:text-[var(--color-text)]"
                   }`}
                 >
-                  {brand.name}
+                  전체
                 </a>
               </li>
-            ))}
-          </ul>
+              {brandsList.map((brand) => (
+                <li key={brand.name}>
+                  <a
+                    href={`/rackets?brand=${encodeURIComponent(brand.name)}`}
+                    className={`text-sm block py-1 ${
+                      brandFilter?.includes(brand.name)
+                        ? "text-[var(--color-text)] font-semibold"
+                        : "text-[var(--color-text-secondary)] hover:text-[var(--color-text)]"
+                    }`}
+                  >
+                    {brand.name}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <RacketFiltersPanel currentParams={searchParams} />
         </div>
       </aside>
 
-      {/* Grid */}
       <div>
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-6 gap-4">
           <p className="text-sm text-[var(--color-text-secondary)]">
             전체 <strong className="text-[var(--color-text)]">{result.total}</strong>개의 라켓
           </p>
+          <div className="flex items-center gap-2">
+            {sortOptions.map((opt) => (
+              <a
+                key={opt.value}
+                href={`/rackets?${new URLSearchParams({
+                  ...(brandFilter ? { brand: brandFilter[0] } : {}),
+                  sort: opt.value,
+                }).toString()}`}
+                className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
+                  (searchParams.sort ?? "popular") === opt.value
+                    ? "border-[var(--color-text)] text-[var(--color-text)] font-medium"
+                    : "border-[var(--color-border)] text-[var(--color-text-muted)] hover:border-[var(--color-text-muted)]"
+                }`}
+              >
+                {opt.label}
+              </a>
+            ))}
+          </div>
         </div>
 
         {result.rackets.length === 0 ? (

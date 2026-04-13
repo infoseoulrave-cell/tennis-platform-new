@@ -3,11 +3,23 @@ import "./globals.css";
 import { GlobalNav } from "@/components/global-nav";
 import { MobileTabBar } from "@/components/mobile-tab-bar";
 import { Footer } from "@/components/footer";
+import { CompareTray } from "@/components/compare-tray";
 
 export const metadata: Metadata = {
-  title: "racketlab | 한국 테니스 라켓 플랫폼",
+  title: {
+    default: "racketlab | 한국 테니스 라켓 플랫폼",
+    template: "%s | racketlab",
+  },
   description:
     "한국에서 실제 판매 중인 테니스 라켓을 이해하고, 비교하고, 추천받고, 구매까지 연결하는 서비스입니다.",
+  openGraph: {
+    type: "website",
+    locale: "ko_KR",
+    siteName: "racketlab",
+    title: "racketlab | 한국 테니스 라켓 플랫폼",
+    description: "한국에서 실제 판매 중인 테니스 라켓을 이해하고, 비교하고, 추천받고, 구매까지 연결하는 서비스입니다.",
+  },
+  robots: { index: true, follow: true },
 };
 
 export default function RootLayout({
@@ -29,6 +41,7 @@ export default function RootLayout({
         <GlobalNav />
         <main className="min-h-screen">{children}</main>
         <Footer />
+        <CompareTray />
         <MobileTabBar />
       </body>
     </html>

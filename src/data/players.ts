@@ -46,7 +46,7 @@ export const players: Player[] = [
     },
     synergy:
       "시너의 폭발적인 플랫 드라이브와 Speed MP의 빠른 반응성은 완벽한 시너지를 이룹니다. 컨트롤과 파워의 균형이 그의 공격적인 베이스라인 플레이를 극대화합니다.",
-    imageUrl: "",
+    imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/09/Jannik_Sinner_%282024_US_Open%29_04_%28cropped%29.jpg/400px-Jannik_Sinner_%282024_US_Open%29_04_%28cropped%29.jpg",
   },
   {
     id: "alcaraz",
@@ -72,7 +72,7 @@ export const players: Player[] = [
     },
     synergy:
       "알카라스의 강렬한 탑스핀과 Pure Aero의 극강 스핀 포텐셜은 최고의 조합입니다. 네트 플레이와 올코트 능력을 뒷받침하는 뛰어난 기동성을 제공합니다.",
-    imageUrl: "",
+    imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b9/Carlos_Alcaraz_Wimbledon_2025_%28cropped%29.jpg/400px-Carlos_Alcaraz_Wimbledon_2025_%28cropped%29.jpg",
   },
   {
     id: "djokovic",
@@ -98,7 +98,7 @@ export const players: Player[] = [
     },
     synergy:
       "조코비치의 정밀한 컨트롤과 Speed Pro의 높은 안정성은 완벽한 조합입니다. 긴 랠리에서도 흔들리지 않는 일관성을 제공하며 수비의 완성도를 높입니다.",
-    imageUrl: "",
+    imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/48/Novak_Djokovic_Practicing_Tennis_05_%28cropped%29.jpg/400px-Novak_Djokovic_Practicing_Tennis_05_%28cropped%29.jpg",
   },
   {
     id: "zverev",
@@ -124,7 +124,7 @@ export const players: Player[] = [
     },
     synergy:
       "즈베레프의 강력한 서브와 긴 리치에 Gravity MP의 뛰어난 컨트롤이 더해져 베이스라인 파워가 극대화됩니다. 편안한 타구감으로 장시간 경기에서도 일관성을 유지합니다.",
-    imageUrl: "",
+    imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/85/Zverev_RG19_%2823%29_%2848199062617%29_%28cropped%29.jpg/400px-Zverev_RG19_%2823%29_%2848199062617%29_%28cropped%29.jpg",
   },
   {
     id: "medvedev",
@@ -150,7 +150,7 @@ export const players: Player[] = [
     },
     synergy:
       "메드베데프의 플랫 베이스라인 게임과 TF-40의 정밀한 컨트롤은 이상적인 매칭입니다. 독특한 서브와 깊은 리턴에 안정적인 타구감을 더해 일관성을 극대화합니다.",
-    imageUrl: "",
+    imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/Danill_Medvedev_Miami_2019_%28cropped%29.jpg/400px-Danill_Medvedev_Miami_2019_%28cropped%29.jpg",
   },
   {
     id: "fritz",
@@ -176,7 +176,7 @@ export const players: Player[] = [
     },
     synergy:
       "프리츠의 빅 서브와 공격적 포핸드에 Speed MP의 빠른 반응성이 더해져 공격력이 배가됩니다. 빠른 코트 커버를 뒷받침하는 가벼운 스윙감이 특징입니다.",
-    imageUrl: "",
+    imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d7/Taylor_Fritz_-_Delray_Beach_Open_Final_Round.jpg/400px-Taylor_Fritz_-_Delray_Beach_Open_Final_Round.jpg",
   },
   {
     id: "ruud",
@@ -202,7 +202,7 @@ export const players: Player[] = [
     },
     synergy:
       "루드의 헤비 탑스핀과 VCORE의 극강 스핀 포텐셜은 클레이에서 최강의 시너지를 발휘합니다. 안정적인 랠리 능력을 뒷받침하는 일관된 볼 컨트롤이 강점입니다.",
-    imageUrl: "",
+    imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f2/Casper_Ruud_%282023_US_Open%29_01_%28cropped%29.jpg/400px-Casper_Ruud_%282023_US_Open%29_01_%28cropped%29.jpg",
   },
   {
     id: "de-minaur",
@@ -228,7 +228,7 @@ export const players: Player[] = [
     },
     synergy:
       "드 미노르의 빠른 발과 카운터펀치 스타일에 FX 500의 높은 파워가 더해져 수비에서 공격으로의 전환이 극대화됩니다. 끈질긴 수비를 뒷받침하는 내구성이 특징입니다.",
-    imageUrl: "",
+    imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e2/Alex_De_Minaur_%2843875330731%29.jpg/400px-Alex_De_Minaur_%2843875330731%29.jpg",
   },
   {
     id: "rublev",
@@ -254,7 +254,7 @@ export const players: Player[] = [
     },
     synergy:
       "루블료프의 폭발적 포핸드와 Gravity MP의 컨트롤이 결합되어 공격적인 리턴이 더욱 정확해집니다. 하드코트에서 빠른 스윙 스피드를 뒷받침하는 편안한 타구감이 강점입니다.",
-    imageUrl: "",
+    imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/Andrey_Rublev_%2819639185239%29.jpg/400px-Andrey_Rublev_%2819639185239%29.jpg",
   },
   {
     id: "dimitrov",
@@ -280,7 +280,7 @@ export const players: Player[] = [
     },
     synergy:
       "디미트로프의 우아한 한손 백핸드와 Pro Staff의 극강 컨트롤은 테니스 미학의 결정체입니다. 정교한 터치 플레이와 올코트 능력을 극대화하는 최고의 조합입니다.",
-    imageUrl: "",
+    imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f4/Grigor_Dimitrov_%282023_US_Open%29_01_%28cropped%29.jpg/400px-Grigor_Dimitrov_%282023_US_Open%29_01_%28cropped%29.jpg",
   },
   // Female
   {
@@ -307,7 +307,7 @@ export const players: Player[] = [
     },
     synergy:
       "시비옹텍의 헤비 탑스핀과 EZONE의 파워-스핀 균형은 클레이에서 무적의 조합입니다. 강력한 포핸드를 뒷받침하는 편안한 타구감으로 긴 경기에서도 일관성을 유지합니다.",
-    imageUrl: "",
+    imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/Iga_Swiatek_2023_%28cropped%29.jpg/400px-Iga_Swiatek_2023_%28cropped%29.jpg",
   },
   {
     id: "sabalenka",
@@ -333,7 +333,7 @@ export const players: Player[] = [
     },
     synergy:
       "사발렌카의 폭발적 파워와 Blade의 정밀한 컨트롤이 만나 공격적 베이스라인 게임이 완성됩니다. 강력한 서브에 안정적인 타구감을 더해 일관성 있는 빅히터 플레이를 구현합니다.",
-    imageUrl: "",
+    imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/Aryna_Sabalenka_US_Open_2024_practice_%28cropped%29.jpg/400px-Aryna_Sabalenka_US_Open_2024_practice_%28cropped%29.jpg",
   },
   {
     id: "gauff",
@@ -359,7 +359,7 @@ export const players: Player[] = [
     },
     synergy:
       "가우프의 강력한 서브와 VCORE의 스핀 포텐셜이 결합되어 올코트 플레이가 더욱 다양해집니다. 빠른 발을 뒷받침하는 가벼운 스윙감으로 기동성을 극대화합니다.",
-    imageUrl: "",
+    imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/72/Coco_Gauff_%282023_US_Open%29_01_%28cropped%29.jpg/400px-Coco_Gauff_%282023_US_Open%29_01_%28cropped%29.jpg",
   },
   {
     id: "paolini",
@@ -385,7 +385,7 @@ export const players: Player[] = [
     },
     synergy:
       "파올리니의 빠른 풋워크와 Pure Aero의 극강 스핀은 공격적 리턴을 더욱 위협적으로 만듭니다. 일관성 있는 플레이를 뒷받침하는 높은 스핀 잠재력이 강점입니다.",
-    imageUrl: "",
+    imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/Jasmine_Paolini_Wimbledon_2024_%28cropped%29.jpg/400px-Jasmine_Paolini_Wimbledon_2024_%28cropped%29.jpg",
   },
   {
     id: "zheng",
@@ -411,7 +411,7 @@ export const players: Player[] = [
     },
     synergy:
       "정친원의 폭발적 포핸드와 EZONE의 파워-스핀 조합은 공격적 테니스를 완성합니다. 빅 서브와 함께 상대를 압박하는 일관된 파워 게임을 구현합니다.",
-    imageUrl: "",
+    imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Zheng_Qinwen_%282024_US_Open%29_02_%28cropped%29.jpg/400px-Zheng_Qinwen_%282024_US_Open%29_02_%28cropped%29.jpg",
   },
   {
     id: "rybakina",
@@ -437,7 +437,7 @@ export const players: Player[] = [
     },
     synergy:
       "리바키나의 강력한 서브와 VCORE의 스핀 포텐셜이 결합되어 플랫 드라이브가 더욱 위협적입니다. 빅히터 스타일을 뒷받침하는 높은 파워 전달력이 특징입니다.",
-    imageUrl: "",
+    imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/Elena_Rybakina_US_Open_2024_%28cropped%29.jpg/400px-Elena_Rybakina_US_Open_2024_%28cropped%29.jpg",
   },
   {
     id: "pegula",
@@ -463,7 +463,7 @@ export const players: Player[] = [
     },
     synergy:
       "페굴라의 안정적인 베이스라인 게임과 Pure Drive의 폭발적 파워가 만나 깊은 리턴이 더욱 위협적입니다. 일관성 있는 플레이를 뒷받침하는 높은 파워 전달력이 강점입니다.",
-    imageUrl: "",
+    imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/94/Jessica_Pegula_%28Roland_Garros_2023%29_04_%28cropped%29.jpg/400px-Jessica_Pegula_%28Roland_Garros_2023%29_04_%28cropped%29.jpg",
   },
   {
     id: "navarro",
@@ -489,7 +489,7 @@ export const players: Player[] = [
     },
     synergy:
       "나바로의 다양한 전술과 Pure Aero의 스핀 포텐셜이 결합되어 올코트 플레이가 더욱 다채로워집니다. 네트 플레이를 뒷받침하는 빠른 스윙감이 특징입니다.",
-    imageUrl: "",
+    imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f3/Emma_Navarro_%282024_US_Open%29_01_%28cropped%29.jpg/400px-Emma_Navarro_%282024_US_Open%29_01_%28cropped%29.jpg",
   },
   {
     id: "kasatkina",
@@ -515,7 +515,7 @@ export const players: Player[] = [
     },
     synergy:
       "카사트키나의 다양한 구질과 Boom MP의 파워가 결합되어 전술적 플레이가 더욱 다채로워집니다. 드롭샷을 비롯한 섬세한 터치 플레이를 뒷받침하는 편안한 타구감이 강점입니다.",
-    imageUrl: "",
+    imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Daria_Kasatkina_%282023_DC_Open%29_12_%28cropped%29.jpg/400px-Daria_Kasatkina_%282023_DC_Open%29_12_%28cropped%29.jpg",
   },
   {
     id: "andreeva",
@@ -541,6 +541,6 @@ export const players: Player[] = [
     },
     synergy:
       "안드레예바의 다재다능한 플레이와 Speed MP의 균형 잡힌 성능이 만나 다양한 코트에서 강점을 발휘합니다. 강한 멘탈을 뒷받침하는 일관된 타구감이 특징입니다.",
-    imageUrl: "",
+    imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/61/Mirra_Andreeva_Roland_Garros_2024_%28cropped%29.jpg/400px-Mirra_Andreeva_Roland_Garros_2024_%28cropped%29.jpg",
   },
 ];
