@@ -108,6 +108,7 @@ export async function getTopRackets(limit: number = 5): Promise<RacketListItem[]
       racket_specs(weight_g, head_size_sq_in, string_pattern),
       racket_variants(retail_price_krw)
     `)
+    .eq("discontinued", false)
     .order("id")
     .limit(limit);
 
@@ -213,7 +214,8 @@ export async function getRackets(filters: RacketFilters = {}): Promise<{
       brands!inner(name),
       racket_specs(weight_g, head_size_sq_in, string_pattern),
       racket_variants(retail_price_krw)
-    `, { count: "exact" });
+    `, { count: "exact" })
+    .eq("discontinued", false);
 
   if (filters.brand?.length) {
     query = query.in("brands.name", filters.brand);
@@ -290,6 +292,7 @@ export async function getSimilarRackets(racketId: string, brand: string, limit: 
       racket_variants(retail_price_krw)
     `)
     .eq("brands.name", brand)
+    .eq("discontinued", false)
     .neq("id", racketId)
     .limit(limit);
 
