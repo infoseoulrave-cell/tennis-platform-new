@@ -7,11 +7,11 @@ export type Scores = {
 };
 
 export const AXIS_LABELS: Record<keyof Scores, string> = {
-  power: "직구력",
+  power: "파워",
   control: "컨트롤",
   spin: "스핀",
-  comfort: "충격흡수",
-  stability: "안정감",
+  comfort: "편안함",
+  stability: "안정성",
 };
 
 const AXES: (keyof Scores)[] = ["power", "control", "spin", "comfort", "stability"];
