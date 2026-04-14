@@ -7,7 +7,7 @@ function PlayerCard({ player }: { player: Player }) {
   const slug = generateSlug(player.racket.brand, player.racket.model, player.racket.year);
 
   return (
-    <article className="border border-[var(--color-border)] rounded-2xl p-6 hover:border-[var(--color-text-muted)] transition-colors">
+    <article className="bg-[var(--color-bg-white)] rounded-2xl p-6 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
       {/* Player header */}
       <div className="flex items-center gap-4 mb-5">
         {player.imageUrl ? (
@@ -78,10 +78,10 @@ export function PlayerSynergySection() {
     <section className="bg-[var(--color-bg-subtle)] py-16">
       <div className="max-w-6xl mx-auto px-6">
         <div className="mb-10">
-          <h2 className="text-2xl font-bold flex items-center gap-2">
-            <span>🏆</span>
-            <span>프로 선수 × 라켓 시너지</span>
-          </h2>
+          <div>
+            <p className="text-[10px] font-semibold tracking-[0.15em] text-[var(--color-brand-dark)] uppercase mb-1">Pro Players</p>
+            <h2 className="text-2xl font-bold tracking-tight">프로 선수 × 라켓 시너지</h2>
+          </div>
           <p className="text-sm text-[var(--color-text-secondary)] mt-2">
             세계 톱 선수들은 왜 이 라켓을 선택했을까?
           </p>

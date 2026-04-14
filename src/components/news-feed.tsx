@@ -5,10 +5,10 @@ export function NewsFeed() {
   return (
     <section className="py-12">
       <div className="flex items-end justify-between mb-6">
-        <h2 className="text-xl font-bold flex items-center gap-2 text-[var(--color-text)]">
-          <span>📰</span>
-          <span>코트 업데이트</span>
-        </h2>
+        <div>
+          <p className="text-[10px] font-semibold tracking-[0.15em] text-[var(--color-brand-dark)] uppercase mb-1">Updates</p>
+          <h2 className="text-xl font-bold tracking-tight text-[var(--color-text)]">코트 업데이트</h2>
+        </div>
         <Link
           href="/updates"
           className="text-xs text-[var(--color-text-muted)] hover:text-[var(--color-text)]"

@@ -30,7 +30,7 @@ export function RacketCard({ racket }: { racket: RacketCardData }) {
   return (
     <Link
       href={`/rackets/${racket.slug}`}
-      className="group block border border-[var(--color-border)] rounded-xl overflow-hidden hover:border-[var(--color-text-muted)] transition-colors"
+      className="group block bg-[var(--color-bg-white)] rounded-xl overflow-hidden shadow-sm hover:shadow-md hover:-translate-y-0.5 hover:ring-1 hover:ring-[var(--color-brand)]/40 transition-all duration-200"
     >
       {/* Image area */}
       <div className="aspect-[4/3] bg-[var(--color-bg-subtle)] flex items-center justify-center">

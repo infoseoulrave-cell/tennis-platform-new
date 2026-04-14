@@ -14,7 +14,7 @@ export function CompareTray() {
 
   return (
     <div className="fixed bottom-16 md:bottom-6 left-1/2 -translate-x-1/2 z-[60] w-[calc(100%-2rem)] max-w-lg">
-      <div className="bg-[var(--color-text)] text-white rounded-2xl px-4 py-3 flex items-center gap-3 shadow-2xl">
+      <div className="bg-[var(--color-court-blue)] text-white rounded-2xl px-4 py-3 flex items-center gap-3 shadow-2xl">
         <div className="flex items-center gap-2 flex-1 min-w-0">
           <span className="text-sm font-semibold shrink-0">{items.length}/3</span>
           <div className="flex gap-1.5 overflow-hidden">
@@ -40,7 +40,7 @@ export function CompareTray() {
           </button>
           <Link
             href={`/compare?slugs=${slugs}`}
-            className="px-4 py-2 bg-white text-[var(--color-text)] text-xs font-semibold rounded-lg hover:bg-gray-100 transition-colors"
+            className="px-4 py-2 bg-[var(--color-brand)] text-black text-xs font-semibold rounded-lg hover:brightness-110 transition-all"
           >
             비교하기
           </Link>

@@ -19,10 +19,10 @@ export async function TopRacketsList() {
   return (
     <section className="py-12">
       <div className="flex items-end justify-between mb-6">
-        <h2 className="text-xl font-bold flex items-center gap-2">
-          <span>🔥</span>
-          <span>인기 라켓 TOP 5</span>
-        </h2>
+        <div>
+          <p className="text-[10px] font-semibold tracking-[0.15em] text-[var(--color-brand-dark)] uppercase mb-1">Popular</p>
+          <h2 className="text-xl font-bold tracking-tight">인기 라켓 TOP 5</h2>
+        </div>
         <Link href="/rackets" className="text-xs text-[var(--color-text-muted)] hover:text-[var(--color-text)]">
           전체 보기 →
         </Link>

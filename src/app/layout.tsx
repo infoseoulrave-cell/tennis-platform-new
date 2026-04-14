@@ -37,7 +37,7 @@ export default function RootLayout({
           href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"
         />
       </head>
-      <body className="bg-white text-[var(--color-text)] antialiased font-sans">
+      <body className="bg-[var(--color-bg)] text-[var(--color-text)] antialiased font-sans">
         <GlobalNav />
         <main className="min-h-screen">{children}</main>
         <Footer />

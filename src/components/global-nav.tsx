@@ -90,19 +90,20 @@ export function GlobalNav() {
 
   return (
     <>
-      <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-[var(--color-border)]">
-        <nav className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-          <Link href="/" className="text-lg font-bold tracking-tight text-[var(--color-text)]">
-            racketlab
-          </Link>
-          <div className="hidden md:flex items-center gap-6">
+    <header className="sticky top-0 z-50 bg-[var(--color-bg-white)]/95 backdrop-blur-sm border-b border-[var(--color-border)]">
+      <nav className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+        <Link href="/" className="flex items-center gap-1.5">
+          <span className="w-2 h-5 rounded-sm bg-[var(--color-brand)]" />
+          <span className="text-lg font-bold tracking-tight text-[var(--color-text)]">racketlab</span>
+        </Link>
+        <div className="hidden md:flex items-center gap-6">
             {links.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
-                className={`text-sm font-medium transition-colors ${
+                className={`relative text-sm font-medium transition-colors py-1 ${
                   pathname?.startsWith(link.href)
-                    ? "text-[var(--color-text)]"
+                    ? "text-[var(--color-text)] after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-[var(--color-brand)] after:rounded-full"
                     : "text-[var(--color-text-secondary)] hover:text-[var(--color-text)]"
                 }`}
               >

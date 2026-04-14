@@ -2,9 +2,9 @@ import { type Scores, AXIS_LABELS } from "./radar-chart";
 
 const AXES: (keyof Scores)[] = ["power", "control", "spin", "comfort", "stability"];
 
-const ACTIVE_COLOR = "#A8D400";
-const NEGATIVE_COLOR = "#dddddd";
-const TRACK_COLOR = "#E8E8D8";
+const ACTIVE_COLOR = "#C4E538";
+const NEGATIVE_COLOR = "#E2E2E2";
+const TRACK_COLOR = "#E8E8E0";
 
 function scoreToPercent(score: number): number {
   return ((score + 5) / 10) * 100;
@@ -24,7 +24,7 @@ export function AxisBars({
         const pct = scoreToPercent(score);
         const sign = score > 0 ? "+" : "";
         const barColor = score >= 0 ? ACTIVE_COLOR : NEGATIVE_COLOR;
-        const scoreColor = score > 0 ? ACTIVE_COLOR : "#1a1a1a";
+        const scoreColor = score > 0 ? "#9BBB30" : "#171717";
 
         return (
           <div key={axis}>

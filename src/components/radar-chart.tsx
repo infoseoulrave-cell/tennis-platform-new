@@ -16,9 +16,9 @@ export const AXIS_LABELS: Record<keyof Scores, string> = {
 
 const AXES: (keyof Scores)[] = ["power", "control", "spin", "comfort", "stability"];
 
-const ACTIVE_COLOR = "#A8D400";
-const GRID_COLOR = "#E8E8D8";
-const LABEL_COLOR = "#5A5A4A";
+const ACTIVE_COLOR = "#C4E538";
+const GRID_COLOR = "#E2E2D8";
+const LABEL_COLOR = "#525252";
 
 function scoreToFraction(score: number): number {
   return (score + 5) / 10;
