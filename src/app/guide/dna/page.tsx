@@ -5,7 +5,7 @@ import Link from "next/link";
 const axes = [
   {
     key: "power",
-    labelKo: "직구력",
+    labelKo: "파워",
     labelEn: "Power",
     desc: "평타·서브에서 볼이 나가는 쉬움과 깊이. 헤드 라이트·낮은 스윙웨이트는 상대적으로 낮게, 헤드 헤비·긴 레버리지는 높게 평가될 수 있어요.",
   },
@@ -23,13 +23,13 @@ const axes = [
   },
   {
     key: "comfort",
-    labelKo: "충격흡수",
+    labelKo: "편안함",
     labelEn: "Comfort",
     desc: "팔·팔꿈치로 전달되는 진동과 충격. 재질·두께·밸런스·추천 스트링 조합이 함께 반영됩니다.",
   },
   {
     key: "stability",
-    labelKo: "안정감",
+    labelKo: "안정성",
     labelEn: "Stability",
     desc: "오프센터 타구에서 흔들림이 적고 방향성이 유지되는 성향입니다. 트위스트·비틀림 강성 등이 관련됩니다.",
   },
@@ -145,7 +145,7 @@ export default function GuideDnaPage() {
             </p>
             <div className="space-y-5">
               <AxisScaleDemo label="스핀" value={4} />
-              <AxisScaleDemo label="직구력" value={1} />
+              <AxisScaleDemo label="파워" value={1} />
             </div>
           </div>
           <div className="rounded-2xl border border-[var(--color-border)] p-5 bg-white">
@@ -153,7 +153,7 @@ export default function GuideDnaPage() {
               안정·컨트롤형 (예시)
             </p>
             <div className="space-y-5">
-              <AxisScaleDemo label="안정감" value={3} />
+              <AxisScaleDemo label="안정성" value={3} />
               <AxisScaleDemo label="컨트롤" value={2} />
             </div>
           </div>

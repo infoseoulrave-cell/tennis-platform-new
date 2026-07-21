@@ -5,7 +5,7 @@ export default function AboutPage() {
     <div className="max-w-3xl mx-auto px-6 py-12 md:py-16">
       <header className="mb-12">
         <p className="text-sm font-medium text-[var(--color-text-muted)]">
-          racketlab
+          racket LAB
         </p>
         <h1 className="mt-2 text-3xl font-bold text-[var(--color-text)]">
           About
@@ -32,7 +32,7 @@ export default function AboutPage() {
               5축 스코어링
             </h3>
             <p className="mt-2 text-sm text-[var(--color-text-secondary)] leading-relaxed">
-              직구력·컨트롤·스핀·충격흡수·안정감을 한눈에 비교할 수 있도록
+              파워·컨트롤·스핀·편안함·안정성을 한눈에 비교할 수 있도록
               스펙 기반으로 정리합니다.
             </p>
           </li>
@@ -62,7 +62,7 @@ export default function AboutPage() {
           팀 · 서비스
         </h2>
         <p className="text-sm text-[var(--color-text-secondary)] leading-relaxed">
-          racketlab은 테니스 장비 데이터와 추천 로직을 계속 다듬는 소규모
+          racket LAB은 테니스 장비 데이터와 추천 로직을 계속 다듬는 소규모
           프로덕트 팀으로 운영됩니다. 카탈로그·가격·파트너 정보는 시장 상황에
           따라 업데이트되며, 추천과 스코어는 참고용 정보이며 최종 선택은 항상
           본인의 피팅과 체험을 우선합니다.
