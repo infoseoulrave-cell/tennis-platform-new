@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { eventLog, offers } from "@/db/schema";
+import { isSafeOfferUrl } from "@/lib/offer-url";
 
 /**
  * 아웃바운드 어필리에이트 리다이렉트.
@@ -25,7 +26,7 @@ export async function GET(
     .limit(1)
     .catch(() => []);
 
-  if (!offer || !offer.active) {
+  if (!offer || !offer.active || !isSafeOfferUrl(offer.url)) {
     return NextResponse.redirect(new URL("/rackets", request.url));
   }
 

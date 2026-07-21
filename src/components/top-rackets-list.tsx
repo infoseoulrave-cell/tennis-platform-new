@@ -1,21 +1,87 @@
 import Link from "next/link";
-import { getTopRackets } from "@/lib/queries";
+import { getTopRackets, type RacketListItem } from "@/lib/queries";
 import { formatRacketName } from "@/lib/racket-name";
+
+type TopRacket = Pick<
+  RacketListItem,
+  "id" | "brand" | "model" | "year" | "weight" | "headSize" | "priceKrw"
+> & { slug?: string };
+
+export const topRacketsFallback: TopRacket[] = [
+  {
+    id: "fallback-yonex-ezone-100-2025",
+    brand: "Yonex",
+    model: "EZONE 100 2025",
+    year: 2025,
+    weight: "300g",
+    headSize: '100"',
+    priceKrw: 345000,
+  },
+  {
+    id: "fallback-dunlop-cx-200-2025",
+    brand: "Dunlop",
+    model: "CX 200 2025",
+    year: 2025,
+    weight: "305g",
+    headSize: '98"',
+    priceKrw: 280000,
+  },
+  {
+    id: "fallback-yonex-vcore-100l-2026",
+    brand: "Yonex",
+    model: "VCORE 100L 2026",
+    year: 2026,
+    weight: "280g",
+    headSize: '100"',
+    priceKrw: 315000,
+  },
+  {
+    id: "fallback-yonex-ezone-98-2025",
+    brand: "Yonex",
+    model: "EZONE 98 2025",
+    year: 2025,
+    weight: "305g",
+    headSize: '98"',
+    priceKrw: 345000,
+  },
+  {
+    id: "fallback-dunlop-fx-500-2025",
+    brand: "Dunlop",
+    model: "FX 500 2025",
+    year: 2025,
+    weight: "300g",
+    headSize: '100"',
+    priceKrw: 280000,
+  },
+];
 
 function formatPrice(price: number | null): string {
   if (!price) return "";
   return `₩${Math.round(price / 1000)}K`;
 }
 
+export function formatTopRacketName(racket: TopRacket): string {
+  return formatRacketName(racket.model, racket.year);
+}
+
+export function topRacketHref(racket: TopRacket): string {
+  if (racket.id.startsWith("fallback-")) {
+    const params = new URLSearchParams({ brand: racket.brand, q: racket.model });
+    return `/rackets?${params.toString()}`;
+  }
+
+  return racket.slug ? `/rackets/${racket.slug}` : "/rackets";
+}
+
 export async function TopRacketsList() {
-  let rackets;
+  let rackets: TopRacket[];
   try {
     rackets = await getTopRackets(5);
   } catch {
-    return null;
+    rackets = topRacketsFallback;
   }
 
-  if (!rackets.length) return null;
+  if (!rackets.length) rackets = topRacketsFallback;
 
   return (
     <section className="py-12">
@@ -41,10 +107,10 @@ export async function TopRacketsList() {
             <div className="flex-1 min-w-0">
               <p className="text-xs text-[var(--color-text-muted)]">{racket.brand}</p>
               <Link
-                href={`/rackets/${racket.slug}`}
+                href={topRacketHref(racket)}
                 className="font-semibold text-sm hover:underline block truncate"
               >
-                {formatRacketName(racket.model, racket.year)}
+                {formatTopRacketName(racket)}
               </Link>
               <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">
                 {racket.weight}

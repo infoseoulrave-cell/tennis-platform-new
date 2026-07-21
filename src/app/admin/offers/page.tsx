@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { offers } from "@/db/schema";
@@ -10,6 +11,8 @@ import {
   totalPrice,
   VENDOR_LABELS,
 } from "@/lib/offers";
+import { createAdminSessionToken, isValidAdminToken } from "@/lib/admin-auth";
+import { isSafeOfferUrl } from "@/lib/offer-url";
 import { getRackets } from "@/lib/queries";
 
 export const dynamic = "force-dynamic";
@@ -21,15 +24,29 @@ const cell: React.CSSProperties = {
   verticalAlign: "top",
 };
 
+async function requireAdminSession() {
+  const adminSecret = process.env.ADMIN_SECRET;
+  const adminToken = (await cookies()).get("admin_token")?.value;
+  if (!adminSecret || !isValidAdminToken(adminToken, createAdminSessionToken(adminSecret))) {
+    throw new Error("Unauthorized");
+  }
+}
+
+export function parseOptionalShippingFee(value: FormDataEntryValue | null): number | null {
+  if (typeof value !== "string" || !value.trim()) return null;
+  const amount = Number(value);
+  return Number.isFinite(amount) && amount >= 0 ? Math.round(amount) : null;
+}
+
 async function createOffer(formData: FormData) {
   "use server";
+  await requireAdminSession();
   const url = String(formData.get("url") ?? "").trim();
   const racketSlug = String(formData.get("racketSlug") ?? "").trim();
   const vendor = String(formData.get("vendor") ?? "other");
-  if (!url || !racketSlug) return;
+  if (!isSafeOfferUrl(url) || !racketSlug) return;
 
   const price = Number(formData.get("priceKrw"));
-  const shipping = Number(formData.get("shippingFeeKrw"));
 
   await db.insert(offers).values({
     racketSlug,
@@ -38,8 +55,7 @@ async function createOffer(formData: FormData) {
     productName: String(formData.get("productName") ?? "").trim() || null,
     url,
     priceKrw: Number.isFinite(price) && price > 0 ? Math.round(price) : null,
-    shippingFeeKrw:
-      Number.isFinite(shipping) && shipping >= 0 ? Math.round(shipping) : null,
+    shippingFeeKrw: parseOptionalShippingFee(formData.get("shippingFeeKrw")),
     sortOrder: Number(formData.get("sortOrder")) || 0,
     lastCheckedAt: new Date(),
   });
@@ -48,6 +64,7 @@ async function createOffer(formData: FormData) {
 
 async function toggleOffer(formData: FormData) {
   "use server";
+  await requireAdminSession();
   const id = String(formData.get("id"));
   const active = formData.get("active") === "true";
   await db.update(offers).set({ active: !active, updatedAt: new Date() }).where(eq(offers.id, id));
@@ -56,6 +73,7 @@ async function toggleOffer(formData: FormData) {
 
 async function deleteOffer(formData: FormData) {
   "use server";
+  await requireAdminSession();
   const id = String(formData.get("id"));
   await db.delete(offers).where(eq(offers.id, id));
   revalidatePath("/admin/offers");

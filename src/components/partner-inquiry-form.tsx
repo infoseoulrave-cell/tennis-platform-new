@@ -30,6 +30,7 @@ export function PartnerInquiryForm() {
           name: data.get("name"),
           contact: data.get("contact"),
           message: data.get("message") || undefined,
+          website: data.get("website"),
         }),
       });
       if (!res.ok) {
@@ -63,6 +64,10 @@ export function PartnerInquiryForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-3 text-left">
+      <div className="absolute -left-[9999px]" aria-hidden="true">
+        <label htmlFor="website">Website</label>
+        <input id="website" name="website" tabIndex={-1} autoComplete="off" />
+      </div>
       <div>
         <label htmlFor="inquiryType" className="mb-1 block text-xs font-medium text-gray-700">
           제휴 유형

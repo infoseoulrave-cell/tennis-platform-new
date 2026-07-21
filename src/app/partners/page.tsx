@@ -39,6 +39,14 @@ export default function PartnersPage() {
           <TrustBadge variant="neutrality" />
           <p className="mt-2 text-xs text-gray-400">제휴 여부는 라켓 점수와 추천 순위에 반영하지 않습니다.</p>
         </div>
+
+        <section className="max-w-lg mx-auto mt-8 rounded-2xl border border-gray-200 bg-white p-6">
+          <h2 className="text-lg font-bold">제휴 문의</h2>
+          <p className="mt-2 mb-5 text-sm leading-relaxed text-gray-500">
+            매장, 코치, 브랜드 제휴를 제안해 주세요. 확인 후 입력하신 연락처로 회신드립니다.
+          </p>
+          <PartnerInquiryForm />
+        </section>
       </div>
     </main>
   );

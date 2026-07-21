@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
 import { desc, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { partnerInquiries } from "@/db/schema";
 import { INQUIRY_TYPE_LABELS } from "@/lib/partner-inquiry";
+import { createAdminSessionToken, isValidAdminToken } from "@/lib/admin-auth";
 
 export const dynamic = "force-dynamic";
 
@@ -20,8 +22,17 @@ const STATUS_LABELS: Record<string, string> = {
   closed: "종료",
 };
 
+async function requireAdminSession() {
+  const adminSecret = process.env.ADMIN_SECRET;
+  const adminToken = (await cookies()).get("admin_token")?.value;
+  if (!adminSecret || !isValidAdminToken(adminToken, createAdminSessionToken(adminSecret))) {
+    throw new Error("Unauthorized");
+  }
+}
+
 async function setStatus(formData: FormData) {
   "use server";
+  await requireAdminSession();
   const id = String(formData.get("id"));
   const status = String(formData.get("status"));
   if (!["new", "contacted", "closed"].includes(status)) return;

@@ -14,4 +14,7 @@ export const partnerInquirySchema = z.object({
   name: z.string().trim().min(1, "이름/상호를 입력해 주세요").max(255),
   contact: z.string().trim().min(1, "연락처를 입력해 주세요").max(255),
   message: z.string().trim().max(2000).optional(),
+  website: z.string().max(255).optional().refine((value) => !value?.trim(), {
+    message: "Invalid submission",
+  }),
 });

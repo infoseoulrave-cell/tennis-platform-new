@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { featuredRackets } from "@/data/featured-rackets";
 
@@ -58,10 +59,12 @@ export function HeroCarousel() {
           {/* Image side */}
           <div className="relative aspect-square flex items-center justify-center">
             {racket.imageUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
+              <Image
                 src={racket.imageUrl}
                 alt={racket.model}
+                width={500}
+                height={500}
+                preload={index === 0}
                 className="object-contain max-h-[400px]"
               />
             ) : (
@@ -69,12 +72,13 @@ export function HeroCarousel() {
                 🎾
               </div>
             )}
-            <div className="absolute bottom-0 right-0 flex gap-3 text-[10px] text-white/45">
+            <div className="absolute bottom-1 right-1 flex items-center gap-2 text-[10px] text-white/40">
               <a href={racket.imageSourceUrl} target="_blank" rel="noreferrer" className="hover:text-white/70 hover:underline">
                 이미지 출처
               </a>
+              <span aria-hidden="true">·</span>
               <a href={racket.specSourceUrl} target="_blank" rel="noreferrer" className="hover:text-white/70 hover:underline">
-                공식 스펙 · 확인 {racket.verifiedAt}
+                스펙 확인 {racket.verifiedAt}
               </a>
             </div>
           </div>
