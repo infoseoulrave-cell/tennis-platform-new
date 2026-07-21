@@ -7,17 +7,17 @@ import { CompareTray } from "@/components/compare-tray";
 
 export const metadata: Metadata = {
   title: {
-    default: "racketlab | 한국 테니스 라켓 플랫폼",
-    template: "%s | racketlab",
+    default: "racket LAB — 라켓을 읽다",
+    template: "%s | racket LAB",
   },
   description:
-    "한국에서 실제 판매 중인 테니스 라켓을 이해하고, 비교하고, 추천받고, 구매까지 연결하는 서비스입니다.",
+    "데이터 기반 5축 분석으로 당신에게 맞는 테니스 라켓을 찾아드립니다. 비교, 추천, 구매까지.",
   openGraph: {
     type: "website",
     locale: "ko_KR",
-    siteName: "racketlab",
-    title: "racketlab | 한국 테니스 라켓 플랫폼",
-    description: "한국에서 실제 판매 중인 테니스 라켓을 이해하고, 비교하고, 추천받고, 구매까지 연결하는 서비스입니다.",
+    siteName: "racket LAB",
+    title: "racket LAB — 라켓을 읽다",
+    description: "데이터 기반 5축 분석으로 당신에게 맞는 테니스 라켓을 찾아드립니다.",
   },
   robots: { index: true, follow: true },
 };

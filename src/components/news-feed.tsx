@@ -6,7 +6,7 @@ export function NewsFeed() {
     <section className="py-12">
       <div className="flex items-end justify-between mb-6">
         <div>
-          <p className="text-[10px] font-semibold tracking-[0.15em] text-[var(--color-brand-dark)] uppercase mb-1">Updates</p>
+          <p className="text-[10px] font-semibold tracking-[0.15em] text-[var(--color-brand)] uppercase mb-1">Updates</p>
           <h2 className="text-xl font-bold tracking-tight text-[var(--color-text)]">코트 업데이트</h2>
         </div>
         <Link
