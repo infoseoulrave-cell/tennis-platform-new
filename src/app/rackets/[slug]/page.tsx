@@ -54,7 +54,7 @@ function getRecommendation(scores: Scores | null) {
   if (scores.spin <= -2) notForWhom.push("스핀을 적극 활용하는 스타일");
 
   if (forWhom.length === 0) forWhom.push("다양한 스타일에 적합한 올라운드 라켓");
-  if (notForWhom.length === 0) notForWhom.push("특별한 제한 없음");
+  if (notForWhom.length === 0) notForWhom.push("특별한 제약 없이 폭넓은 레벨에서 사용 가능");
 
   return { forWhom, notForWhom };
 }
@@ -62,15 +62,15 @@ function getRecommendation(scores: Scores | null) {
 function getStringRecommendation(scores: Scores | null) {
   if (!scores) return null;
   if (scores.spin >= 3) {
-    return { string: "Luxilon ALU Power / Babolat RPM Blast", tension: "초기 시타 48-52 lbs", reason: "오픈 패턴에서 비교해 볼 수 있는 폴리 조합 예시." };
+    return { string: "Luxilon ALU Power / Babolat RPM Blast", tension: "48-52 lbs", reason: "오픈 패턴에서 비교해 볼 수 있는 폴리 조합 예시." };
   }
   if (scores.control >= 3) {
-    return { string: "Tecnifibre Razor Code / Solinco Confidential", tension: "초기 시타 50-54 lbs", reason: "컨트롤 성향을 비교하기 위한 폴리 조합 예시." };
+    return { string: "Tecnifibre Razor Code / Solinco Confidential", tension: "50-54 lbs", reason: "컨트롤 성향을 비교하기 위한 폴리 조합 예시." };
   }
   if (scores.comfort >= 2) {
-    return { string: "Wilson NXT / Tecnifibre X-One", tension: "초기 시타 48-52 lbs", reason: "멀티필라멘트 타구감을 비교하기 위한 출발 조합." };
+    return { string: "Wilson NXT / Tecnifibre X-One", tension: "48-52 lbs", reason: "멀티필라멘트 타구감을 비교하기 위한 출발 조합." };
   }
-  return { string: "Yonex Poly Tour Pro / Head Lynx", tension: "초기 시타 48-52 lbs", reason: "중립적인 폴리 조합을 비교하기 위한 출발점." };
+  return { string: "Yonex Poly Tour Pro / Head Lynx", tension: "48-52 lbs", reason: "중립적인 폴리 조합을 비교하기 위한 출발점." };
 }
 
 export default async function RacketDetailPage({
@@ -96,181 +96,227 @@ export default async function RacketDetailPage({
   const similarRackets = await getSimilarRackets(racket.id, racket.brand).catch(() => []);
   const recommendation = getRecommendation(racket.scores);
   const stringRec = getStringRecommendation(racket.scores);
+  const segmentLabel = racket.segment ? (SEGMENT_LABELS[racket.segment] ?? racket.segment) : null;
 
   return (
-    <div className="max-w-6xl mx-auto px-6 py-8">
-      <nav className="mb-6 flex items-center gap-2 text-xs text-[var(--color-text-muted)]">
-        <Link href="/rackets" className="hover:text-[var(--color-text)]">
-          ← 라켓
-        </Link>
-        <span>/</span>
-        <span>{racket.brand}</span>
-      </nav>
+    <div>
+      {/* 헤더: 화이트 섹션 */}
+      <section className="bg-[var(--color-bg-white)]">
+        <div className="max-w-6xl mx-auto px-6 py-8">
+          <nav className="mb-6 flex items-center gap-2 text-xs text-[var(--color-text-muted)]">
+            <Link href="/rackets" className="hover:text-[var(--color-text)]">라켓</Link>
+            <span>/</span>
+            <Link href={`/rackets?brand=${encodeURIComponent(racket.brand)}`} className="hover:text-[var(--color-text)]">
+              {racket.brand}
+            </Link>
+            <span>/</span>
+            <span className="text-[var(--color-text-secondary)]">{racket.model}</span>
+          </nav>
 
-      <div className="grid lg:grid-cols-[1fr_1.2fr] gap-12">
-        <div className="lg:sticky lg:top-20 lg:self-start">
-          <div className="relative aspect-square bg-[var(--color-bg-subtle)] rounded-2xl flex items-center justify-center overflow-hidden">
-            {racket.imageUrl ? (
-              <Image
-                src={racket.imageUrl}
-                alt={`${racket.brand} ${racket.model}`}
-                fill
-                sizes="(max-width: 1024px) 100vw, 45vw"
-                unoptimized
-                className="object-contain p-8"
-              />
-            ) : (
-              <span className="px-8 text-center text-sm text-[var(--color-text-muted)]">검증된 제품 이미지 준비 중</span>
-            )}
-          </div>
-        </div>
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <div className="relative aspect-square flex items-center justify-center py-8">
+              {racket.imageUrl ? (
+                <Image
+                  src={racket.imageUrl}
+                  alt={racket.model}
+                  fill
+                  sizes="(max-width: 1024px) 100vw, 45vw"
+                  unoptimized
+                  className="object-contain"
+                />
+              ) : (
+                <span className="px-8 text-center text-sm text-[var(--color-text-muted)]">검증된 제품 이미지 준비 중</span>
+              )}
+            </div>
 
-        <div className="space-y-8">
-          <div>
-            <p className="text-xs text-[var(--color-text-muted)] tracking-wider uppercase">{racket.brand}</p>
-            <h1 className="text-3xl md:text-4xl font-bold mt-2 tracking-tight">
-              {formatRacketName(racket.model, racket.year)}
-            </h1>
-            {racket.segment && (
-              <p className="text-sm text-[var(--color-text-secondary)] mt-3">
-                {SEGMENT_LABELS[racket.segment] ?? racket.segment} 라켓
-              </p>
-            )}
-          </div>
-
-          <div className="flex flex-wrap gap-2">
-            {racket.weight && (
-              <span className="text-xs px-3 py-1.5 bg-[var(--color-bg-subtle)] rounded-full">{racket.weight}</span>
-            )}
-            {racket.headSize && (
-              <span className="text-xs px-3 py-1.5 bg-[var(--color-bg-subtle)] rounded-full">{racket.headSize}</span>
-            )}
-            {racket.pattern && (
-              <span className="text-xs px-3 py-1.5 bg-[var(--color-bg-subtle)] rounded-full">{racket.pattern}</span>
-            )}
-          </div>
-
-          {racket.scores && (
-            <section className="border border-[var(--color-border)] rounded-2xl p-6">
-              <h2 className="text-sm font-semibold mb-4">5축 능력 분석</h2>
-              <RadarBarCombo scores={racket.scores} />
-              <div className="mt-5">
-                <ScoringMethodologyNote />
-              </div>
-            </section>
-          )}
-
-          <div className="border-t border-[var(--color-border)] pt-6">
-            <div className="flex items-end justify-between">
+            <div className="space-y-5">
               <div>
-                <p className="text-xs text-[var(--color-text-muted)]">최저가</p>
-                <p className="text-2xl font-bold mt-1">{formatPrice(racket.priceKrw)}</p>
+                <p className="text-[10px] font-semibold tracking-[0.15em] text-[var(--color-brand)] uppercase">
+                  {racket.brand}
+                </p>
+                <h1 className="text-3xl md:text-4xl font-bold mt-1 tracking-tight leading-tight">
+                  {racket.model}
+                </h1>
+                {racket.year && (
+                  <span className="inline-block text-xs px-2 py-0.5 bg-[var(--color-brand-subtle)] text-[var(--color-brand)] font-medium rounded mt-2">
+                    {racket.year}
+                  </span>
+                )}
               </div>
-              <RacketDetailActions
-                slug={racket.slug}
-                brand={racket.brand}
-                model={racket.model}
-                year={racket.year}
-                imageUrl={racket.imageUrl}
-                priceKrw={racket.priceKrw}
-              />
+
+              {segmentLabel && (
+                <p className="text-sm text-[var(--color-text-secondary)] leading-relaxed">
+                  {segmentLabel}용 라켓
+                </p>
+              )}
+
+              <div className="flex flex-wrap gap-2">
+                {racket.weight && (
+                  <span className="text-xs px-3 py-1.5 bg-[var(--color-bg-subtle)] rounded-full font-medium">{racket.weight}</span>
+                )}
+                {racket.headSize && (
+                  <span className="text-xs px-3 py-1.5 bg-[var(--color-bg-subtle)] rounded-full font-medium">{racket.headSize}</span>
+                )}
+                {racket.pattern && (
+                  <span className="text-xs px-3 py-1.5 bg-[var(--color-bg-subtle)] rounded-full font-medium">{racket.pattern}</span>
+                )}
+                {segmentLabel && (
+                  <span className="text-xs px-3 py-1.5 bg-[var(--color-bg-subtle)] rounded-full font-medium">{segmentLabel}용</span>
+                )}
+              </div>
+
+              <div className="flex items-end justify-between pt-4 border-t border-[var(--color-border)]">
+                <div>
+                  <p className="text-[10px] text-[var(--color-text-muted)] uppercase tracking-wide">최저가</p>
+                  <p className="text-3xl font-bold tracking-tight">{formatPrice(racket.priceKrw)}</p>
+                </div>
+                <RacketDetailActions
+                  slug={racket.slug}
+                  brand={racket.brand}
+                  model={racket.model}
+                  year={racket.year}
+                  imageUrl={racket.imageUrl}
+                  priceKrw={racket.priceKrw}
+                />
+              </div>
             </div>
           </div>
         </div>
-      </div>
-
-      {recommendation && (
-        <section className="mt-12 grid md:grid-cols-2 gap-6">
-          <div className="border border-[var(--color-border)] rounded-2xl p-6">
-            <h2 className="text-sm font-semibold mb-4 flex items-center gap-2">
-              <span className="text-green-500">✓</span> 이런 분에게 추천
-            </h2>
-            <ul className="space-y-2">
-              {recommendation.forWhom.map((text, i) => (
-                <li key={i} className="text-sm text-[var(--color-text-secondary)] flex items-start gap-2">
-                  <span className="text-green-400 mt-0.5 shrink-0">•</span>
-                  {text}
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div className="border border-[var(--color-border)] rounded-2xl p-6">
-            <h2 className="text-sm font-semibold mb-4 flex items-center gap-2">
-              <span className="text-orange-500">!</span> 주의할 점
-            </h2>
-            <ul className="space-y-2">
-              {recommendation.notForWhom.map((text, i) => (
-                <li key={i} className="text-sm text-[var(--color-text-secondary)] flex items-start gap-2">
-                  <span className="text-orange-400 mt-0.5 shrink-0">•</span>
-                  {text}
-                </li>
-              ))}
-            </ul>
-          </div>
-        </section>
-      )}
-
-      {stringRec && (
-        <section className="mt-8 border border-[var(--color-border)] rounded-2xl p-6">
-          <h2 className="text-sm font-semibold mb-2">스트링 시타 출발점</h2>
-          <p className="mb-4 text-xs leading-relaxed text-[var(--color-text-muted)]">
-            아래 범위는 처방이 아닌 비교용 예시입니다. 실제 장력은 제조사 허용 범위, 스트링 게이지, 부상 이력에 따라 전문점 또는 의료 전문가와 결정하세요.
-          </p>
-          <div className="grid sm:grid-cols-3 gap-4">
-            <div>
-              <p className="text-xs text-[var(--color-text-muted)] mb-1">비교 스트링</p>
-              <p className="text-sm font-medium">{stringRec.string}</p>
-            </div>
-            <div>
-              <p className="text-xs text-[var(--color-text-muted)] mb-1">초기 시타 범위</p>
-              <p className="text-sm font-medium">{stringRec.tension}</p>
-            </div>
-            <div className="sm:col-span-1">
-              <p className="text-xs text-[var(--color-text-muted)] mb-1">이유</p>
-              <p className="text-sm text-[var(--color-text-secondary)]">{stringRec.reason}</p>
-            </div>
-          </div>
-        </section>
-      )}
-
-      <section className="mt-16 border-t border-[var(--color-border)] pt-12">
-        <h2 className="text-xl font-bold mb-6">상세 스펙</h2>
-        <dl className="grid sm:grid-cols-2 gap-x-12">
-          <SpecRow label="헤드사이즈" value={racket.headSize} />
-          <SpecRow label="무게" value={racket.weight} />
-          <SpecRow label="스트링 패턴" value={racket.pattern} />
-          <SpecRow label="강성 (RA)" value={racket.stiffness?.toString()} />
-          <SpecRow label="길이" value={racket.lengthMm ? `${racket.lengthMm}mm` : null} />
-          <SpecRow label="프레임 두께" value={racket.beamWidth ? `${racket.beamWidth}mm` : null} />
-          <SpecRow label="밸런스" value={racket.balanceMm ? `${racket.balanceMm}mm` : null} />
-          <SpecRow label="스윙웨이트" value={racket.swingWeight?.toString()} />
-        </dl>
       </section>
 
-      {similarRackets.length > 0 && (
-        <section className="mt-16 border-t border-[var(--color-border)] pt-12">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold">비슷한 라켓</h2>
-            <Link href={`/rackets?brand=${encodeURIComponent(racket.brand)}`} className="text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-text)]">
-              {racket.brand} 전체 보기 →
-            </Link>
-          </div>
-          <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-4">
-            {similarRackets.map((r) => (
-              <RacketCard key={r.id} racket={r} />
-            ))}
+      {/* 5축 분석: 다크 섹션 */}
+      {racket.scores && (
+        <section className="bg-[var(--color-bg-dark)] text-white py-12">
+          <div className="max-w-6xl mx-auto px-6">
+            <p className="text-[10px] font-semibold tracking-[0.15em] text-[var(--color-accent)] uppercase mb-1">
+              Analysis
+            </p>
+            <h2 className="text-xl font-bold tracking-tight mb-8">5축 능력 분석</h2>
+            <RadarBarCombo scores={racket.scores} dark />
           </div>
         </section>
       )}
+
+      <div className="max-w-6xl mx-auto px-6">
+        {racket.scores && (
+          <div className="pt-6">
+            <ScoringMethodologyNote compact />
+          </div>
+        )}
+
+        {recommendation && (
+          <section className="py-10 grid md:grid-cols-2 gap-5">
+            <div className="bg-[var(--color-brand-subtle)] rounded-2xl p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <span className="w-6 h-6 rounded-full bg-[var(--color-brand)] text-white text-xs flex items-center justify-center font-bold">✓</span>
+                <h2 className="text-sm font-bold">이런 분에게 추천</h2>
+              </div>
+              <ul className="space-y-2.5">
+                {recommendation.forWhom.map((text, i) => (
+                  <li key={i} className="text-sm text-[var(--color-text-secondary)] flex items-start gap-2">
+                    <span className="w-1 h-1 rounded-full bg-[var(--color-brand)] mt-2 shrink-0" />
+                    {text}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="bg-orange-50 rounded-2xl p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <span className="w-6 h-6 rounded-full bg-orange-500 text-white text-xs flex items-center justify-center font-bold">!</span>
+                <h2 className="text-sm font-bold">주의할 점</h2>
+              </div>
+              <ul className="space-y-2.5">
+                {recommendation.notForWhom.map((text, i) => (
+                  <li key={i} className="text-sm text-[var(--color-text-secondary)] flex items-start gap-2">
+                    <span className="w-1 h-1 rounded-full bg-orange-400 mt-2 shrink-0" />
+                    {text}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </section>
+        )}
+
+        {stringRec && (
+          <section className="bg-[var(--color-brand)] text-white rounded-2xl p-6 mb-10">
+            <p className="text-[10px] font-semibold tracking-[0.15em] text-blue-200/70 uppercase mb-1">String Setup</p>
+            <h2 className="text-base font-bold mb-5">추천 스트링 세팅</h2>
+            <div className="grid sm:grid-cols-3 gap-6">
+              <div>
+                <p className="text-[10px] text-blue-200/60 uppercase tracking-wide mb-1">스트링</p>
+                <p className="text-sm font-semibold">{stringRec.string}</p>
+              </div>
+              <div>
+                <p className="text-[10px] text-blue-200/60 uppercase tracking-wide mb-1">장력</p>
+                <p className="text-sm font-semibold">{stringRec.tension}</p>
+              </div>
+              <div>
+                <p className="text-[10px] text-blue-200/60 uppercase tracking-wide mb-1">이유</p>
+                <p className="text-sm text-blue-100/80 leading-relaxed">{stringRec.reason}</p>
+              </div>
+            </div>
+            <p className="mt-5 text-[10px] text-blue-200/50 leading-relaxed">
+              위 범위는 처방이 아닌 비교용 예시입니다. 실제 장력은 제조사 허용 범위, 스트링 게이지, 부상 이력에 따라 전문점 또는 의료 전문가와 결정하세요.
+            </p>
+          </section>
+        )}
+
+        <section className="pb-12">
+          <p className="text-[10px] font-semibold tracking-[0.15em] text-[var(--color-brand)] uppercase mb-1">Specifications</p>
+          <h2 className="text-xl font-bold tracking-tight mb-6">상세 스펙</h2>
+          <div className="bg-[var(--color-bg-white)] rounded-2xl shadow-sm overflow-hidden">
+            <dl>
+              <SpecRow label="헤드사이즈" value={racket.headSize} zebra />
+              <SpecRow label="무게" value={racket.weight} />
+              <SpecRow label="스트링 패턴" value={racket.pattern} zebra />
+              <SpecRow label="강성 (RA)" value={racket.stiffness?.toString()} />
+              <SpecRow label="길이" value={racket.lengthMm ? `${racket.lengthMm}mm` : null} zebra />
+              <SpecRow label="프레임 두께" value={racket.beamWidth ? `${racket.beamWidth}mm` : null} />
+              <SpecRow label="밸런스" value={racket.balanceMm ? `${racket.balanceMm}mm` : null} zebra />
+              <SpecRow label="스윙웨이트" value={racket.swingWeight?.toString()} />
+            </dl>
+          </div>
+        </section>
+
+        {similarRackets.length > 0 && (
+          <section className="border-t border-[var(--color-border)] pt-12 pb-16">
+            <div className="flex items-end justify-between mb-6">
+              <div>
+                <p className="text-[10px] font-semibold tracking-[0.15em] text-[var(--color-brand)] uppercase mb-1">Similar</p>
+                <h2 className="text-xl font-bold tracking-tight">비슷한 성격의 라켓</h2>
+              </div>
+              <Link
+                href={`/rackets?brand=${encodeURIComponent(racket.brand)}`}
+                className="text-xs text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
+              >
+                {racket.brand} 전체 보기 →
+              </Link>
+            </div>
+            <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-4">
+              {similarRackets.map((r) => (
+                <RacketCard key={r.id} racket={r} />
+              ))}
+            </div>
+          </section>
+        )}
+      </div>
     </div>
   );
 }
 
-function SpecRow({ label, value }: { label: string; value: string | null | undefined }) {
+function SpecRow({
+  label,
+  value,
+  zebra = false,
+}: {
+  label: string;
+  value: string | null | undefined;
+  zebra?: boolean;
+}) {
   return (
-    <div className="flex justify-between py-3 border-b border-[var(--color-border)] last:border-0">
+    <div className={`flex justify-between items-center px-6 py-4 ${zebra ? "bg-[var(--color-bg-subtle)]" : ""}`}>
       <dt className="text-sm text-[var(--color-text-secondary)]">{label}</dt>
-      <dd className="text-sm font-medium">{value ?? "—"}</dd>
+      <dd className="text-sm font-semibold">{value ?? "—"}</dd>
     </div>
   );
 }
