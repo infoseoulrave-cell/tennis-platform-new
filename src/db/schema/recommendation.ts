@@ -7,8 +7,9 @@ import {
   integer,
   timestamp,
   jsonb,
+  uniqueIndex,
 } from "drizzle-orm/pg-core";
-import { racketModels, racketSpecs } from "./catalog";
+import { racketModels } from "./catalog";
 
 export const axisDefinitions = pgTable("axis_definitions", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -20,7 +21,12 @@ export const axisDefinitions = pgTable("axis_definitions", {
   scoringFormula: text("scoring_formula").notNull(),
   weightDefault: numeric("weight_default", { precision: 3, scale: 2 }).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-});
+}, (table) => [
+  uniqueIndex("axis_definitions_version_axis_key_unique").on(
+    table.version,
+    table.axisKey,
+  ),
+]);
 
 export const racketAxisScores = pgTable("racket_axis_scores", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -34,7 +40,13 @@ export const racketAxisScores = pgTable("racket_axis_scores", {
   score: numeric("score", { precision: 4, scale: 2 }).notNull(),
   inputSnapshot: jsonb("input_snapshot").notNull(),
   computedAt: timestamp("computed_at").defaultNow().notNull(),
-});
+}, (table) => [
+  uniqueIndex("racket_axis_scores_model_axis_version_unique").on(
+    table.racketModelId,
+    table.axisDefinitionId,
+    table.scoringVersion,
+  ),
+]);
 
 export const diagnosisQuestions = pgTable("diagnosis_questions", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -89,4 +101,9 @@ export const recommendationResults = pgTable("recommendation_results", {
   confidenceLevel: text("confidence_level"),
   confidenceReasonKo: text("confidence_reason_ko"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-});
+}, (table) => [
+  uniqueIndex("recommendation_results_run_rank_unique").on(
+    table.recommendationRunId,
+    table.rank,
+  ),
+]);

@@ -3,8 +3,11 @@ import { db } from "@/db";
 import { brands, racketModels, racketSpecs, specSources, normalizationDecisions } from "@/db/schema";
 import { eq, count } from "drizzle-orm";
 import { detectConflicts } from "@/modules/catalog/ingestion";
+import { isAdminRequest, unauthorizedAdminResponse } from "@/lib/admin-auth";
 
 export async function GET(request: NextRequest) {
+  if (!isAdminRequest(request)) return unauthorizedAdminResponse();
+
   // Get all specs in "review" or "normalized" state that may have conflicts
   const specs = await db
     .select({

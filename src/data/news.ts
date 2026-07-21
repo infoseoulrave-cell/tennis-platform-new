@@ -10,29 +10,29 @@ export type NewsItem = {
 export const newsItems: NewsItem[] = [
   {
     id: "babolat-pure-aero-2026",
-    date: "03/19",
+    date: "07/21",
     category: "신제품",
     categoryEmoji: "🆕",
     title: "Babolat Pure Aero 2026 출시",
     summary:
-      "에어로 프레임 완전 재설계. 스핀 잠재력 역대 최고. 알카라스 실전 투입 확인.",
+      "Babolat 공식 2026 Pure Aero 리테일 라인. 알카라스의 공식 후원 표시는 Pure Aero 98이지만 실제 투어 프레임 사양과 동일하다고 단정하지 않습니다.",
   },
   {
     id: "head-speed-mp-2026",
-    date: "03/18",
+    date: "07/21",
     category: "신제품",
     categoryEmoji: "🆕",
     title: "Head Speed MP 2026 출시",
     summary:
-      "시너/조코비치 사용 모델. 밸런스 재조정으로 안정감 대폭 향상.",
+      "HEAD 공식 2026 Speed 리테일 라인. 시너는 Speed, 조코비치는 Speed Legend 후원 라인이며 실제 투어 프레임은 시판 사양과 다를 수 있습니다.",
   },
   {
     id: "poly-tension-2lbs",
-    date: "03/17",
+    date: "07/21",
     category: "팁",
     categoryEmoji: "💡",
     title: "폴리 장력, 2lbs 낮추면 뭐가 달라질까?",
     summary:
-      "파워와 스핀 모두 체감 변화. 50→48lbs만으로 깊이가 달라집니다.",
+      "같은 스트링에서 장력을 낮추면 일반적으로 깊이와 편안함이 늘 수 있지만, 프레임·스트링·스윙에 따라 반응이 달라지는 출발점입니다.",
   },
 ];

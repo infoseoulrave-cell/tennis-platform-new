@@ -20,6 +20,26 @@ type SearchResult = {
   year: number | null;
 };
 
+export function normalizeNavSearchResults(input: unknown): SearchResult[] {
+  if (!Array.isArray(input)) return [];
+  return input.flatMap((item) => {
+    if (!item || typeof item !== "object") return [];
+    const row = item as Record<string, unknown>;
+    if (
+      typeof row.slug !== "string"
+      || typeof row.brandName !== "string"
+      || typeof row.displayName !== "string"
+    ) return [];
+
+    return [{
+      slug: row.slug,
+      brand: row.brandName,
+      model: row.displayName,
+      year: typeof row.releaseYear === "number" ? row.releaseYear : null,
+    }];
+  });
+}
+
 export function GlobalNav() {
   const pathname = usePathname();
   const [searchOpen, setSearchOpen] = useState(false);
@@ -60,15 +80,7 @@ export function GlobalNav() {
         const res = await fetch(`/api/diagnosis/racket-search?q=${encodeURIComponent(searchQuery)}&limit=6`);
         if (res.ok) {
           const data = await res.json();
-          setSearchResults(
-            (data.results ?? []).map((r: Record<string, string | null>) => ({
-              slug: [r.brandName, r.displayName].filter(Boolean).join(" ")
-                .toLowerCase().replace(/[()]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""),
-              brand: r.brandName,
-              model: r.displayName,
-              year: null,
-            }))
-          );
+          setSearchResults(normalizeNavSearchResults(data.results));
         }
       } catch { /* silent */ }
       setIsSearching(false);
@@ -166,7 +178,9 @@ export function GlobalNav() {
                       <span className="text-lg">🎾</span>
                       <div>
                         <p className="text-xs text-[var(--color-text-muted)]">{r.brand}</p>
-                        <p className="text-sm font-medium">{r.model}</p>
+                        <p className="text-sm font-medium">
+                          {r.model}{r.year && !r.model.includes(String(r.year)) ? ` (${r.year})` : ""}
+                        </p>
                       </div>
                     </Link>
                   </li>

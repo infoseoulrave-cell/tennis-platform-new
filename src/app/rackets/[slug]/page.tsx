@@ -1,11 +1,14 @@
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { getRacketBySlug, getSimilarRackets } from "@/lib/queries";
 import { RadarBarCombo } from "@/components/radar-bar-combo";
 import { RacketCard } from "@/components/racket-card";
 import { RacketDetailActions } from "@/components/racket-detail-actions";
+import { ScoringMethodologyNote } from "@/components/scoring-methodology-note";
 import type { Metadata } from "next";
 import type { Scores } from "@/components/radar-chart";
+import { formatRacketName } from "@/lib/racket-name";
 
 export const dynamic = "force-dynamic";
 
@@ -18,7 +21,7 @@ export async function generateMetadata({
   const racket = await getRacketBySlug(slug).catch(() => null);
   if (!racket) return {};
   return {
-    title: `${racket.brand} ${racket.model}${racket.year ? ` (${racket.year})` : ""}`,
+    title: `${racket.brand} ${formatRacketName(racket.model, racket.year)}`,
     description: `${racket.brand} ${racket.model} - ${racket.weight ?? ""} ${racket.headSize ?? ""} ${racket.pattern ?? ""}. 5축 분석과 스펙, 최저가 비교.`,
   };
 }
@@ -43,10 +46,10 @@ function getRecommendation(scores: Scores | null) {
   if (scores.spin >= 3) forWhom.push("탑스핀 위주의 공격적 플레이어");
   if (scores.control >= 3) forWhom.push("정밀한 배치를 중시하는 올라운더");
   if (scores.power >= 3) forWhom.push("파워풀한 플랫 히팅을 원하는 플레이어");
-  if (scores.comfort >= 2) forWhom.push("팔 보호가 필요한 장시간 플레이어");
+  if (scores.comfort >= 2) forWhom.push("상대적으로 낮은 강성 후보를 비교하려는 플레이어");
   if (scores.stability >= 3) forWhom.push("안정적인 랠리를 선호하는 플레이어");
 
-  if (scores.comfort <= -2) notForWhom.push("팔꿈치/손목 통증이 있는 플레이어");
+  if (scores.comfort <= -2) notForWhom.push("높은 강성 후보를 피하려는 플레이어");
   if (scores.power <= -2) notForWhom.push("스윙 스피드가 느린 초보자");
   if (scores.spin <= -2) notForWhom.push("스핀을 적극 활용하는 스타일");
 
@@ -59,15 +62,15 @@ function getRecommendation(scores: Scores | null) {
 function getStringRecommendation(scores: Scores | null) {
   if (!scores) return null;
   if (scores.spin >= 3) {
-    return { string: "Luxilon ALU Power / Babolat RPM Blast", tension: "48-52 lbs", reason: "스핀 포텐셜을 최대로 활용. 폴리 스트링으로 내구성과 스핀을 동시에 확보." };
+    return { string: "Luxilon ALU Power / Babolat RPM Blast", tension: "초기 시타 48-52 lbs", reason: "오픈 패턴에서 비교해 볼 수 있는 폴리 조합 예시." };
   }
   if (scores.control >= 3) {
-    return { string: "Tecnifibre Razor Code / Solinco Confidential", tension: "52-55 lbs", reason: "높은 컨트롤을 살리는 폴리 스트링. 장력을 약간 높여 정밀도 극대화." };
+    return { string: "Tecnifibre Razor Code / Solinco Confidential", tension: "초기 시타 50-54 lbs", reason: "컨트롤 성향을 비교하기 위한 폴리 조합 예시." };
   }
   if (scores.comfort >= 2) {
-    return { string: "Wilson NXT / Tecnifibre X-One", tension: "50-54 lbs", reason: "멀티필라멘트로 편안한 타구감 유지. 팔 부담 최소화." };
+    return { string: "Wilson NXT / Tecnifibre X-One", tension: "초기 시타 48-52 lbs", reason: "멀티필라멘트 타구감을 비교하기 위한 출발 조합." };
   }
-  return { string: "Yonex Poly Tour Pro / Head Lynx", tension: "50-53 lbs", reason: "올라운드 성능의 폴리 스트링. 균형 잡힌 세팅 추천." };
+  return { string: "Yonex Poly Tour Pro / Head Lynx", tension: "초기 시타 48-52 lbs", reason: "중립적인 폴리 조합을 비교하기 위한 출발점." };
 }
 
 export default async function RacketDetailPage({
@@ -106,15 +109,18 @@ export default async function RacketDetailPage({
 
       <div className="grid lg:grid-cols-[1fr_1.2fr] gap-12">
         <div className="lg:sticky lg:top-20 lg:self-start">
-          <div className="aspect-square bg-[var(--color-bg-subtle)] rounded-2xl flex items-center justify-center">
+          <div className="relative aspect-square bg-[var(--color-bg-subtle)] rounded-2xl flex items-center justify-center overflow-hidden">
             {racket.imageUrl ? (
-              <img
+              <Image
                 src={racket.imageUrl}
-                alt={racket.model}
-                className="object-contain w-full h-full p-8"
+                alt={`${racket.brand} ${racket.model}`}
+                fill
+                sizes="(max-width: 1024px) 100vw, 45vw"
+                unoptimized
+                className="object-contain p-8"
               />
             ) : (
-              <span className="text-7xl opacity-20">🎾</span>
+              <span className="px-8 text-center text-sm text-[var(--color-text-muted)]">검증된 제품 이미지 준비 중</span>
             )}
           </div>
         </div>
@@ -123,7 +129,7 @@ export default async function RacketDetailPage({
           <div>
             <p className="text-xs text-[var(--color-text-muted)] tracking-wider uppercase">{racket.brand}</p>
             <h1 className="text-3xl md:text-4xl font-bold mt-2 tracking-tight">
-              {racket.model}{racket.year ? ` (${racket.year})` : ""}
+              {formatRacketName(racket.model, racket.year)}
             </h1>
             {racket.segment && (
               <p className="text-sm text-[var(--color-text-secondary)] mt-3">
@@ -148,6 +154,9 @@ export default async function RacketDetailPage({
             <section className="border border-[var(--color-border)] rounded-2xl p-6">
               <h2 className="text-sm font-semibold mb-4">5축 능력 분석</h2>
               <RadarBarCombo scores={racket.scores} />
+              <div className="mt-5">
+                <ScoringMethodologyNote />
+              </div>
             </section>
           )}
 
@@ -203,14 +212,17 @@ export default async function RacketDetailPage({
 
       {stringRec && (
         <section className="mt-8 border border-[var(--color-border)] rounded-2xl p-6">
-          <h2 className="text-sm font-semibold mb-4">추천 스트링 세팅</h2>
+          <h2 className="text-sm font-semibold mb-2">스트링 시타 출발점</h2>
+          <p className="mb-4 text-xs leading-relaxed text-[var(--color-text-muted)]">
+            아래 범위는 처방이 아닌 비교용 예시입니다. 실제 장력은 제조사 허용 범위, 스트링 게이지, 부상 이력에 따라 전문점 또는 의료 전문가와 결정하세요.
+          </p>
           <div className="grid sm:grid-cols-3 gap-4">
             <div>
-              <p className="text-xs text-[var(--color-text-muted)] mb-1">추천 스트링</p>
+              <p className="text-xs text-[var(--color-text-muted)] mb-1">비교 스트링</p>
               <p className="text-sm font-medium">{stringRec.string}</p>
             </div>
             <div>
-              <p className="text-xs text-[var(--color-text-muted)] mb-1">추천 장력</p>
+              <p className="text-xs text-[var(--color-text-muted)] mb-1">초기 시타 범위</p>
               <p className="text-sm font-medium">{stringRec.tension}</p>
             </div>
             <div className="sm:col-span-1">

@@ -1,7 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useWishlist } from "@/lib/wishlist";
+import { resolveRacketImage } from "@/lib/racket-images";
+import { formatRacketName } from "@/lib/racket-name";
 
 export default function WishlistPage() {
   const { items, remove } = useWishlist();
@@ -28,22 +31,31 @@ export default function WishlistPage() {
         </div>
       ) : (
         <div className="space-y-3">
-          {items.map((item) => (
-            <div
+          {items.map((item) => {
+            const verifiedImage = resolveRacketImage(item.imageUrl, item.slug);
+
+            return <div
               key={item.slug}
               className="flex items-center gap-4 p-4 border border-[var(--color-border)] rounded-xl"
             >
-              <div className="w-16 h-16 bg-[var(--color-bg-subtle)] rounded-lg flex items-center justify-center shrink-0">
-                {item.imageUrl ? (
-                  <img src={item.imageUrl} alt={item.model} className="object-contain w-full h-full p-2" />
+              <div className="relative w-16 h-16 bg-[var(--color-bg-subtle)] rounded-lg flex items-center justify-center shrink-0 overflow-hidden">
+                {verifiedImage ? (
+                  <Image
+                    src={verifiedImage.url}
+                    alt={`${item.brand} ${item.model}`}
+                    fill
+                    sizes="64px"
+                    unoptimized
+                    className="object-contain p-2"
+                  />
                 ) : (
-                  <span className="text-2xl opacity-20">🎾</span>
+                  <span className="px-1 text-center text-[9px] text-[var(--color-text-muted)]">이미지 검증 중</span>
                 )}
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-xs text-[var(--color-text-muted)]">{item.brand}</p>
                 <Link href={`/rackets/${item.slug}`} className="text-sm font-semibold hover:underline block truncate">
-                  {item.model}{item.year ? ` (${item.year})` : ""}
+                  {formatRacketName(item.model, item.year)}
                 </Link>
                 {item.priceKrw && (
                   <p className="text-xs font-medium mt-0.5">₩{item.priceKrw.toLocaleString()}</p>
@@ -55,8 +67,8 @@ export default function WishlistPage() {
               >
                 삭제
               </button>
-            </div>
-          ))}
+            </div>;
+          })}
         </div>
       )}
     </div>

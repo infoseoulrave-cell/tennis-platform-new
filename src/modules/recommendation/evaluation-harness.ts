@@ -10,16 +10,14 @@
 
 import {
   computeAxisScores,
-  parseStringDensity,
-  parseBeamWidth,
   type RacketSpecInput,
-  type AxisScore,
 } from "./scoring";
 import {
   generateExplanationFragments,
   computeConfidence,
   type DiagnosisAnswers,
 } from "./explanation-templates";
+import { calculatePlayerWeights, suitabilityAdjustment } from "./ranking";
 
 // ---------------------------------------------------------------------------
 // Test rackets — representative models from the seed catalog
@@ -211,7 +209,7 @@ const SCENARIOS: Scenario[] = [
     },
     expectations: {
       topAxisKey: "spin",
-      racketRanking: ["lightOversize", "textremeTour100"],
+      racketRanking: ["textremeTour100", "pureAero"],
     },
   },
   {
@@ -241,25 +239,19 @@ function scoreRackets(
   racketScores: Map<string, Record<string, number>>,
   answers: DiagnosisAnswers
 ): { name: string; totalScore: number; axisScores: Record<string, number> }[] {
-  // Default weights
   const axisKeys = ["power", "control", "comfort", "spin", "stability"];
-  const weights = new Map(axisKeys.map((k) => [k, 0.20]));
-
-  // Priority boosts
-  const first = answers.priority_tradeoffs?.first;
-  const second = answers.priority_tradeoffs?.second;
-  if (first && weights.has(first)) weights.set(first, (weights.get(first)! + 0.15));
-  if (second && weights.has(second)) weights.set(second, (weights.get(second)! + 0.10));
-
-  // Normalize to sum = 1
-  const total = Array.from(weights.values()).reduce((a, b) => a + b, 0);
-  for (const [k, v] of weights.entries()) weights.set(k, v / total);
+  const weights = calculatePlayerWeights(
+    axisKeys.map((axisKey) => ({ axisKey, weightDefault: 0.2 })),
+    answers,
+  );
 
   const scored = Array.from(racketScores.entries()).map(([name, axes]) => {
     let totalScore = 0;
     for (const [axisKey, weight] of weights.entries()) {
       totalScore += weight * (axes[axisKey] ?? 0);
     }
+    totalScore += suitabilityAdjustment(RACKETS[name], answers);
+    totalScore = Math.max(0, Math.min(100, totalScore));
     return { name, totalScore, axisScores: axes };
   });
 

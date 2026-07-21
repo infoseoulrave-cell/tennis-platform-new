@@ -12,14 +12,13 @@ type RecommendationCardProps = {
   tier: "best_fit" | "safe_alternative" | "adventurous_choice";
   racketName: string;
   racketNameKo: string | null;
-  imageUrl?: string | null;
   brandName?: string | null;
   summaryKo?: string | null;
   matchScore: number;
   explanationFragments: ExplanationFragment[];
   confidenceLevel: "high" | "medium" | "low";
-  recommendationResultId: string;
-  compareIds?: string;
+  racketSlug: string;
+  compareSlugs?: string;
 };
 
 const TIER_CONFIG = {
@@ -56,14 +55,13 @@ export function RecommendationCard({
   tier,
   racketName,
   racketNameKo,
-  imageUrl,
   brandName,
   summaryKo,
   matchScore,
   explanationFragments,
   confidenceLevel,
-  recommendationResultId,
-  compareIds,
+  racketSlug,
+  compareSlugs,
 }: RecommendationCardProps) {
   const config = TIER_CONFIG[tier];
 
@@ -108,13 +106,13 @@ export function RecommendationCard({
       {/* CTA buttons */}
       <div className="mt-4 flex gap-2">
         <Link
-          href={`/racket/${recommendationResultId}`}
+          href={`/rackets/${racketSlug}`}
           className="flex-1 py-3 text-center text-sm font-medium text-white bg-blue-500 rounded-2xl hover:bg-blue-600 active:bg-blue-700 transition-colors min-h-[44px] flex items-center justify-center"
         >
           자세히 보기
         </Link>
         <Link
-          href={`/compare?ids=${compareIds ?? recommendationResultId}`}
+          href={`/compare?slugs=${compareSlugs ?? ""}`}
           className="flex-1 py-3 text-center text-sm font-medium text-gray-600 border border-gray-200 rounded-2xl hover:bg-gray-50 active:bg-gray-100 transition-colors min-h-[44px] flex items-center justify-center"
         >
           비교하기

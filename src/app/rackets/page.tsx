@@ -3,6 +3,7 @@ import { getRackets, getAllBrands } from "@/lib/queries";
 import { RacketCard } from "@/components/racket-card";
 import { RacketFiltersPanel } from "@/components/racket-filters";
 import type { Metadata } from "next";
+import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
@@ -13,6 +14,7 @@ export const metadata: Metadata = {
 
 type SearchParams = {
   brand?: string | string[];
+  q?: string;
   sort?: string;
   page?: string;
   minWeight?: string;
@@ -21,6 +23,24 @@ type SearchParams = {
   maxHead?: string;
   segment?: string;
 };
+
+const PAGE_SIZE = 24;
+
+function racketsHref(
+  current: SearchParams,
+  overrides: Partial<Record<keyof SearchParams, string | undefined>>,
+): string {
+  const params = new URLSearchParams();
+  for (const [key, rawValue] of Object.entries(current)) {
+    const value = Array.isArray(rawValue) ? rawValue[0] : rawValue;
+    if (value) params.set(key, value);
+  }
+  for (const [key, value] of Object.entries(overrides)) {
+    if (value) params.set(key, value);
+    else params.delete(key);
+  }
+  return `/rackets${params.size ? `?${params.toString()}` : ""}`;
+}
 
 async function RacketGrid({ searchParams }: { searchParams: SearchParams }) {
   const brandFilter = Array.isArray(searchParams.brand)
@@ -35,9 +55,10 @@ async function RacketGrid({ searchParams }: { searchParams: SearchParams }) {
     [result, brandsList] = await Promise.all([
       getRackets({
         brand: brandFilter,
+        q: searchParams.q,
         sort: (searchParams.sort as "popular" | "price_asc" | "price_desc" | "newest" | "lightest" | "heaviest") ?? "popular",
         page: searchParams.page ? Number(searchParams.page) : 1,
-        limit: 80,
+        limit: PAGE_SIZE,
         minWeight: searchParams.minWeight ? Number(searchParams.minWeight) : undefined,
         maxWeight: searchParams.maxWeight ? Number(searchParams.maxWeight) : undefined,
         minHead: searchParams.minHead ? Number(searchParams.minHead) : undefined,
@@ -62,6 +83,8 @@ async function RacketGrid({ searchParams }: { searchParams: SearchParams }) {
     { value: "lightest", label: "가벼운순" },
     { value: "heaviest", label: "무거운순" },
   ];
+  const currentPage = Math.max(1, Number(searchParams.page) || 1);
+  const totalPages = Math.max(1, Math.ceil(result.total / PAGE_SIZE));
 
   return (
     <div className="grid lg:grid-cols-[260px_1fr] gap-8">
@@ -71,8 +94,8 @@ async function RacketGrid({ searchParams }: { searchParams: SearchParams }) {
             <h3 className="font-semibold text-sm mb-3">브랜드</h3>
             <ul className="space-y-1.5">
               <li>
-                <a
-                  href="/rackets"
+                <Link
+                  href={racketsHref(searchParams, { brand: undefined, page: undefined })}
                   className={`text-sm block py-1 ${
                     !brandFilter
                       ? "text-[var(--color-text)] font-semibold"
@@ -80,12 +103,12 @@ async function RacketGrid({ searchParams }: { searchParams: SearchParams }) {
                   }`}
                 >
                   전체
-                </a>
+                </Link>
               </li>
               {brandsList.map((brand) => (
                 <li key={brand.name}>
-                  <a
-                    href={`/rackets?brand=${encodeURIComponent(brand.name)}`}
+                  <Link
+                    href={racketsHref(searchParams, { brand: brand.name, page: undefined })}
                     className={`text-sm block py-1 ${
                       brandFilter?.includes(brand.name)
                         ? "text-[var(--color-text)] font-semibold"
@@ -93,7 +116,7 @@ async function RacketGrid({ searchParams }: { searchParams: SearchParams }) {
                     }`}
                   >
                     {brand.name}
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -110,12 +133,9 @@ async function RacketGrid({ searchParams }: { searchParams: SearchParams }) {
           </p>
           <div className="flex items-center gap-2">
             {sortOptions.map((opt) => (
-              <a
+              <Link
                 key={opt.value}
-                href={`/rackets?${new URLSearchParams({
-                  ...(brandFilter ? { brand: brandFilter[0] } : {}),
-                  sort: opt.value,
-                }).toString()}`}
+                href={racketsHref(searchParams, { sort: opt.value, page: undefined })}
                 className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
                   (searchParams.sort ?? "popular") === opt.value
                     ? "border-[var(--color-text)] text-[var(--color-text)] font-medium"
@@ -123,7 +143,7 @@ async function RacketGrid({ searchParams }: { searchParams: SearchParams }) {
                 }`}
               >
                 {opt.label}
-              </a>
+              </Link>
             ))}
           </div>
         </div>
@@ -138,6 +158,30 @@ async function RacketGrid({ searchParams }: { searchParams: SearchParams }) {
               <RacketCard key={racket.id} racket={racket} />
             ))}
           </div>
+        )}
+
+        {totalPages > 1 && (
+          <nav className="mt-10 flex items-center justify-center gap-2" aria-label="라켓 목록 페이지">
+            {currentPage > 1 && (
+              <Link
+                href={racketsHref(searchParams, { page: String(currentPage - 1) })}
+                className="rounded-lg border border-[var(--color-border)] px-3 py-2 text-xs text-[var(--color-text-secondary)]"
+              >
+                이전
+              </Link>
+            )}
+            <span className="px-3 py-2 text-xs text-[var(--color-text-muted)]">
+              {Math.min(currentPage, totalPages)} / {totalPages}
+            </span>
+            {currentPage < totalPages && (
+              <Link
+                href={racketsHref(searchParams, { page: String(currentPage + 1) })}
+                className="rounded-lg border border-[var(--color-border)] px-3 py-2 text-xs text-[var(--color-text-secondary)]"
+              >
+                다음
+              </Link>
+            )}
+          </nav>
         )}
       </div>
     </div>

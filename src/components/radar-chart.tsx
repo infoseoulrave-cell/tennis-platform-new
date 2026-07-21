@@ -1,3 +1,5 @@
+import { clampPublicScore, formatPublicScore } from "@/lib/score-display";
+
 export type Scores = {
   power: number;
   control: number;
@@ -21,7 +23,7 @@ const GRID_COLOR = "#E2E2D8";
 const LABEL_COLOR = "#525252";
 
 function scoreToFraction(score: number): number {
-  return (score + 5) / 10;
+  return (clampPublicScore(score) + 5) / 10;
 }
 
 function getPoint(cx: number, cy: number, r: number, index: number, fraction: number) {
@@ -40,6 +42,8 @@ function polygon(scores: Scores, cx: number, cy: number, r: number): string {
 export function RadarChart({
   scores,
   compareScores,
+  series,
+  showValues = true,
   size = 220,
   className = "",
   color = ACTIVE_COLOR,
@@ -47,6 +51,8 @@ export function RadarChart({
 }: {
   scores: Scores;
   compareScores?: Scores;
+  series?: Array<{ id: string; scores: Scores; color: string; dashed?: boolean }>;
+  showValues?: boolean;
   size?: number;
   className?: string;
   color?: string;
@@ -57,6 +63,12 @@ export function RadarChart({
   const r = size * 0.38;
 
   const gridLevels = [0, 0.5, 1];
+  const chartSeries = series ?? [
+    ...(compareScores
+      ? [{ id: "compare", scores: compareScores, color: compareColor, dashed: true }]
+      : []),
+    { id: "primary", scores, color, dashed: false },
+  ];
 
   return (
     <svg
@@ -69,6 +81,7 @@ export function RadarChart({
       {gridLevels.map((level, li) => (
         <polygon
           key={level}
+          data-radar-grid={level}
           points={AXES.map((_, i) => {
             const p = getPoint(cx, cy, r, i, level === 0 ? 0.001 : level);
             return `${p.x},${p.y}`;
@@ -86,32 +99,22 @@ export function RadarChart({
         return <line key={i} x1={cx} y1={cy} x2={p.x} y2={p.y} stroke={GRID_COLOR} strokeWidth={0.5} />;
       })}
 
-      {/* Compare polygon */}
-      {compareScores && (
-        <polygon
-          points={polygon(compareScores, cx, cy, r)}
-          fill={compareColor}
-          fillOpacity={0.1}
-          stroke={compareColor}
-          strokeWidth={1.5}
-          strokeDasharray="4 2"
-        />
-      )}
-
-      {/* Data polygon */}
-      <polygon
-        points={polygon(scores, cx, cy, r)}
-        fill={color}
-        fillOpacity={0.2}
-        stroke={color}
-        strokeWidth={2}
-      />
-
-      {/* Data dots */}
-      {AXES.map((axis, i) => {
-        const p = getPoint(cx, cy, r, i, scoreToFraction(scores[axis]));
-        return <circle key={i} cx={p.x} cy={p.y} r={3} fill={color} />;
-      })}
+      {chartSeries.map((item) => (
+        <g key={item.id} data-radar-series={item.id}>
+          <polygon
+            points={polygon(item.scores, cx, cy, r)}
+            fill={item.color}
+            fillOpacity={0.14}
+            stroke={item.color}
+            strokeWidth={item.dashed ? 1.5 : 2}
+            strokeDasharray={item.dashed ? "4 2" : undefined}
+          />
+          {AXES.map((axis, i) => {
+            const p = getPoint(cx, cy, r, i, scoreToFraction(item.scores[axis]));
+            return <circle key={axis} cx={p.x} cy={p.y} r={2.5} fill={item.color} />;
+          })}
+        </g>
+      ))}
 
       {/* Axis labels + score */}
       {AXES.map((axis, i) => {
@@ -120,11 +123,10 @@ export function RadarChart({
         const lx = cx + labelR * Math.cos(angle);
         const ly = cy + labelR * Math.sin(angle);
         const score = scores[axis];
-        const sign = score > 0 ? "+" : "";
         const scoreColor = score > 0 ? color : "#aaaaaa";
 
         return (
-          <g key={i}>
+          <g key={i} data-radar-label={axis}>
             <text
               x={lx}
               y={ly - 6}
@@ -135,16 +137,18 @@ export function RadarChart({
             >
               {AXIS_LABELS[axis]}
             </text>
-            <text
-              x={lx}
-              y={ly + 7}
-              textAnchor="middle"
-              className="text-[10px] font-bold"
-              dominantBaseline="middle"
-              style={{ fill: scoreColor, fontSize: 10, fontWeight: "bold" }}
-            >
-              {sign}{score.toFixed ? score.toFixed(0) : score}
-            </text>
+            {showValues && (
+              <text
+                x={lx}
+                y={ly + 7}
+                textAnchor="middle"
+                className="text-[10px] font-bold"
+                dominantBaseline="middle"
+                style={{ fill: scoreColor, fontSize: 10, fontWeight: "bold" }}
+              >
+                {formatPublicScore(score)}
+              </text>
+            )}
           </g>
         );
       })}

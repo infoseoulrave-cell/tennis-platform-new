@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getTopRackets } from "@/lib/queries";
+import { formatRacketName } from "@/lib/racket-name";
 
 function formatPrice(price: number | null): string {
   if (!price) return "";
@@ -10,7 +11,7 @@ export async function TopRacketsList() {
   let rackets;
   try {
     rackets = await getTopRackets(5);
-  } catch (e) {
+  } catch {
     return null;
   }
 
@@ -43,7 +44,7 @@ export async function TopRacketsList() {
                 href={`/rackets/${racket.slug}`}
                 className="font-semibold text-sm hover:underline block truncate"
               >
-                {racket.model}{racket.year ? ` (${racket.year})` : ""}
+                {formatRacketName(racket.model, racket.year)}
               </Link>
               <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">
                 {racket.weight}

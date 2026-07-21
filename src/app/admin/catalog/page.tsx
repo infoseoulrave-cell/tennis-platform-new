@@ -1,9 +1,7 @@
 import { db } from "@/db";
 import { brands, racketModels, racketSpecs } from "@/db/schema";
-import { eq, count, sql } from "drizzle-orm";
+import { eq, count } from "drizzle-orm";
 import Link from "next/link";
-
-type StateCount = { state: string; count: number };
 
 export default async function CatalogPage() {
   const rackets = await db

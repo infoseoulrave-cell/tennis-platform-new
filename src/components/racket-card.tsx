@@ -1,5 +1,8 @@
 import Link from "next/link";
+import Image from "next/image";
 import { type Scores, AXIS_LABELS } from "./radar-chart";
+import { formatRacketName } from "@/lib/racket-name";
+import { formatPublicScore } from "@/lib/score-display";
 
 export type RacketCardData = {
   slug: string;
@@ -33,11 +36,18 @@ export function RacketCard({ racket }: { racket: RacketCardData }) {
       className="group block bg-[var(--color-bg-white)] rounded-xl overflow-hidden shadow-sm hover:shadow-md hover:-translate-y-0.5 hover:ring-1 hover:ring-[var(--color-brand)]/40 transition-all duration-200"
     >
       {/* Image area */}
-      <div className="aspect-[4/3] bg-[var(--color-bg-subtle)] flex items-center justify-center">
+      <div className="relative aspect-[4/3] bg-[var(--color-bg-subtle)] flex items-center justify-center">
         {racket.imageUrl ? (
-          <img src={racket.imageUrl} alt={racket.model} className="object-contain w-full h-full p-4" />
+          <Image
+            src={racket.imageUrl}
+            alt={`${racket.brand} ${racket.model}`}
+            fill
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            unoptimized
+            className="object-contain p-4"
+          />
         ) : (
-          <span className="text-4xl opacity-20">🎾</span>
+          <span className="px-5 text-center text-xs text-[var(--color-text-muted)]">검증된 제품 이미지 준비 중</span>
         )}
       </div>
 
@@ -45,7 +55,7 @@ export function RacketCard({ racket }: { racket: RacketCardData }) {
       <div className="p-4">
         <p className="text-xs text-[var(--color-text-muted)]">{racket.brand}</p>
         <h3 className="text-sm font-semibold mt-0.5 group-hover:underline">
-          {racket.model}{racket.year ? ` (${racket.year})` : ""}
+          {formatRacketName(racket.model, racket.year)}
         </h3>
 
         {/* Spec badges */}
@@ -65,7 +75,7 @@ export function RacketCard({ racket }: { racket: RacketCardData }) {
                 key={key}
                 className="text-xs px-2 py-0.5 bg-[var(--color-bg-subtle)] rounded-full text-[var(--color-text-secondary)]"
               >
-                {AXIS_LABELS[key]} {score > 0 ? "+" : ""}{score}
+                {AXIS_LABELS[key]} {formatPublicScore(score)}
               </span>
             ))}
           </div>

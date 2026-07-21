@@ -1,11 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { stateTransitionSchema } from "@/modules/catalog/validation";
 import { transitionSpecState } from "@/modules/catalog/ingestion";
+import { isAdminRequest, unauthorizedAdminResponse } from "@/lib/admin-auth";
 
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  if (!isAdminRequest(request)) return unauthorizedAdminResponse();
+
   const { id } = await params;
   const body = await request.json();
   const parsed = stateTransitionSchema.safeParse(body);

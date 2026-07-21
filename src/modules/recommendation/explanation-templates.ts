@@ -56,12 +56,12 @@ const PAIN_POINT_FRAGMENTS: Record<string, {
   elbow_pain: {
     axisKey: "comfort",
     threshold: 45,
-    textKo: "팔꿈치 통증 완화에 도움이 되는 라켓입니다",
+    textKo: "상대적으로 낮은 강성의 비교 후보입니다. 통증이 지속되면 의료 전문가와 전문점 상담이 우선입니다",
   },
   wrist_pain: {
     axisKey: "comfort",
     threshold: 45,
-    textKo: "손목 부담이 적은 구조로 설계되었습니다",
+    textKo: "조작 부담을 비교하기 위한 후보입니다. 손목 증상은 의료 전문가와 전문점에 먼저 상담하세요",
   },
   short_shots: {
     axisKey: "control",

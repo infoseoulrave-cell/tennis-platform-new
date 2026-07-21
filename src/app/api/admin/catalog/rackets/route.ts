@@ -1,9 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
-import { brands, racketModels, racketSpecs, specSources } from "@/db/schema";
+import { brands, racketModels, racketSpecs } from "@/db/schema";
 import { eq, sql, count } from "drizzle-orm";
+import { isAdminRequest, unauthorizedAdminResponse } from "@/lib/admin-auth";
 
 export async function GET(request: NextRequest) {
+  if (!isAdminRequest(request)) return unauthorizedAdminResponse();
+
   const { searchParams } = new URL(request.url);
   const state = searchParams.get("state");
   const brandFilter = searchParams.get("brand");

@@ -1,7 +1,10 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { IMPORT_TEMPLATE_FIELDS, EXAMPLE_IMPORT_ROWS } from "@/modules/catalog/import-template";
+import { isAdminRequest, unauthorizedAdminResponse } from "@/lib/admin-auth";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  if (!isAdminRequest(request)) return unauthorizedAdminResponse();
+
   return NextResponse.json({
     fields: IMPORT_TEMPLATE_FIELDS,
     examples: EXAMPLE_IMPORT_ROWS,

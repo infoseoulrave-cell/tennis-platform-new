@@ -69,6 +69,14 @@ export function HeroCarousel() {
                 🎾
               </div>
             )}
+            <div className="absolute bottom-0 right-0 flex gap-3 text-[10px] text-white/45">
+              <a href={racket.imageSourceUrl} target="_blank" rel="noreferrer" className="hover:text-white/70 hover:underline">
+                이미지 출처
+              </a>
+              <a href={racket.specSourceUrl} target="_blank" rel="noreferrer" className="hover:text-white/70 hover:underline">
+                공식 스펙 · 확인 {racket.verifiedAt}
+              </a>
+            </div>
           </div>
         </div>
       </div>

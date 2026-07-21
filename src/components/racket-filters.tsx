@@ -5,6 +5,7 @@ import { useState } from "react";
 
 type FilterParams = {
   brand?: string | string[];
+  q?: string;
   sort?: string;
   minWeight?: string;
   maxWeight?: string;
@@ -67,6 +68,7 @@ export function RacketFiltersPanel({ currentParams }: { currentParams: FilterPar
       if (b) params.set("brand", b);
     }
     if (currentParams.sort) params.set("sort", currentParams.sort);
+    if (currentParams.q) params.set("q", currentParams.q);
 
     const wMin = overrides.minWeight ?? wr.min;
     const wMax = overrides.maxWeight ?? wr.max;

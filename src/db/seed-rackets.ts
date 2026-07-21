@@ -7,7 +7,6 @@ import {
   racketSpecs,
   specSources,
 } from "./schema";
-import { eq } from "drizzle-orm";
 
 // ---------------------------------------------------------------------------
 // Types

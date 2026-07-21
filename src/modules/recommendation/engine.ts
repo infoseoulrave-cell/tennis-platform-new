@@ -1,19 +1,20 @@
 import { db } from "@/db";
 import {
   axisDefinitions,
-  racketAxisScores,
   racketModels,
   racketSpecs,
-  racketVariants,
-  brands,
   specSources,
   playerProfiles,
   recommendationRuns,
   recommendationResults,
 } from "@/db/schema";
-import { eq, and, inArray, desc } from "drizzle-orm";
-
-const SCORING_VERSION = "v1";
+import { eq, inArray } from "drizzle-orm";
+import {
+  computeAxisScores,
+  SCORING_VERSION,
+  type RacketSpecInput,
+} from "./scoring-core";
+import { calculatePlayerWeights, suitabilityAdjustment } from "./ranking";
 
 // Tier labels by rank
 const TIER_BY_RANK: Record<number, string> = {
@@ -33,8 +34,8 @@ const AXIS_LABEL_KO_FALLBACK: Record<string, string> = {
 
 // Korean pain point descriptions
 const PAIN_POINT_KO: Record<string, string> = {
-  elbow_pain: "팔꿈치 통증 완화에 도움이 되는 라켓입니다",
-  wrist_pain: "손목 부담이 적은 구조로 설계되었습니다",
+  elbow_pain: "상대적으로 낮은 강성의 비교 후보입니다. 통증이 지속되면 의료 전문가와 전문점 상담이 우선입니다",
+  wrist_pain: "조작 부담을 비교하기 위한 후보입니다. 손목 증상은 의료 전문가와 전문점에 먼저 상담하세요",
   short_shots: "짧은 샷 컨트롤에 유리한 설계입니다",
   inconsistent_serve: "서브 일관성 향상에 기여합니다",
   heavy_racket: "가벼운 취급감으로 피로감을 줄여줍니다",
@@ -102,14 +103,6 @@ interface DiagnosisAnswers {
   confirmation?: boolean;
 }
 
-interface AxisScoreRow {
-  racketModelId: string;
-  axisKey: string;
-  axisDefinitionId: string;
-  axisNameKo: string | null;
-  score: string; // numeric comes back as string from drizzle
-}
-
 interface RacketInfo {
   id: string;
   name: string;
@@ -169,40 +162,6 @@ function generateSummaryKo(answers: DiagnosisAnswers): string {
   const first = priorityMap[answers.priority_tradeoffs?.first ?? ""] ?? "밸런스";
 
   return `경력 ${exp} / ${freq} / ${first} 중시`;
-}
-
-// Compute player axis weights from defaults + priority boosts
-function computePlayerWeights(
-  axisRows: { id: string; axisKey: string; weightDefault: string }[],
-  answers: DiagnosisAnswers
-): Map<string, number> {
-  const weights = new Map<string, number>();
-
-  // Initialize with defaults
-  for (const axis of axisRows) {
-    weights.set(axis.axisKey, parseFloat(axis.weightDefault));
-  }
-
-  // Apply priority boosts
-  const first = answers.priority_tradeoffs?.first;
-  const second = answers.priority_tradeoffs?.second;
-
-  if (first && weights.has(first)) {
-    weights.set(first, (weights.get(first) ?? 0) + 0.15);
-  }
-  if (second && weights.has(second)) {
-    weights.set(second, (weights.get(second) ?? 0) + 0.10);
-  }
-
-  // Normalize to sum = 1.0
-  const total = Array.from(weights.values()).reduce((a, b) => a + b, 0);
-  if (total > 0) {
-    for (const [key, val] of weights.entries()) {
-      weights.set(key, val / total);
-    }
-  }
-
-  return weights;
 }
 
 // Build explanation fragments for a ranked racket
@@ -319,7 +278,7 @@ export async function runRecommendation(input: {
   const answersCount = Object.keys(answers).length;
 
   // 1. Load axis definitions
-  const axisDefs = await db
+  const persistedAxisDefs = await db
     .select({
       id: axisDefinitions.id,
       axisKey: axisDefinitions.axisKey,
@@ -329,17 +288,38 @@ export async function runRecommendation(input: {
     .from(axisDefinitions)
     .where(eq(axisDefinitions.version, SCORING_VERSION));
 
+  // A deployment can receive the application code before the v2 definition
+  // rows are migrated. The recommendation calculation itself is spec-based,
+  // so keep the five equal default weights available as a safe fallback.
+  const axisDefs = persistedAxisDefs.length === 5
+    ? persistedAxisDefs
+    : Object.entries(AXIS_LABEL_KO_FALLBACK).map(([axisKey, axisNameKo]) => ({
+        id: axisKey,
+        axisKey,
+        axisNameKo,
+        weightDefault: "0.20",
+      }));
+
   const axisKeyToLabelKo = new Map<string, string>(
     axisDefs.map((a) => [a.axisKey, a.axisNameKo ?? AXIS_LABEL_KO_FALLBACK[a.axisKey] ?? a.axisKey])
   );
-  const axisDefIdToKey = new Map<string, string>(axisDefs.map((a) => [a.id, a.axisKey]));
-
   // 2. Compute player weights
-  const playerWeights = computePlayerWeights(axisDefs, answers);
+  const playerWeights = calculatePlayerWeights(axisDefs, answers);
 
-  // 3. Load all pre-computed axis scores for v1 (published rackets only)
+  // 3. Load published specs and calculate every candidate with v2. This
+  // avoids silently reusing stale v1 rows and works before v2 rows persist.
   const publishedModelIds = await db
-    .select({ id: racketModels.id, segment: racketModels.segment })
+    .select({
+      id: racketModels.id,
+      segment: racketModels.segment,
+      headSizeSqIn: racketSpecs.headSizeSqIn,
+      weightG: racketSpecs.weightG,
+      balanceMm: racketSpecs.balanceMm,
+      swingWeightKgCm2: racketSpecs.swingWeightKgCm2,
+      stiffnessRa: racketSpecs.stiffnessRa,
+      beamWidthMm: racketSpecs.beamWidthMm,
+      stringPattern: racketSpecs.stringPattern,
+    })
     .from(racketModels)
     .innerJoin(racketSpecs, eq(racketSpecs.racketModelId, racketModels.id))
     .where(eq(racketSpecs.ingestionState, "published"));
@@ -349,35 +329,31 @@ export async function runRecommendation(input: {
   }
 
   const publishedIds = publishedModelIds.map((r) => r.id);
-  const segmentByModelId = new Map(publishedModelIds.map((r) => [r.id, r.segment]));
 
-  const allAxisScores = await db
-    .select({
-      racketModelId: racketAxisScores.racketModelId,
-      axisDefinitionId: racketAxisScores.axisDefinitionId,
-      score: racketAxisScores.score,
-    })
-    .from(racketAxisScores)
-    .where(
-      and(
-        eq(racketAxisScores.scoringVersion, SCORING_VERSION),
-        inArray(racketAxisScores.racketModelId, publishedIds)
-      )
+  const computedScoresByRacket = new Map<string, Record<string, number>>();
+  const specsByRacket = new Map<string, RacketSpecInput>();
+  for (const row of publishedModelIds) {
+    const spec: RacketSpecInput = {
+      headSizeSqIn: row.headSizeSqIn ? Number(row.headSizeSqIn) : null,
+      weightG: row.weightG ? Number(row.weightG) : null,
+      balanceMm: row.balanceMm ? Number(row.balanceMm) : null,
+      swingWeightKgCm2: row.swingWeightKgCm2 ? Number(row.swingWeightKgCm2) : null,
+      stiffnessRa: row.stiffnessRa ? Number(row.stiffnessRa) : null,
+      beamWidthMm: row.beamWidthMm,
+      stringPattern: row.stringPattern,
+    };
+    const scores = computeAxisScores(spec);
+    if (scores.length !== 5) continue;
+    specsByRacket.set(row.id, spec);
+    computedScoresByRacket.set(
+      row.id,
+      Object.fromEntries(scores.map((score) => [score.axisKey, score.score])),
     );
-
-  // 4. Group axis scores by racket
-  const axisScoresByRacket = new Map<string, Record<string, number>>();
-  for (const row of allAxisScores) {
-    const axisKey = axisDefIdToKey.get(row.axisDefinitionId);
-    if (!axisKey) continue;
-    if (!axisScoresByRacket.has(row.racketModelId)) {
-      axisScoresByRacket.set(row.racketModelId, {});
-    }
-    axisScoresByRacket.get(row.racketModelId)![axisKey] = parseFloat(row.score);
   }
+  const axisScoresByRacket = computedScoresByRacket;
 
   // 5. Only include rackets that have scores for ALL axes
-  const requiredAxisCount = axisDefs.length;
+  const requiredAxisCount = 5;
   const completeRacketIds = publishedIds.filter((id) => {
     const scores = axisScoresByRacket.get(id);
     return scores !== undefined && Object.keys(scores).length >= requiredAxisCount;
@@ -412,6 +388,10 @@ export async function runRecommendation(input: {
     for (const [axisKey, weight] of playerWeights.entries()) {
       totalScore += weight * (axes[axisKey] ?? 0);
     }
+    const candidateSpec = specsByRacket.get(racketId);
+    if (!candidateSpec) continue;
+    totalScore += suitabilityAdjustment(candidateSpec, answers);
+    totalScore = Math.max(0, Math.min(100, totalScore));
 
     scored.push({ racket: info, totalScore, axisScores: axes });
   }
@@ -422,11 +402,10 @@ export async function runRecommendation(input: {
   // 9. Pick top 3: for rank 3 prefer different segment than rank 1
   const top2 = scored.slice(0, 2);
   const rank1Segment = top2[0]?.racket.segment ?? null;
-  let rank3: ScoredRacket | undefined;
   const rest = scored.slice(2);
 
   // Prefer different segment for adventurous choice
-  rank3 = rest.find((r) => r.racket.segment !== rank1Segment) ?? rest[0];
+  const rank3 = rest.find((r) => r.racket.segment !== rank1Segment) ?? rest[0];
 
   // If we have fewer than 3 total, use what we have
   const top3: ScoredRacket[] = [top2[0], top2[1], rank3].filter(
@@ -438,26 +417,7 @@ export async function runRecommendation(input: {
   let currentAxes: Record<string, number> | null = null;
 
   if (currentRacketId) {
-    const currentAxisRows = await db
-      .select({
-        axisDefinitionId: racketAxisScores.axisDefinitionId,
-        score: racketAxisScores.score,
-      })
-      .from(racketAxisScores)
-      .where(
-        and(
-          eq(racketAxisScores.racketModelId, currentRacketId),
-          eq(racketAxisScores.scoringVersion, SCORING_VERSION)
-        )
-      );
-
-    if (currentAxisRows.length > 0) {
-      currentAxes = {};
-      for (const row of currentAxisRows) {
-        const axisKey = axisDefIdToKey.get(row.axisDefinitionId);
-        if (axisKey) currentAxes[axisKey] = parseFloat(row.score);
-      }
-    }
+    currentAxes = axisScoresByRacket.get(currentRacketId) ?? null;
   }
 
   // 11. Count spec sources for the top 3 rackets (for confidence)

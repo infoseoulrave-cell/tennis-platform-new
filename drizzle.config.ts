@@ -5,6 +5,7 @@ export default defineConfig({
   out: "./src/db/migrations",
   dialect: "postgresql",
   dbCredentials: {
-    url: process.env.DATABASE_URL!,
+    // Schema generation is offline; runtime access still requires DATABASE_URL.
+    url: process.env.DATABASE_URL ?? "postgres://schema:generate@localhost:5432/schema",
   },
 });

@@ -36,21 +36,23 @@ type NewRacket = {
   weight: number;
   headSize: number;
   pattern: string;
-  stiffness: number;
-  swingWeight: number;
+  stiffness: number | null;
+  swingWeight: number | null;
   balance: number;
   beam: string;
   length: number;
   price: number;
   twCode: string;
+  sourceUrl?: string;
+  measurementBasis?: "unstrung" | "strung";
 };
 
 const NEW_RACKETS: NewRacket[] = [
   // Babolat 2025-2026
-  { brand: "Babolat", name: "Pure Aero 2026", year: 2026, segment: "intermediate", weight: 300, headSize: 100, pattern: "16x19", stiffness: 66, swingWeight: 318, balance: 320, beam: "23/26/23", length: 686, price: 339000, twCode: "BPAR26" },
-  { brand: "Babolat", name: "Pure Aero 98 2026", year: 2026, segment: "advanced", weight: 305, headSize: 98, pattern: "16x19", stiffness: 66, swingWeight: 322, balance: 320, beam: "21/23/21", length: 686, price: 349000, twCode: "BPA98R" },
-  { brand: "Babolat", name: "Pure Aero Team 2026", year: 2026, segment: "intermediate", weight: 285, headSize: 100, pattern: "16x19", stiffness: 66, swingWeight: 305, balance: 320, beam: "23/26/23", length: 686, price: 319000, twCode: "BPAT26" },
-  { brand: "Babolat", name: "Pure Aero Lite 2026", year: 2026, segment: "beginner", weight: 270, headSize: 100, pattern: "16x19", stiffness: 66, swingWeight: 293, balance: 330, beam: "23/26/23", length: 686, price: 299000, twCode: "BPALTR" },
+  { brand: "Babolat", name: "Pure Aero 2026", year: 2026, segment: "intermediate", weight: 300, headSize: 100, pattern: "16x19", stiffness: 69, swingWeight: 290, balance: 321, beam: "23/26/23", length: 685, price: 339000, twCode: "BPAR26", sourceUrl: "https://www.babolat.com/us/pure-aero-gen9-unstrung/101569.html", measurementBasis: "unstrung" },
+  { brand: "Babolat", name: "Pure Aero 98 2026", year: 2026, segment: "advanced", weight: 305, headSize: 98, pattern: "16x20", stiffness: 71, swingWeight: 295, balance: 315, beam: "21/23/22", length: 685, price: 349000, twCode: "BPA98R", sourceUrl: "https://www.babolat.com/us/pure-aero-98-gen9-unstrung/101567.html", measurementBasis: "unstrung" },
+  { brand: "Babolat", name: "Pure Aero Team 2026", year: 2026, segment: "intermediate", weight: 285, headSize: 100, pattern: "16x19", stiffness: 70, swingWeight: 280, balance: 320, beam: "23/26/23", length: 685, price: 319000, twCode: "BPAT26", sourceUrl: "https://www.babolat.com/us/pure-aero-team-gen9-unstrung/101571.html", measurementBasis: "unstrung" },
+  { brand: "Babolat", name: "Pure Aero Lite 2026", year: 2026, segment: "beginner", weight: 270, headSize: 100, pattern: "16x19", stiffness: 70, swingWeight: 275, balance: 330, beam: "23/26/23", length: 685, price: 299000, twCode: "BPALTR", sourceUrl: "https://www.babolat.com/us/pure-aero-lite-gen9-unstrung/101572.html", measurementBasis: "unstrung" },
   { brand: "Babolat", name: "Pure Drive 2025", year: 2025, segment: "intermediate", weight: 300, headSize: 100, pattern: "16x19", stiffness: 71, swingWeight: 318, balance: 320, beam: "23.5/26/23", length: 686, price: 339000, twCode: "BPD25R" },
   { brand: "Babolat", name: "Pure Drive Lite 2025", year: 2025, segment: "beginner", weight: 270, headSize: 100, pattern: "16x19", stiffness: 71, swingWeight: 293, balance: 330, beam: "23.5/26/23", length: 686, price: 299000, twCode: "BPDLR" },
   { brand: "Babolat", name: "Pure Drive Team 2025", year: 2025, segment: "intermediate", weight: 285, headSize: 100, pattern: "16x19", stiffness: 71, swingWeight: 305, balance: 320, beam: "23.5/26/23", length: 686, price: 319000, twCode: "BPDP25" },
@@ -66,9 +68,9 @@ const NEW_RACKETS: NewRacket[] = [
   { brand: "Wilson", name: "Shift 99 Pro V1", year: 2024, segment: "pro", weight: 315, headSize: 99, pattern: "16x20", stiffness: 63, swingWeight: 330, balance: 315, beam: "24/24/24", length: 686, price: 295000, twCode: "WSP315" },
 
   // Head 2024-2026
-  { brand: "Head", name: "Speed Pro 2026", year: 2026, segment: "advanced", weight: 310, headSize: 100, pattern: "16x19", stiffness: 63, swingWeight: 325, balance: 315, beam: "23/23/22", length: 686, price: 305000, twCode: "HSPDP6" },
+  { brand: "Head", name: "Speed Pro 2026", year: 2026, segment: "advanced", weight: 310, headSize: 100, pattern: "18x20", stiffness: null, swingWeight: null, balance: 310, beam: "23", length: 685, price: 305000, twCode: "HSPDP6", sourceUrl: "https://www.head.com/en_CA/product/speed-pro-2026-232006", measurementBasis: "unstrung" },
   { brand: "Head", name: "Speed MP 2026", year: 2026, segment: "intermediate", weight: 300, headSize: 100, pattern: "16x19", stiffness: 63, swingWeight: 315, balance: 320, beam: "23/23/22", length: 686, price: 295000, twCode: "HSPMP6" },
-  { brand: "Head", name: "Speed MP L 2026", year: 2026, segment: "intermediate", weight: 280, headSize: 100, pattern: "16x19", stiffness: 63, swingWeight: 298, balance: 330, beam: "23/23/22", length: 686, price: 279000, twCode: "HSMPL6" },
+  { brand: "Head", name: "Speed MP L 2026", year: 2026, segment: "intermediate", weight: 285, headSize: 100, pattern: "16x19", stiffness: null, swingWeight: null, balance: 325, beam: "23", length: 685, price: 279000, twCode: "HSMPL6", sourceUrl: "https://www.head.com/en_US/product/speed-mp-l-2026-232036", measurementBasis: "unstrung" },
   { brand: "Head", name: "Boom Pro 2026", year: 2026, segment: "advanced", weight: 310, headSize: 98, pattern: "16x19", stiffness: 64, swingWeight: 325, balance: 318, beam: "22/22/21", length: 686, price: 305000, twCode: "HBOOP6" },
   { brand: "Head", name: "Boom MP 2026", year: 2026, segment: "intermediate", weight: 295, headSize: 100, pattern: "16x19", stiffness: 64, swingWeight: 310, balance: 320, beam: "24/24/23", length: 686, price: 295000, twCode: "HBOMP6" },
   { brand: "Head", name: "Gravity MP 2025", year: 2025, segment: "intermediate", weight: 295, headSize: 100, pattern: "16x20", stiffness: 60, swingWeight: 315, balance: 325, beam: "22/22/22", length: 686, price: 295000, twCode: "HGMPXL" },
@@ -179,8 +181,8 @@ async function main() {
       head_size_sq_in: r.headSize.toString(),
       weight_g: r.weight.toString(),
       balance_mm: r.balance.toString(),
-      swing_weight_kg_cm2: r.swingWeight.toString(),
-      stiffness_ra: r.stiffness.toString(),
+      swing_weight_kg_cm2: r.swingWeight?.toString() ?? null,
+      stiffness_ra: r.stiffness?.toString() ?? null,
       length_mm: r.length.toString(),
       beam_width_mm: r.beam,
       string_pattern: r.pattern,
@@ -230,6 +232,7 @@ async function main() {
 }
 
 function computeScores(r: NewRacket) {
+  if (r.stiffness == null || r.swingWeight == null) return {};
   const NORM: Record<string, { min: number; max: number }> = {
     headSize: { min: 93, max: 115 },
     weight: { min: 250, max: 345 },

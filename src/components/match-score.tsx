@@ -4,11 +4,12 @@ type MatchScoreProps = {
 };
 
 export function MatchScore({ score, size = "sm" }: MatchScoreProps) {
+  const boundedScore = Math.max(0, Math.min(100, score));
   const dims = size === "sm" ? 64 : 96;
   const strokeWidth = size === "sm" ? 5 : 6;
   const r = (dims - strokeWidth) / 2;
   const circumference = 2 * Math.PI * r;
-  const offset = circumference - (score / 100) * circumference;
+  const offset = circumference - (boundedScore / 100) * circumference;
 
   const fontSize = size === "sm" ? "text-sm" : "text-xl";
   const labelSize = size === "sm" ? "text-[9px]" : "text-xs";
@@ -44,12 +45,12 @@ export function MatchScore({ score, size = "sm" }: MatchScoreProps) {
         </svg>
         <div className="absolute inset-0 flex items-center justify-center">
           <span className={`${fontSize} font-bold text-gray-900`}>
-            {score}%
+            {Math.round(boundedScore)}
           </span>
         </div>
       </div>
       <span className={`${labelSize} font-medium text-gray-500`}>
-        매칭도
+        상대 적합 점수
       </span>
     </div>
   );

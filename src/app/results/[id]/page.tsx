@@ -14,6 +14,7 @@ import { RecommendationCard } from "@/components/recommendation-card";
 import { TrustBadge } from "@/components/trust-badge";
 import { NeutralityDisclaimer } from "@/components/neutrality-disclaimer";
 import { track } from "@/events/track";
+import { generateSlug } from "@/lib/queries";
 
 type ExplanationFragment = {
   type: "positive" | "tradeoff";
@@ -98,7 +99,13 @@ export default async function ResultsPage({
   const racketIds = results.map((r) => r.racketModelId);
   const racketInfo = new Map<
     string,
-    { name: string; nameKo: string | null; brandName: string | null; imageUrl: string | null }
+    {
+      name: string;
+      nameKo: string | null;
+      brandName: string | null;
+      imageUrl: string | null;
+      releaseYear: number | null;
+    }
   >();
   const racketSpecsMap = new Map<
     string,
@@ -111,6 +118,7 @@ export default async function ResultsPage({
         name: racketModels.name,
         nameKo: racketModels.nameKo,
         imageUrl: racketModels.imageUrl,
+        releaseYear: racketModels.releaseYear,
         brandName: brands.name,
       })
       .from(racketModels)
@@ -141,8 +149,11 @@ export default async function ResultsPage({
     resultCount: results.length,
   }).catch(() => {});
 
-  // Build compare IDs string (all result IDs)
-  const allResultIds = results.map((r) => r.id).join(",");
+  const allCompareSlugs = results.flatMap((result) => {
+    const racket = racketInfo.get(result.racketModelId);
+    if (!racket?.brandName) return [];
+    return [generateSlug(racket.brandName, racket.name, racket.releaseYear)];
+  }).join(",");
 
   return (
     <main className="min-h-screen bg-white pb-32">
@@ -190,14 +201,15 @@ export default async function ResultsPage({
                   racketName={racket?.name ?? "Unknown"}
                   racketNameKo={racket?.nameKo ?? null}
                   brandName={racket?.brandName ?? null}
-                  imageUrl={racket?.imageUrl ?? null}
                   matchScore={Math.round(Number(result.totalScore))}
                   explanationFragments={fragments}
                   confidenceLevel={
                     (result.confidenceLevel as "high" | "medium" | "low") ?? "medium"
                   }
-                  recommendationResultId={result.id}
-                  compareIds={allResultIds}
+                  racketSlug={racket?.brandName
+                    ? generateSlug(racket.brandName, racket.name, racket.releaseYear)
+                    : ""}
+                  compareSlugs={allCompareSlugs}
                 />
               );
             })}
@@ -205,9 +217,9 @@ export default async function ResultsPage({
 
           {/* String & Grip follow-on hooks */}
           <div className="mt-8">
-            <h3 className="text-base font-bold mb-3">추천 스트링 조합</h3>
+            <h3 className="text-base font-bold mb-3">스트링 시타 출발점</h3>
             <p className="text-xs text-gray-400 mb-3">
-              라켓 특성에 맞는 스트링을 매칭했습니다
+              아래 조합과 범위는 처방이 아닌 비교용 예시입니다. 제조사 허용 범위를 확인하고 전문점 또는 의료 전문가와 결정하세요.
             </p>
             <div className="space-y-2">
               {results.map((result) => {
@@ -235,7 +247,7 @@ export default async function ResultsPage({
                       </span>
                     </div>
                     <div className="text-xs text-gray-500">
-                      추천 텐션: {suggestion.tension} · {suggestion.reason}
+                      초기 시타 범위: {suggestion.tension} · {suggestion.reason}
                     </div>
                   </div>
                 );

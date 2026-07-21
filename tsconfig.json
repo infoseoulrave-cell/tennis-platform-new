@@ -1,7 +1,11 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
@@ -11,19 +15,47 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "jsx": "preserve",
+    "jsx": "react-jsx",
     "incremental": true,
-    "plugins": [{ "name": "next" }],
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
     "paths": {
-      "@/*": ["./src/*"],
-      "@/catalog/*": ["./src/modules/catalog/*"],
-      "@/profile/*": ["./src/modules/profile/*"],
-      "@/recommendation/*": ["./src/modules/recommendation/*"],
-      "@/content/*": ["./src/modules/content/*"],
-      "@/partner/*": ["./src/modules/partner/*"],
-      "@/ops/*": ["./src/modules/ops/*"]
+      "@/*": [
+        "./src/*"
+      ],
+      "@/catalog/*": [
+        "./src/modules/catalog/*"
+      ],
+      "@/profile/*": [
+        "./src/modules/profile/*"
+      ],
+      "@/recommendation/*": [
+        "./src/modules/recommendation/*"
+      ],
+      "@/content/*": [
+        "./src/modules/content/*"
+      ],
+      "@/partner/*": [
+        "./src/modules/partner/*"
+      ],
+      "@/ops/*": [
+        "./src/modules/ops/*"
+      ]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules", "src/db/seed*.ts", "scripts"]
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "src/db/seed*.ts",
+    "scripts"
+  ]
 }

@@ -1,8 +1,16 @@
-import { supabaseAdmin } from "./supabase";
+import { getSupabaseAdmin } from "./supabase";
 import { type Scores } from "@/components/radar-chart";
+import { clampPublicScore } from "./score-display";
+import { resolveRacketImage } from "./racket-images";
+import {
+  computeAxisScores,
+  SCORING_VERSION,
+  type RacketSpecInput,
+} from "@/modules/recommendation/scoring-core";
 
 export function generateSlug(brand: string, model: string, year?: number | null): string {
-  const parts = [brand, model, year ?? ""].filter(Boolean).join(" ");
+  const modelHasYear = year != null && new RegExp(`(?:^|\\D)${year}(?:\\D|$)`).test(model);
+  const parts = [brand, model, modelHasYear ? "" : year ?? ""].filter(Boolean).join(" ");
   return parts
     .toLowerCase()
     .replace(/[()]/g, "")
@@ -22,11 +30,27 @@ export type RacketListItem = {
   priceKrw: number | null;
   imageUrl: string | null;
   scores: Scores | null;
+  availableInKorea: boolean;
 };
 
-function rowToScores(axisScores: { score: number; axis_key: string }[]): Scores | null {
+type AxisScoreRow = {
+  score: number;
+  axis_key: string;
+  input_snapshot?: unknown;
+};
+
+function isReliableScoreSnapshot(snapshot: unknown): boolean {
+  if (!snapshot || typeof snapshot !== "object") return false;
+  const value = snapshot as { completeness?: unknown; confidence?: unknown };
+  return typeof value.completeness === "number"
+    && value.completeness >= 5 / 7
+    && typeof value.confidence === "number"
+    && value.confidence >= 0.60;
+}
+
+export function rowToScores(axisScores: AxisScoreRow[]): Scores | null {
   if (!axisScores.length) return null;
-  const out: Scores = { power: 0, control: 0, spin: 0, comfort: 0, stability: 0 };
+  const out: Partial<Scores> = {};
   const map: Record<string, keyof Scores> = {
     power: "power",
     control: "control",
@@ -36,36 +60,131 @@ function rowToScores(axisScores: { score: number; axis_key: string }[]): Scores 
     penetration: "power",
   };
   for (const r of axisScores) {
+    if (!isReliableScoreSnapshot(r.input_snapshot)) continue;
     const key = map[r.axis_key];
     if (key) {
       // Stored as 0-100, convert to -5..+5
       const v = Number(r.score);
-      out[key] = Math.round(((v / 100) * 10 - 5) * 10) / 10;
+      if (!Number.isFinite(v)) continue;
+      out[key] = clampPublicScore(Math.round(((v / 100) * 10 - 5) * 10) / 10);
     }
   }
-  return out;
+
+  const required: Array<keyof Scores> = ["power", "control", "spin", "comfort", "stability"];
+  if (!required.every((key) => out[key] !== undefined)) return null;
+  return out as Scores;
+}
+
+export function scoresFromSpec(spec: RacketSpecInput): Scores | null {
+  return rowToScores(
+    computeAxisScores(spec).map(({ axisKey, score, inputSnapshot }) => ({
+      axis_key: axisKey,
+      score,
+      input_snapshot: inputSnapshot,
+    })),
+  );
+}
+
+type VariantRow = {
+  available_in_korea?: unknown;
+  region_code?: unknown;
+  retail_price_krw?: unknown;
+};
+
+export function selectKoreanVariant(variants: VariantRow[] | null | undefined): {
+  availableInKorea: boolean;
+  priceKrw: number | null;
+} {
+  const available = (variants ?? []).filter((variant) =>
+    variant.available_in_korea === true && variant.region_code === "KR"
+  );
+  const prices = available
+    .map((variant) => nullableNumber(variant.retail_price_krw))
+    .filter((price): price is number => price !== null);
+
+  return {
+    availableInKorea: available.length > 0,
+    priceKrw: prices.length > 0 ? Math.min(...prices) : null,
+  };
+}
+
+type SpecSourceRow = {
+  source_url?: unknown;
+  raw_values?: unknown;
+  captured_at?: unknown;
+};
+
+export type RacketSpecSource = {
+  sourceUrl: string | null;
+  measurementBasis: string | null;
+  capturedAt: string | null;
+};
+
+export function pickLatestSpecSource(
+  sources: SpecSourceRow[] | null | undefined,
+): RacketSpecSource | null {
+  const latest = [...(sources ?? [])].sort((a, b) =>
+    String(b.captured_at ?? "").localeCompare(String(a.captured_at ?? ""))
+  )[0];
+  if (!latest) return null;
+
+  const rawValues = latest.raw_values && typeof latest.raw_values === "object"
+    ? latest.raw_values as Record<string, unknown>
+    : null;
+  return {
+    sourceUrl: typeof latest.source_url === "string" ? latest.source_url : null,
+    measurementBasis: typeof rawValues?.measurement_basis === "string"
+      ? rawValues.measurement_basis
+      : null,
+    capturedAt: typeof latest.captured_at === "string" ? latest.captured_at : null,
+  };
+}
+
+function nullableNumber(value: unknown): number | null {
+  if (value == null || value === "") return null;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function rowToSpec(specs: Record<string, unknown> | null): RacketSpecInput {
+  return {
+    headSizeSqIn: nullableNumber(specs?.head_size_sq_in),
+    weightG: nullableNumber(specs?.weight_g),
+    balanceMm: nullableNumber(specs?.balance_mm),
+    swingWeightKgCm2: nullableNumber(specs?.swing_weight_kg_cm2),
+    stiffnessRa: nullableNumber(specs?.stiffness_ra),
+    beamWidthMm: (specs?.beam_width_mm as string | null) ?? null,
+    stringPattern: (specs?.string_pattern as string | null) ?? null,
+  };
 }
 
 async function fetchScoresForRackets(racketIds: string[]): Promise<Record<string, Scores | null>> {
   if (!racketIds.length) return {};
 
+  const supabaseAdmin = getSupabaseAdmin();
   const { data, error } = await supabaseAdmin
     .from("racket_axis_scores")
     .select(`
       racket_model_id,
       score,
+      input_snapshot,
       axis_definitions!inner(axis_key)
     `)
-    .in("racket_model_id", racketIds);
+    .in("racket_model_id", racketIds)
+    .eq("scoring_version", SCORING_VERSION);
 
   if (error || !data) return {};
 
-  const grouped: Record<string, { score: number; axis_key: string }[]> = {};
+  const grouped: Record<string, AxisScoreRow[]> = {};
   for (const r of data) {
     const axisKey = (r.axis_definitions as unknown as { axis_key: string })?.axis_key;
     if (!axisKey) continue;
     if (!grouped[r.racket_model_id]) grouped[r.racket_model_id] = [];
-    grouped[r.racket_model_id].push({ score: Number(r.score), axis_key: axisKey });
+    grouped[r.racket_model_id].push({
+      score: Number(r.score),
+      axis_key: axisKey,
+      input_snapshot: r.input_snapshot,
+    });
   }
 
   const result: Record<string, Scores | null> = {};
@@ -79,34 +198,45 @@ function toListItem(r: Record<string, unknown>, scoresMap: Record<string, Scores
   const specs = r.racket_specs as Record<string, unknown> | null;
   // racket_variants is a 1-to-many join — PostgREST returns an array
   const variantArr = r.racket_variants as Array<Record<string, unknown>> | null;
-  const variant = Array.isArray(variantArr) ? (variantArr[0] ?? null) : (variantArr as Record<string, unknown> | null);
+  const variants = Array.isArray(variantArr)
+    ? variantArr
+    : variantArr
+      ? [variantArr as Record<string, unknown>]
+      : [];
+  const koreanVariant = selectKoreanVariant(variants);
   const brand = r.brands as { name: string } | null;
   const id = r.id as string;
   const year = r.release_year as number | null;
+  const slug = generateSlug(brand?.name ?? "", r.name as string, year);
 
   return {
     id,
-    slug: generateSlug(brand?.name ?? "", r.name as string, year),
+    slug,
     brand: brand?.name ?? "",
     model: r.name as string,
     year,
     weight: specs?.weight_g ? `${Math.round(Number(specs.weight_g))}g` : null,
     headSize: specs?.head_size_sq_in ? `${Number(specs.head_size_sq_in)}"` : null,
     pattern: (specs?.string_pattern as string | null) ?? null,
-    priceKrw: (variant?.retail_price_krw as number | null) ?? null,
-    imageUrl: (r.image_url as string | null) ?? null,
-    scores: scoresMap[id] || null,
+    priceKrw: koreanVariant.priceKrw,
+    imageUrl: resolveRacketImage(r.image_url as string | null, slug)?.url ?? null,
+    scores: scoresMap[id] ?? scoresFromSpec(rowToSpec(specs)),
+    availableInKorea: koreanVariant.availableInKorea,
   };
 }
 
 export async function getTopRackets(limit: number = 5): Promise<RacketListItem[]> {
+  const supabaseAdmin = getSupabaseAdmin();
   const { data, error } = await supabaseAdmin
     .from("racket_models")
     .select(`
       id, name, release_year, image_url,
       brands!inner(name),
-      racket_specs(weight_g, head_size_sq_in, string_pattern),
-      racket_variants(retail_price_krw)
+      racket_specs(
+        weight_g, head_size_sq_in, string_pattern, balance_mm,
+        swing_weight_kg_cm2, stiffness_ra, beam_width_mm
+      ),
+      racket_variants(retail_price_krw, available_in_korea, region_code)
     `)
     .eq("discontinued", false)
     .order("id")
@@ -131,9 +261,11 @@ export type RacketDetail = RacketListItem & {
   lengthMm: number | null;
   beamWidth: string | null;
   brandKo: string | null;
+  specSource: RacketSpecSource | null;
 };
 
 export async function getRacketBySlug(slug: string): Promise<RacketDetail | null> {
+  const supabaseAdmin = getSupabaseAdmin();
   const { data, error } = await supabaseAdmin
     .from("racket_models")
     .select(`
@@ -141,9 +273,10 @@ export async function getRacketBySlug(slug: string): Promise<RacketDetail | null
       brands!inner(name, name_ko),
       racket_specs(
         weight_g, head_size_sq_in, string_pattern, composition,
-        balance_mm, swing_weight_kg_cm2, stiffness_ra, length_mm, beam_width_mm
+        balance_mm, swing_weight_kg_cm2, stiffness_ra, length_mm, beam_width_mm,
+        spec_sources(source_url, raw_values, captured_at)
       ),
-      racket_variants(retail_price_krw)
+      racket_variants(retail_price_krw, available_in_korea, region_code)
     `);
 
   if (error || !data) return null;
@@ -159,7 +292,12 @@ export async function getRacketBySlug(slug: string): Promise<RacketDetail | null
 
   const specs = (match.racket_specs as unknown) as Record<string, unknown> | null;
   const variantArr = (match.racket_variants as unknown) as Array<Record<string, unknown>> | null;
-  const variant = Array.isArray(variantArr) ? (variantArr[0] ?? null) : (variantArr as Record<string, unknown> | null);
+  const variants = Array.isArray(variantArr)
+    ? variantArr
+    : variantArr
+      ? [variantArr as Record<string, unknown>]
+      : [];
+  const koreanVariant = selectKoreanVariant(variants);
   const brand = (match.brands as unknown) as { name: string; name_ko: string | null } | null;
 
   return {
@@ -181,14 +319,19 @@ export async function getRacketBySlug(slug: string): Promise<RacketDetail | null
     stiffness: specs?.stiffness_ra ? Number(specs.stiffness_ra) : null,
     lengthMm: specs?.length_mm ? Number(specs.length_mm) : null,
     beamWidth: (specs?.beam_width_mm as string | null) ?? null,
-    priceKrw: (variant?.retail_price_krw as number | null) ?? null,
-    imageUrl: match.image_url,
-    scores: scoresMap[match.id] || null,
+    priceKrw: koreanVariant.priceKrw,
+    imageUrl: resolveRacketImage(match.image_url, slug)?.url ?? null,
+    scores: scoresMap[match.id] ?? scoresFromSpec(rowToSpec(specs)),
+    availableInKorea: koreanVariant.availableInKorea,
+    specSource: pickLatestSpecSource(
+      specs?.spec_sources as Array<Record<string, unknown>> | null,
+    ),
   };
 }
 
 export type RacketFilters = {
   brand?: string[];
+  q?: string;
   minWeight?: number;
   maxWeight?: number;
   minHead?: number;
@@ -199,22 +342,93 @@ export type RacketFilters = {
   limit?: number;
 };
 
+function numericSpec(value: string | null): number | null {
+  if (!value) return null;
+  const parsed = parseFloat(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function compareNullable(
+  left: number | null,
+  right: number | null,
+  direction: "asc" | "desc",
+): number {
+  if (left === null && right === null) return 0;
+  if (left === null) return 1;
+  if (right === null) return -1;
+  return direction === "asc" ? left - right : right - left;
+}
+
+export function filterSortPaginateRackets(
+  source: RacketListItem[],
+  filters: RacketFilters = {},
+): { rackets: RacketListItem[]; total: number } {
+  const brandSet = new Set((filters.brand ?? []).map((brand) => brand.toLowerCase()));
+  const query = filters.q?.trim().toLowerCase();
+  let rackets = source.filter((racket) => {
+    if (!racket.availableInKorea) return false;
+    if (brandSet.size > 0 && !brandSet.has(racket.brand.toLowerCase())) return false;
+    if (query && !`${racket.brand} ${racket.model}`.toLowerCase().includes(query)) return false;
+
+    const weight = numericSpec(racket.weight);
+    if (filters.minWeight !== undefined && (weight === null || weight < filters.minWeight)) return false;
+    if (filters.maxWeight !== undefined && (weight === null || weight > filters.maxWeight)) return false;
+
+    const headSize = numericSpec(racket.headSize);
+    if (filters.minHead !== undefined && (headSize === null || headSize < filters.minHead)) return false;
+    if (filters.maxHead !== undefined && (headSize === null || headSize > filters.maxHead)) return false;
+    return true;
+  });
+
+  switch (filters.sort) {
+    case "price_asc":
+      rackets.sort((a, b) => compareNullable(a.priceKrw, b.priceKrw, "asc"));
+      break;
+    case "price_desc":
+      rackets.sort((a, b) => compareNullable(a.priceKrw, b.priceKrw, "desc"));
+      break;
+    case "lightest":
+      rackets.sort((a, b) => compareNullable(numericSpec(a.weight), numericSpec(b.weight), "asc"));
+      break;
+    case "heaviest":
+      rackets.sort((a, b) => compareNullable(numericSpec(a.weight), numericSpec(b.weight), "desc"));
+      break;
+    case "newest":
+      rackets.sort((a, b) => compareNullable(a.year, b.year, "desc"));
+      break;
+    case "power":
+    case "control":
+    case "spin": {
+      const axis = filters.sort;
+      rackets.sort((a, b) => compareNullable(a.scores?.[axis] ?? null, b.scores?.[axis] ?? null, "desc"));
+      break;
+    }
+  }
+
+  const total = rackets.length;
+  const limit = Math.max(1, filters.limit ?? 24);
+  const page = Math.max(1, filters.page ?? 1);
+  const offset = (page - 1) * limit;
+  return { rackets: rackets.slice(offset, offset + limit), total };
+}
+
 export async function getRackets(filters: RacketFilters = {}): Promise<{
   rackets: RacketListItem[];
   total: number;
 }> {
-  const limit = filters.limit ?? 24;
-  const page = filters.page ?? 1;
-  const offset = (page - 1) * limit;
+  const supabaseAdmin = getSupabaseAdmin();
 
   let query = supabaseAdmin
     .from("racket_models")
     .select(`
       id, name, release_year, image_url,
       brands!inner(name),
-      racket_specs(weight_g, head_size_sq_in, string_pattern),
-      racket_variants(retail_price_krw)
-    `, { count: "exact" })
+      racket_specs(
+        weight_g, head_size_sq_in, string_pattern, balance_mm,
+        swing_weight_kg_cm2, stiffness_ra, beam_width_mm
+      ),
+      racket_variants(retail_price_krw, available_in_korea, region_code)
+    `)
     .eq("discontinued", false);
 
   if (filters.brand?.length) {
@@ -225,71 +439,33 @@ export async function getRackets(filters: RacketFilters = {}): Promise<{
     query = query.eq("segment", filters.segment);
   }
 
-  if (filters.sort === "newest") {
-    query = query.order("release_year", { ascending: false, nullsFirst: false });
-  } else if (filters.sort === "price_asc") {
-    query = query.order("id", { ascending: false });
-  } else if (filters.sort === "price_desc") {
-    query = query.order("id", { ascending: false });
-  } else {
-    query = query.order("id", { ascending: false });
-  }
+  query = query.order("id", { ascending: false }).limit(1000);
 
-  query = query.range(offset, offset + limit - 1);
-
-  const { data, count, error } = await query;
+  const { data, error } = await query;
 
   if (error || !data) return { rackets: [], total: 0 };
 
   const ids = data.map((r) => r.id);
   const scoresMap = await fetchScoresForRackets(ids).catch(() => ({} as Record<string, Scores | null>));
 
-  let rackets = data.map((r) => toListItem(r as unknown as Record<string, unknown>, scoresMap));
-
-  if (filters.minWeight || filters.maxWeight) {
-    rackets = rackets.filter((r) => {
-      const w = r.weight ? parseFloat(r.weight) : null;
-      if (w === null) return false;
-      if (filters.minWeight && w < filters.minWeight) return false;
-      if (filters.maxWeight && w > filters.maxWeight) return false;
-      return true;
-    });
-  }
-
-  if (filters.minHead || filters.maxHead) {
-    rackets = rackets.filter((r) => {
-      const h = r.headSize ? parseFloat(r.headSize) : null;
-      if (h === null) return false;
-      if (filters.minHead && h < filters.minHead) return false;
-      if (filters.maxHead && h > filters.maxHead) return false;
-      return true;
-    });
-  }
-
-  if (filters.sort === "price_asc") {
-    rackets.sort((a, b) => (a.priceKrw ?? 999999) - (b.priceKrw ?? 999999));
-  } else if (filters.sort === "price_desc") {
-    rackets.sort((a, b) => (b.priceKrw ?? 0) - (a.priceKrw ?? 0));
-  } else if (filters.sort === "lightest") {
-    rackets.sort((a, b) => (parseFloat(a.weight ?? "999") - parseFloat(b.weight ?? "999")));
-  } else if (filters.sort === "heaviest") {
-    rackets.sort((a, b) => (parseFloat(b.weight ?? "0") - parseFloat(a.weight ?? "0")));
-  }
-
-  return {
-    rackets,
-    total: count ?? rackets.length,
-  };
+  return filterSortPaginateRackets(
+    data.map((r) => toListItem(r as unknown as Record<string, unknown>, scoresMap)),
+    filters,
+  );
 }
 
 export async function getSimilarRackets(racketId: string, brand: string, limit: number = 4): Promise<RacketListItem[]> {
+  const supabaseAdmin = getSupabaseAdmin();
   const { data, error } = await supabaseAdmin
     .from("racket_models")
     .select(`
       id, name, release_year, image_url,
       brands!inner(name),
-      racket_specs(weight_g, head_size_sq_in, string_pattern),
-      racket_variants(retail_price_krw)
+      racket_specs(
+        weight_g, head_size_sq_in, string_pattern, balance_mm,
+        swing_weight_kg_cm2, stiffness_ra, beam_width_mm
+      ),
+      racket_variants(retail_price_krw, available_in_korea, region_code)
     `)
     .eq("brands.name", brand)
     .eq("discontinued", false)
@@ -305,6 +481,7 @@ export async function getSimilarRackets(racketId: string, brand: string, limit: 
 }
 
 export async function getAllBrands(): Promise<{ name: string; nameKo: string | null }[]> {
+  const supabaseAdmin = getSupabaseAdmin();
   const { data, error } = await supabaseAdmin
     .from("brands")
     .select("name, name_ko")

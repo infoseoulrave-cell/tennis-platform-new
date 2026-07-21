@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { getRacketBySlug, type RacketDetail } from "@/lib/queries";
 import { RadarChart, type Scores } from "@/components/radar-chart";
+import { ScoringMethodologyNote } from "@/components/scoring-methodology-note";
+import { formatRacketName } from "@/lib/racket-name";
+import { colorForRacket } from "@/lib/compare-colors";
 
 export const dynamic = "force-dynamic";
-
-const CHART_COLORS = ["#111", "#3b82f6", "#10b981"];
 
 function formatPrice(price: number | null): string {
   if (!price) return "—";
@@ -56,6 +57,7 @@ export default async function ComparePage({
 
   // Combine all scores into a single radar chart with multiple polygons
   const racketsWithScores = rackets.filter((r): r is RacketDetail & { scores: Scores } => r.scores !== null);
+  const orderedRacketIds = rackets.map((r) => r.id);
 
   return (
     <div className="max-w-6xl mx-auto px-6 py-12">
@@ -80,9 +82,9 @@ export default async function ComparePage({
             </div>
             <p className="text-xs text-[var(--color-text-muted)]">{r.brand}</p>
             <Link href={`/rackets/${r.slug}`} className="font-semibold text-sm hover:underline block">
-              {r.model}{r.year ? ` (${r.year})` : ""}
+              {formatRacketName(r.model, r.year)}
             </Link>
-            <span className="inline-block w-3 h-3 rounded-full mt-2" style={{ backgroundColor: CHART_COLORS[i] }} />
+            <span className="inline-block w-3 h-3 rounded-full mt-2" style={{ backgroundColor: colorForRacket(r.id, orderedRacketIds) }} />
           </div>
         ))}
       </div>
@@ -92,25 +94,27 @@ export default async function ComparePage({
         <section className="border border-[var(--color-border)] rounded-2xl p-8 mb-10">
           <h2 className="text-base font-semibold mb-6 text-center">5축 비교</h2>
           <div className="flex justify-center">
-            <div className="relative" style={{ width: 280, height: 280 }}>
-              {racketsWithScores.map((r, i) => (
-                <div key={r.id} className="absolute inset-0">
-                  <RadarChart
-                    scores={r.scores}
-                    size={280}
-                    color={CHART_COLORS[i]}
-                  />
-                </div>
-              ))}
-            </div>
+            <RadarChart
+              scores={racketsWithScores[0].scores}
+              series={racketsWithScores.map((r) => ({
+                id: r.id,
+                scores: r.scores,
+                color: colorForRacket(r.id, orderedRacketIds),
+              }))}
+              showValues={false}
+              size={280}
+            />
           </div>
           <div className="flex justify-center gap-6 mt-6">
-            {racketsWithScores.map((r, i) => (
+            {racketsWithScores.map((r) => (
               <div key={r.id} className="flex items-center gap-2">
-                <span className="w-3 h-3 rounded-full" style={{ backgroundColor: CHART_COLORS[i] }} />
+                <span className="w-3 h-3 rounded-full" style={{ backgroundColor: colorForRacket(r.id, orderedRacketIds) }} />
                 <span className="text-xs text-[var(--color-text-secondary)]">{r.model}</span>
               </div>
             ))}
+          </div>
+          <div className="mt-6">
+            <ScoringMethodologyNote />
           </div>
         </section>
       )}

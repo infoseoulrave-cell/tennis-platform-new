@@ -82,6 +82,58 @@ async function seed() {
     ])
     .onConflictDoNothing();
 
+  console.log("Seeding axis definitions v2...");
+  await db
+    .insert(axisDefinitions)
+    .values([
+      {
+        version: "v2",
+        axisKey: "power",
+        axisName: "Power",
+        axisNameKo: "파워",
+        description: "Spec-based estimate using swingweight, stiffness, beam width, and head size.",
+        scoringFormula: "renorm(0.35*SW + 0.25*RA + 0.20*beam + 0.20*headSize)",
+        weightDefault: "0.20",
+      },
+      {
+        version: "v2",
+        axisKey: "control",
+        axisName: "Control",
+        axisNameKo: "컨트롤",
+        description: "Spec-based estimate using head size, string density, beam width, and stiffness.",
+        scoringFormula: "renorm(0.30*invHead + 0.25*density + 0.20*invBeam + 0.25*invRA)",
+        weightDefault: "0.20",
+      },
+      {
+        version: "v2",
+        axisKey: "spin",
+        axisName: "Spin Potential",
+        axisNameKo: "스핀",
+        description: "Spec-based estimate using string density and head size; balance is excluded.",
+        scoringFormula: "renorm(0.65*invStringDensity + 0.35*headSize)",
+        weightDefault: "0.20",
+      },
+      {
+        version: "v2",
+        axisKey: "comfort",
+        axisName: "Comfort",
+        axisNameKo: "편안함",
+        description: "Spec-based estimate using stiffness, swingweight, and mass; beam width is excluded.",
+        scoringFormula: "renorm(0.60*invRA + 0.25*SW + 0.15*mass)",
+        weightDefault: "0.20",
+      },
+      {
+        version: "v2",
+        axisKey: "stability",
+        axisName: "Stability",
+        axisNameKo: "안정성",
+        description: "Spec-based estimate using swingweight, mass, and beam width.",
+        scoringFormula: "renorm(0.45*SW + 0.35*mass + 0.20*beam)",
+        weightDefault: "0.20",
+      },
+    ])
+    .onConflictDoNothing();
+
   console.log("Seed complete.");
   await client.end();
 }
