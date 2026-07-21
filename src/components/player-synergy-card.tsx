@@ -85,7 +85,7 @@ export function PlayerCard({ player }: { player: Player }) {
 
 export function PlayerSynergySection() {
   return (
-    <section className="bg-[var(--color-bg-subtle)] py-16">
+    <section className="bg-[var(--color-brand-subtle)] py-16 border-y border-[var(--color-border)]">
       <div className="max-w-6xl mx-auto px-6">
         <div className="mb-10">
           <div>

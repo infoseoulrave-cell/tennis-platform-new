@@ -50,9 +50,9 @@ export function QuickLinks() {
         <Link
           key={link.href}
           href={link.href}
-          className="group p-5 border border-[var(--color-border)] rounded-xl hover:border-[var(--color-text)] transition-colors"
+          className="group p-5 bg-[var(--color-bg-white)] rounded-xl shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200"
         >
-          <div className="text-[var(--color-text)] mb-3">{link.icon}</div>
+          <div className="text-[var(--color-brand)] mb-3">{link.icon}</div>
           <h3 className="font-semibold text-sm">{link.title}</h3>
           <p className="text-xs text-[var(--color-text-muted)] mt-1">{link.subtitle}</p>
         </Link>
