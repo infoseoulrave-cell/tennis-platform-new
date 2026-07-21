@@ -21,7 +21,7 @@ export async function TopRacketsList() {
     <section className="py-12">
       <div className="flex items-end justify-between mb-6">
         <div>
-          <p className="text-[10px] font-semibold tracking-[0.15em] text-[var(--color-brand-dark)] uppercase mb-1">Popular</p>
+          <p className="text-[10px] font-semibold tracking-[0.15em] text-[var(--color-brand)] uppercase mb-1">Popular</p>
           <h2 className="text-xl font-bold tracking-tight">인기 라켓 TOP 5</h2>
         </div>
         <Link href="/rackets" className="text-xs text-[var(--color-text-muted)] hover:text-[var(--color-text)]">

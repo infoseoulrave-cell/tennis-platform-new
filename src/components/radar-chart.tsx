@@ -48,6 +48,8 @@ export function RadarChart({
   className = "",
   color = ACTIVE_COLOR,
   compareColor = "#9ca3af",
+  fillOpacity = 0.14,
+  pointRadius = 2.5,
 }: {
   scores: Scores;
   compareScores?: Scores;
@@ -57,6 +59,8 @@ export function RadarChart({
   className?: string;
   color?: string;
   compareColor?: string;
+  fillOpacity?: number;
+  pointRadius?: number;
 }) {
   const cx = size / 2;
   const cy = size / 2;
@@ -104,14 +108,14 @@ export function RadarChart({
           <polygon
             points={polygon(item.scores, cx, cy, r)}
             fill={item.color}
-            fillOpacity={0.14}
+            fillOpacity={fillOpacity}
             stroke={item.color}
             strokeWidth={item.dashed ? 1.5 : 2}
             strokeDasharray={item.dashed ? "4 2" : undefined}
           />
           {AXES.map((axis, i) => {
             const p = getPoint(cx, cy, r, i, scoreToFraction(item.scores[axis]));
-            return <circle key={axis} cx={p.x} cy={p.y} r={2.5} fill={item.color} />;
+            return <circle key={axis} cx={p.x} cy={p.y} r={pointRadius} fill={item.color} />;
           })}
         </g>
       ))}

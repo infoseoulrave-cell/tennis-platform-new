@@ -89,7 +89,7 @@ export function PlayerSynergySection() {
       <div className="max-w-6xl mx-auto px-6">
         <div className="mb-10">
           <div>
-            <p className="text-[10px] font-semibold tracking-[0.15em] text-[var(--color-brand-dark)] uppercase mb-1">Pro Players</p>
+            <p className="text-[10px] font-semibold tracking-[0.15em] text-[var(--color-brand)] uppercase mb-1">Pro Players</p>
             <h2 className="text-2xl font-bold tracking-tight">프로 선수 × 라켓 시너지</h2>
           </div>
           <p className="text-sm text-[var(--color-text-secondary)] mt-2">

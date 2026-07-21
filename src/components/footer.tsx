@@ -25,12 +25,18 @@ export function Footer() {
       <div className="max-w-6xl mx-auto px-6 py-12">
         <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-8">
           <div className="space-y-4 lg:col-span-2">
-            <span className="flex items-center gap-1.5">
-              <span className="w-2 h-5 rounded-sm bg-[var(--color-brand)]" />
-              <span className="text-lg font-bold tracking-tight text-white">racketlab</span>
+            <span className="flex items-center gap-2">
+              <svg width={20} height={20} viewBox="0 0 24 24" fill="#C4E538" className="shrink-0" aria-hidden>
+                <polygon points="12,1 23,8.5 19.5,21 4.5,21 1,8.5" />
+              </svg>
+              <span className="text-base tracking-wide text-white">
+                <span className="font-normal">racket</span>
+                <span className="font-bold"> LAB</span>
+              </span>
             </span>
-            <p className="text-sm leading-relaxed">
-              한국에서 실제 판매 중인 테니스 라켓을 이해하고, 비교하고, 추천받고, 구매까지 연결하는 서비스입니다.
+            <p className="text-xs text-blue-200/40 tracking-wide mt-1">Read your racket.</p>
+            <p className="text-sm leading-relaxed mt-3">
+              데이터 기반 5축 분석으로 당신에게 맞는 라켓을 찾아드립니다.
             </p>
           </div>
 
@@ -78,7 +84,7 @@ export function Footer() {
         </div>
 
         <div className="border-t border-white/10 mt-12 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-sm">&copy; 2026 racketlab. All rights reserved.</p>
+          <p className="text-sm">&copy; 2026 racket LAB. All rights reserved.</p>
           <p className="text-xs text-blue-200/50">데이터 확인 기준일 2026-07-21</p>
         </div>
       </div>

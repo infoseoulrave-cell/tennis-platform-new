@@ -17,7 +17,7 @@ export function HeroCarousel() {
   const racket = featuredRackets[index];
 
   return (
-    <section className="relative bg-[var(--color-bg-dark)] text-white overflow-hidden">
+    <section className="relative bg-gradient-to-br from-[#0C0C0C] via-[#0f1a2e] to-[var(--color-court-blue)] text-white overflow-hidden">
       <div className="max-w-6xl mx-auto px-6 py-16 md:py-24 min-h-[520px] flex items-center">
         <div className="grid md:grid-cols-2 gap-8 items-center w-full">
           {/* Text side */}
@@ -100,7 +100,7 @@ export function HeroCarousel() {
           <div className="flex gap-3">
             <Link
               href="/recommendation"
-              className="px-5 py-2.5 bg-[var(--color-brand)] text-black text-sm font-semibold rounded-lg hover:brightness-110 transition-all"
+              className="px-5 py-2.5 bg-white text-[var(--color-brand)] text-sm font-semibold rounded-lg hover:bg-white/90 transition-all"
             >
               추천 받기
             </Link>
