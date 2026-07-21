@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import Link from "next/link";
 import { TrustBadge } from "@/components/trust-badge";
+import { PartnerInquiryForm } from "@/components/partner-inquiry-form";
 import { trackEvent } from "@/lib/track-event";
 
 export default function PartnersPage() {

@@ -5,6 +5,7 @@ import { getRacketBySlug, getSimilarRackets } from "@/lib/queries";
 import { RadarBarCombo } from "@/components/radar-bar-combo";
 import { RacketCard } from "@/components/racket-card";
 import { RacketDetailActions } from "@/components/racket-detail-actions";
+import { PriceComparison } from "@/components/price-comparison";
 import { ScoringMethodologyNote } from "@/components/scoring-methodology-note";
 import type { Metadata } from "next";
 import type { Scores } from "@/components/radar-chart";
@@ -176,6 +177,8 @@ export default async function RacketDetailPage({
               />
             </div>
           </div>
+
+          <PriceComparison slug={racket.slug} />
         </div>
       </div>
 

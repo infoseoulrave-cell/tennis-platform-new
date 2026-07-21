@@ -40,7 +40,7 @@ export function CompareTray() {
           </button>
           <Link
             href={`/compare?slugs=${slugs}`}
-            className="px-4 py-2 bg-[var(--color-brand)] text-black text-xs font-semibold rounded-lg hover:brightness-110 transition-all"
+            className="px-4 py-2 bg-[var(--color-accent)] text-black text-xs font-semibold rounded-lg hover:brightness-105 transition-all"
           >
             비교하기
           </Link>

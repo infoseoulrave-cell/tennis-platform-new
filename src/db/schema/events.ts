@@ -19,6 +19,7 @@ export const eventTypeEnum = pgEnum("event_type", [
   "save_result",
   "partner_click",
   "partner_lead_submit",
+  "affiliate_click",
   "page_view",
   "search",
 ]);
