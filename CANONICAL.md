@@ -22,9 +22,10 @@
 
 - 팀/프로젝트: `rachel-flower/racketlab`
 - 프로덕션: `https://racketlab-one.vercel.app/`
-- 프로덕션 배포 ID: `dpl_AqYWUxkx36ybLVXHyq3aNs7m7Pj3`
+- 기능 검증·수동 승격 배포 ID: `dpl_AqYWUxkx36ybLVXHyq3aNs7m7Pj3`
 - 검증된 프리뷰: `https://racketlab-e80doc5jl-rachel-flower.vercel.app/`
 - 배포는 프리뷰 검증 후 동일 배포를 프로덕션으로 승격하며 Omega에는 어떤 변경도 가하지 않는다.
+- `main` push마다 새 Production ID가 생성되므로 최신 ID는 `vercel ls`/`vercel inspect`로 확인하고 문서의 ID를 불변 기준으로 사용하지 않는다.
 
 ## 4. 데이터베이스 기준
 
