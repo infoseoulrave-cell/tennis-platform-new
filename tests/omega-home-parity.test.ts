@@ -133,6 +133,15 @@ test("Omega hero shows compact source and verification links", () => {
   assert.match(hero, /<Image/);
   assert.match(hero, /preload=\{index === 0\}/);
   assert.doesNotMatch(hero, /<img/);
+  assert.match(hero, /prefers-reduced-motion: reduce/);
+  assert.match(hero, /hoverPaused/);
+  assert.match(hero, /focusWithinPaused/);
+  assert.match(hero, /onFocusCapture/);
+  assert.match(hero, /onMouseEnter/);
+  assert.doesNotMatch(hero, /aria-pressed=\{rotationPaused\}/);
+  assert.match(hero, /min-h-6 min-w-6/);
+  assert.match(hero, /flex-col items-stretch gap-4 sm:flex-row/);
+  assert.match(hero, /슬라이드 자동 회전 일시정지/);
 });
 
 test("partners page renders the inquiry form", () => {

@@ -1,7 +1,8 @@
 import Link from "next/link";
 
-const racketLinks = [
+const productLinks = [
   { href: "/rackets", label: "전체 라켓" },
+  { href: "/strings", label: "스트링" },
   { href: "/rackets?sort=newest", label: "신상품" },
   { href: "/rackets?sort=price_asc", label: "가격순" },
   { href: "/recommendation", label: "추천" },
@@ -41,9 +42,9 @@ export function Footer() {
           </div>
 
           <div>
-            <h4 className="font-semibold text-blue-100 mb-4">라켓</h4>
+            <h4 className="font-semibold text-blue-100 mb-4">제품</h4>
             <ul className="space-y-2">
-              {racketLinks.map((link) => (
+              {productLinks.map((link) => (
                 <li key={link.href}>
                   <Link href={link.href} className="text-sm hover:text-white transition-colors">
                     {link.label}

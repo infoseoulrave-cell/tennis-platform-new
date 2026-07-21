@@ -233,6 +233,12 @@ export default async function RacketDetailPage({
               <p className="text-sm text-[var(--color-text-secondary)]">{stringRec.reason}</p>
             </div>
           </div>
+          <Link
+            href="/strings"
+            className="mt-5 inline-flex text-sm font-semibold text-[var(--color-text)] hover:underline"
+          >
+            스트링 판매처 보기 →
+          </Link>
         </section>
       )}
 

@@ -31,9 +31,15 @@ export default function AdminDashboard() {
             </Link>
           </li>
           <li>
+            <Link href="/admin/offers" style={{ display: "block", padding: "16px", background: "#f3f4f6", borderRadius: "8px", textDecoration: "none", color: "#111827" }}>
+              <strong>Offers · Monetization</strong>
+              <p style={{ fontSize: "14px", color: "#6b7280", margin: "4px 0 0" }}>Manage racket and string offers, prices, and affiliate attribution</p>
+            </Link>
+          </li>
+          <li>
             <Link href="/admin/partners" style={{ display: "block", padding: "16px", background: "#f3f4f6", borderRadius: "8px", textDecoration: "none", color: "#111827" }}>
-              <strong>Partner Offers</strong>
-              <p style={{ fontSize: "14px", color: "#6b7280", margin: "4px 0 0" }}>Manage partner offers and attribution</p>
+              <strong>Partner Inquiries</strong>
+              <p style={{ fontSize: "14px", color: "#6b7280", margin: "4px 0 0" }}>Review shop, coach, and brand partnership inquiries</p>
             </Link>
           </li>
         </ul>

@@ -17,3 +17,13 @@ test("admin offer and partner server actions revalidate the admin session", () =
     assert.match(source, /createAdminSessionToken/);
   }
 });
+
+test("admin dashboard separates commercial offers from partner inquiries", () => {
+  const dashboard = read("src/app/admin/page.tsx");
+
+  assert.match(dashboard, /href="\/admin\/offers"/);
+  assert.match(dashboard, /Offers · Monetization/);
+  assert.match(dashboard, /href="\/admin\/partners"/);
+  assert.match(dashboard, /Partner Inquiries/);
+  assert.doesNotMatch(dashboard, /<strong>Partner Offers<\/strong>/);
+});

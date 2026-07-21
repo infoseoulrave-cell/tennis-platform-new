@@ -1,4 +1,4 @@
-import { and, desc, eq, gte, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { eventLog, offers } from "@/db/schema";
 
@@ -49,13 +49,43 @@ export function lowestPriceOfferId(list: Offer[]): string | null {
   return first?.id ?? null;
 }
 
-export async function getActiveOffersForRacket(slug: string): Promise<Offer[]> {
+export type OffersByProductKey = Record<string, Offer[]>;
+
+export function groupOffersByProductKey(
+  productKeys: readonly string[],
+  rows: Offer[],
+): OffersByProductKey {
+  const grouped: OffersByProductKey = Object.fromEntries(
+    [...new Set(productKeys)].map((productKey) => [productKey, []]),
+  );
+  for (const offer of rows) {
+    grouped[offer.racketSlug]?.push(offer);
+  }
+  for (const productKey of Object.keys(grouped)) {
+    grouped[productKey] = sortOffersByPrice(grouped[productKey]);
+  }
+  return grouped;
+}
+
+export async function getActiveOffersForProductKeys(
+  productKeys: readonly string[],
+): Promise<OffersByProductKey> {
+  const uniqueKeys = [...new Set(productKeys)];
+  if (uniqueKeys.length === 0) return {};
+
   const rows = await db
     .select()
     .from(offers)
-    .where(and(eq(offers.racketSlug, slug), eq(offers.active, true)));
-  return sortOffersByPrice(rows);
+    .where(and(inArray(offers.racketSlug, uniqueKeys), eq(offers.active, true)));
+  return groupOffersByProductKey(uniqueKeys, rows);
 }
+
+export async function getActiveOffersForProductKey(productKey: string): Promise<Offer[]> {
+  const grouped = await getActiveOffersForProductKeys([productKey]);
+  return grouped[productKey] ?? [];
+}
+
+export const getActiveOffersForRacket = getActiveOffersForProductKey;
 
 export type OfferClickStat = {
   offerId: string | null;

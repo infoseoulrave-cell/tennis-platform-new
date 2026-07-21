@@ -63,6 +63,12 @@ export default function GuideStringsPage() {
           소재 특성과 장력은 타구감·내구·스핀에 직결됩니다. 먼저 네 가지
           대표 타입을 이해한 뒤, 장력과 조합을 맞추면 됩니다.
         </p>
+        <Link
+          href="/strings"
+          className="mt-5 inline-flex rounded-lg bg-[var(--color-text)] px-4 py-2.5 text-sm font-semibold text-[var(--color-bg)] hover:opacity-85 transition-opacity"
+        >
+          스트링 판매처 보기
+        </Link>
       </header>
 
       <section className="mb-12">

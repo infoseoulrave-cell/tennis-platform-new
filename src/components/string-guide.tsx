@@ -17,7 +17,7 @@ const types = [
     icon: "◎",
     name: "내추럴 거트",
     pros: "최고의 타구감과 반발력",
-    cons: "매우 비쌈 (5~8만원)",
+    cons: "비용 부담이 큰 편",
   },
   {
     icon: "⫘",
@@ -36,12 +36,20 @@ export function StringGuide() {
           <p className="text-sm text-[var(--color-text-secondary)] leading-relaxed">
             같은 라켓이라도 스트링에 따라 완전히 다른 라켓이 됩니다. 종류별 특성과 추천 세팅을 확인하세요.
           </p>
-          <Link
-            href="/guide/strings"
-            className="inline-block mt-4 text-sm font-medium text-[var(--color-text)] hover:underline"
-          >
-            가이드 읽기 →
-          </Link>
+          <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2">
+            <Link
+              href="/strings"
+              className="text-sm font-semibold text-[var(--color-text)] hover:underline"
+            >
+              스트링 판매처 보기 →
+            </Link>
+            <Link
+              href="/guide/strings"
+              className="text-sm font-medium text-[var(--color-text-secondary)] hover:underline"
+            >
+              가이드 읽기 →
+            </Link>
+          </div>
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

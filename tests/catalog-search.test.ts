@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import test from "node:test";
 
 import { buildPlayerRacketHref } from "../src/components/player-synergy-card";
@@ -36,6 +37,26 @@ test("search API and global navigation preserve the server canonical slug and ye
   assert.equal(apiResult.slug, "head-speed-mp-2026");
   assert.equal(navResult.slug, apiResult.slug);
   assert.equal(navResult.year, 2026);
+});
+
+test("global search exposes an accessible modal and restores contained focus", () => {
+  const nav = readFileSync(
+    new URL("../src/components/global-nav.tsx", import.meta.url),
+    "utf8",
+  );
+
+  assert.match(nav, /aria-label="라켓 검색 열기"/);
+  assert.match(nav, /role="dialog"/);
+  assert.match(nav, /aria-modal="true"/);
+  assert.match(nav, /aria-label="라켓 검색"/);
+  assert.match(nav, /returnFocusRef/);
+  assert.match(nav, /if \(searchOpen\) return/);
+  assert.match(nav, /querySelectorAll<HTMLElement>/);
+  assert.match(nav, /aria-live="polite"/);
+  assert.match(nav, /`검색 결과 \$\{searchResults\.length\}개`/);
+  assert.match(nav, /settledSearchQuery !== normalizedSearchQuery/);
+  assert.match(nav, /settledSearchQuery === normalizedSearchQuery/);
+  assert.match(nav, /new AbortController\(\)/);
 });
 
 test("Korean availability uses the minimum price across all available KR variants", () => {

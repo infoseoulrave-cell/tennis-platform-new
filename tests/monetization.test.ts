@@ -1,6 +1,9 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
+  getActiveOffersForProductKey,
+  getActiveOffersForRacket,
+  groupOffersByProductKey,
   lowestPriceOfferId,
   sortOffersByPrice,
   totalPrice,
@@ -27,6 +30,24 @@ function makeOffer(overrides: Partial<Offer>): Offer {
     ...overrides,
   };
 }
+
+test("legacy racket offer lookup remains an alias of the generic product-key lookup", () => {
+  assert.equal(getActiveOffersForRacket, getActiveOffersForProductKey);
+});
+
+test("batch offer grouping keeps every requested key and sorts each product", () => {
+  const expensive = makeOffer({ racketSlug: "string:a", priceKrw: 30_000 });
+  const cheap = makeOffer({ racketSlug: "string:a", priceKrw: 20_000 });
+  const other = makeOffer({ racketSlug: "string:b", priceKrw: 25_000 });
+
+  const grouped = groupOffersByProductKey(
+    ["string:a", "string:b", "string:empty"],
+    [expensive, other, cheap],
+  );
+  assert.deepEqual(grouped["string:a"].map((offer) => offer.id), [cheap.id, expensive.id]);
+  assert.deepEqual(grouped["string:b"].map((offer) => offer.id), [other.id]);
+  assert.deepEqual(grouped["string:empty"], []);
+});
 
 test("totalPrice는 배송비를 포함하고, 가격 없으면 null", () => {
   assert.equal(totalPrice(makeOffer({ priceKrw: 100000, shippingFeeKrw: 3000 })), 103000);

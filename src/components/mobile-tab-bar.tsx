@@ -7,6 +7,7 @@ import { useWishlist } from "@/lib/wishlist";
 const tabs = [
   { href: "/", label: "홈", icon: "🏠" },
   { href: "/rackets", label: "찾기", icon: "🔍" },
+  { href: "/strings", label: "스트링", icon: "🧵" },
   { href: "/compare", label: "비교", icon: "⇄" },
   { href: "/wishlist", label: "찜", icon: "♡" },
 ];

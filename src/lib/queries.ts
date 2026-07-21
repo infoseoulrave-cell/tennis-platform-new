@@ -33,11 +33,27 @@ export type RacketListItem = {
   availableInKorea: boolean;
 };
 
+export type RacketCatalogIdentity = {
+  brand: string;
+  model: string;
+  year: number;
+  slug: string;
+};
+
 type AxisScoreRow = {
   score: number;
   axis_key: string;
   input_snapshot?: unknown;
 };
+
+export function unwrapSupabaseData<T>(
+  data: T | null,
+  error: unknown,
+  fallback: T,
+): T {
+  if (error) throw error;
+  return data ?? fallback;
+}
 
 function isReliableScoreSnapshot(snapshot: unknown): boolean {
   if (!snapshot || typeof snapshot !== "object") return false;
@@ -225,6 +241,65 @@ function toListItem(r: Record<string, unknown>, scoresMap: Record<string, Scores
   };
 }
 
+function racketCatalogIdentityKey(
+  racket: Pick<RacketListItem, "brand" | "model" | "year">,
+): string {
+  return `${racket.brand}\u0000${racket.model}\u0000${racket.year ?? ""}`;
+}
+
+export function selectRacketsByCatalogIdentities(
+  source: RacketListItem[],
+  identities: readonly RacketCatalogIdentity[],
+): RacketListItem[] {
+  const byIdentity = new Map(
+    source.map((racket) => [racketCatalogIdentityKey(racket), racket]),
+  );
+
+  return identities.flatMap((identity) => {
+    const racket = byIdentity.get(racketCatalogIdentityKey(identity));
+    return racket?.slug === identity.slug ? [racket] : [];
+  });
+}
+
+export async function getRacketsByCatalogIdentities(
+  identities: readonly RacketCatalogIdentity[],
+): Promise<RacketListItem[]> {
+  if (identities.length === 0) return [];
+
+  const supabaseAdmin = getSupabaseAdmin();
+  const brands = [...new Set(identities.map((identity) => identity.brand))];
+  const models = [...new Set(identities.map((identity) => identity.model))];
+  const years = [...new Set(identities.map((identity) => identity.year))];
+  const { data, error } = await supabaseAdmin
+    .from("racket_models")
+    .select(`
+      id, name, release_year, image_url,
+      brands!inner(name),
+      racket_specs(
+        weight_g, head_size_sq_in, string_pattern, balance_mm,
+        swing_weight_kg_cm2, stiffness_ra, beam_width_mm
+      ),
+      racket_variants(retail_price_krw, available_in_korea, region_code)
+    `)
+    .eq("discontinued", false)
+    .in("brands.name", brands)
+    .in("name", models)
+    .in("release_year", years)
+    .limit(identities.length);
+
+  if (error || !data) return [];
+
+  const ids = data.map((racket) => racket.id);
+  const scoresMap = await fetchScoresForRackets(ids).catch(
+    () => ({} as Record<string, Scores | null>),
+  );
+  const rackets = data
+    .map((racket) => toListItem(racket as unknown as Record<string, unknown>, scoresMap))
+    .filter((racket) => racket.availableInKorea);
+
+  return selectRacketsByCatalogIdentities(rackets, identities);
+}
+
 export async function getTopRackets(limit: number = 5): Promise<RacketListItem[]> {
   const supabaseAdmin = getSupabaseAdmin();
   const { data, error } = await supabaseAdmin
@@ -281,9 +356,9 @@ export async function getRacketBySlug(slug: string): Promise<RacketDetail | null
       racket_variants(retail_price_krw, available_in_korea, region_code)
     `);
 
-  if (error || !data) return null;
+  const rows = unwrapSupabaseData(data, error, []);
 
-  const match = data.find((r) => {
+  const match = rows.find((r) => {
     const brand = (r.brands as unknown as { name: string } | null)?.name ?? "";
     return generateSlug(brand, r.name, r.release_year) === slug;
   });
@@ -444,14 +519,13 @@ export async function getRackets(filters: RacketFilters = {}): Promise<{
   query = query.order("id", { ascending: false }).limit(1000);
 
   const { data, error } = await query;
+  const rows = unwrapSupabaseData(data, error, []);
 
-  if (error || !data) return { rackets: [], total: 0 };
-
-  const ids = data.map((r) => r.id);
+  const ids = rows.map((r) => r.id);
   const scoresMap = await fetchScoresForRackets(ids).catch(() => ({} as Record<string, Scores | null>));
 
   return filterSortPaginateRackets(
-    data.map((r) => toListItem(r as unknown as Record<string, unknown>, scoresMap)),
+    rows.map((r) => toListItem(r as unknown as Record<string, unknown>, scoresMap)),
     filters,
   );
 }

@@ -1,9 +1,22 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { generateSlug, rowToScores, scoresFromSpec } from "../src/lib/queries";
+import {
+  generateSlug,
+  rowToScores,
+  scoresFromSpec,
+  unwrapSupabaseData,
+} from "../src/lib/queries";
 
 const VERIFIED_SNAPSHOT = { completeness: 1, confidence: 1 };
+
+test("Supabase failures are not disguised as empty catalog data", () => {
+  const failure = new Error("database unavailable");
+
+  assert.throws(() => unwrapSupabaseData(null, failure, []), failure);
+  assert.deepEqual(unwrapSupabaseData(null, null, []), []);
+  assert.deepEqual(unwrapSupabaseData(["racket"], null, []), ["racket"]);
+});
 
 test("slug generation does not repeat a release year already in the model", () => {
   assert.equal(

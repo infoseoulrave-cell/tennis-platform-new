@@ -14,6 +14,7 @@ import {
 import { createAdminSessionToken, isValidAdminToken } from "@/lib/admin-auth";
 import { isSafeOfferUrl } from "@/lib/offer-url";
 import { getRackets } from "@/lib/queries";
+import { isStringOfferKey, stringProducts } from "@/data/strings";
 
 export const dynamic = "force-dynamic";
 
@@ -38,13 +39,17 @@ export function parseOptionalShippingFee(value: FormDataEntryValue | null): numb
   return Number.isFinite(amount) && amount >= 0 ? Math.round(amount) : null;
 }
 
+export function isAllowedOfferProductKey(value: string): boolean {
+  return Boolean(value) && (!value.startsWith("string:") || isStringOfferKey(value));
+}
+
 async function createOffer(formData: FormData) {
   "use server";
   await requireAdminSession();
   const url = String(formData.get("url") ?? "").trim();
   const racketSlug = String(formData.get("racketSlug") ?? "").trim();
   const vendor = String(formData.get("vendor") ?? "other");
-  if (!isSafeOfferUrl(url) || !racketSlug) return;
+  if (!isSafeOfferUrl(url) || !isAllowedOfferProductKey(racketSlug)) return;
 
   const price = Number(formData.get("priceKrw"));
 
@@ -60,6 +65,7 @@ async function createOffer(formData: FormData) {
     lastCheckedAt: new Date(),
   });
   revalidatePath("/admin/offers");
+  revalidatePath("/strings");
 }
 
 async function toggleOffer(formData: FormData) {
@@ -69,6 +75,7 @@ async function toggleOffer(formData: FormData) {
   const active = formData.get("active") === "true";
   await db.update(offers).set({ active: !active, updatedAt: new Date() }).where(eq(offers.id, id));
   revalidatePath("/admin/offers");
+  revalidatePath("/strings");
 }
 
 async function deleteOffer(formData: FormData) {
@@ -77,6 +84,7 @@ async function deleteOffer(formData: FormData) {
   const id = String(formData.get("id"));
   await db.delete(offers).where(eq(offers.id, id));
   revalidatePath("/admin/offers");
+  revalidatePath("/strings");
 }
 
 export default async function AdminOffersPage() {
@@ -102,10 +110,13 @@ export default async function AdminOffersPage() {
       <section style={{ background: "#f9fafb", border: "1px solid #e5e7eb", borderRadius: "8px", padding: "16px", marginBottom: "24px" }}>
         <h2 style={{ fontSize: "16px", fontWeight: 600, margin: "0 0 12px" }}>새 오퍼 추가</h2>
         <form action={createOffer} style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "8px" }}>
-          <input name="racketSlug" list="racket-slugs" placeholder="racket slug *" required style={{ padding: "8px", border: "1px solid #d1d5db", borderRadius: "6px" }} />
-          <datalist id="racket-slugs">
+          <input name="racketSlug" list="product-keys" aria-label="상품 키" placeholder="라켓 slug 또는 스트링 상품 키 *" required style={{ padding: "8px", border: "1px solid #d1d5db", borderRadius: "6px" }} />
+          <datalist id="product-keys">
             {racketList.map((r) => (
               <option key={r.id} value={r.slug}>{`${r.brand} ${r.model}`}</option>
+            ))}
+            {stringProducts.map((product) => (
+              <option key={product.offerKey} value={product.offerKey}>{`${product.brand} ${product.name}`}</option>
             ))}
           </datalist>
           <select name="vendor" style={{ padding: "8px", border: "1px solid #d1d5db", borderRadius: "6px" }}>
@@ -126,7 +137,7 @@ export default async function AdminOffersPage() {
       <table style={{ width: "100%", borderCollapse: "collapse" }}>
         <thead>
           <tr style={{ textAlign: "left", color: "#6b7280", fontSize: "12px" }}>
-            <th style={cell}>라켓</th>
+            <th style={cell}>상품 키</th>
             <th style={cell}>판매처</th>
             <th style={cell}>총액</th>
             <th style={cell}>클릭 7d/30d</th>
