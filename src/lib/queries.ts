@@ -247,7 +247,9 @@ export async function getTopRackets(limit: number = 5): Promise<RacketListItem[]
   const ids = data.map((r) => r.id);
   const scoresMap = await fetchScoresForRackets(ids).catch(() => ({} as Record<string, Scores | null>));
 
-  return data.map((r) => toListItem(r as unknown as Record<string, unknown>, scoresMap));
+  return data
+    .map((r) => toListItem(r as unknown as Record<string, unknown>, scoresMap))
+    .filter((racket) => racket.availableInKorea);
 }
 
 export type RacketDetail = RacketListItem & {
@@ -365,7 +367,7 @@ export function filterSortPaginateRackets(
 ): { rackets: RacketListItem[]; total: number } {
   const brandSet = new Set((filters.brand ?? []).map((brand) => brand.toLowerCase()));
   const query = filters.q?.trim().toLowerCase();
-  let rackets = source.filter((racket) => {
+  const rackets = source.filter((racket) => {
     if (!racket.availableInKorea) return false;
     if (brandSet.size > 0 && !brandSet.has(racket.brand.toLowerCase())) return false;
     if (query && !`${racket.brand} ${racket.model}`.toLowerCase().includes(query)) return false;
@@ -477,7 +479,9 @@ export async function getSimilarRackets(racketId: string, brand: string, limit: 
   const ids = data.map((r) => r.id);
   const scoresMap = await fetchScoresForRackets(ids).catch(() => ({} as Record<string, Scores | null>));
 
-  return data.map((r) => toListItem(r as unknown as Record<string, unknown>, scoresMap));
+  return data
+    .map((r) => toListItem(r as unknown as Record<string, unknown>, scoresMap))
+    .filter((racket) => racket.availableInKorea);
 }
 
 export async function getAllBrands(): Promise<{ name: string; nameKo: string | null }[]> {

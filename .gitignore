@@ -11,6 +11,8 @@ next-env.d.ts
 .superpowers/
 .vercel/
 *.sql
+!src/db/migrations/
+!src/db/migrations/*.sql
 *.py
 seed_via_api.py
 generate_seed_sql.py
