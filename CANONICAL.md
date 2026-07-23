@@ -58,3 +58,34 @@
 
 - `/admin/offers`에서 실제 어필리에이트 링크를 등록하고 `/strings`의 외부 이동을 확인한다.
 - 과거 노출 이력이 있는 GitHub PAT를 폐기하고 새 토큰으로 교체한다.
+
+## 8. 2026-07-23 LOCAL/PREVIEW 후보 상태
+
+이 절은 검증된 다음 후보를 기록하며 프로덕션 반영 완료를 뜻하지 않는다.
+
+- Omega URL `https://racketlab-omega.vercel.app/`와 배포 ID `dpl_GmX79sYrsM78DpRFmLLnoktrtYXv`는 불변이며 이번 후보에서 건드리지 않았다.
+- canonical Git은 `https://github.com/infoseoulrave-cell/tennis-platform-new.git`의 `main`이다.
+- 후보 커밋 `073ed40032d4bf45b13a1e5be1c66245ad4b83c4`는 로컬에만 있고 아직 원격에 푸시하지 않았다.
+- canonical Vercel 대상은 프로젝트 `prj_wPzKAFzr9oLIrMfLMRBDdJukdMi7`, 팀 `team_B761Aj9bfMMOo5L3FJIVAMU3`, 프로덕션 alias `https://racketlab-one.vercel.app/`이다.
+- 최종 프리뷰는 `https://racketlab-n35r2x6jj-rachel-flower.vercel.app/`이며 배포 ID `dpl_FPbxRqKh9MwUbuZaMg7E9NR4yo3z`가 `READY`임을 확인했다.
+- 현재 후보는 Git push, 프로덕션 배포, DB `--apply`를 수행하지 않았으며 세 작업 모두 명시적 사용자 승인을 기다린다.
+
+### 라켓 데이터 불변식
+
+- 공개 점수는 항상 `10.0..15.0`이며 raw v3 `0..100`을 `10 + raw / 20`으로 표시한다.
+- 활성 한국 라켓 정체성은 정확히 39개이며 각 라켓은 제조사와 Tennis Warehouse 출처를 하나씩 가져 총 78개 출처를 이룬다.
+- 정규화 결정은 273개, v3 점수는 5축 × 39개인 195개다.
+- 제조사 출처는 언스트링 정적 스펙을, Tennis Warehouse 출처는 스트링 상태의 swing weight와 stiffness RA를 담당한다.
+- 정체성 교정 2건은 canonical 백필에 포함하며 기존 이름은 검색 호환을 위한 alias로 보존한다.
+- 이전 카탈로그 mutator는 실행하지 않고 `scripts/backfill-racket-evidence.ts`만 기본 dry-run 후 정확한 `--apply`로 사용한다.
+- 은퇴한 중복 라켓은 active-only 상세 가드로 공개 상세에 노출하지 않는다.
+
+### 검증 및 승인 후 실행 순서
+
+- 현재 검증은 테스트 111/111, typecheck 통과, 린트 오류 0건, 29페이지 build 통과, diff-check 통과다.
+- 데스크톱·모바일의 목록·상세·비교·가이드에서 오버플로와 콘솔 오류가 없고, 이미지 프레임은 순백 배경으로 통일했으며 불필요한 흰 사각 테두리 아티팩트가 없음을 확인했다.
+- DB dry-run 결과는 mutation 0이며 `--apply`는 실행하지 않았다.
+- 승인 후 로컬 커밋을 canonical `main`에 푸시하고 최종 프리뷰와 동일한 소스인지 확인한 뒤 canonical 프로젝트에만 프로덕션 반영한다.
+- 승인 후 백필을 정확한 `--apply`로 한 번 실행하며, 트랜잭션 내부 post-apply 검증이 출처 78개, 결정 273개, 축 정의 5개, v3 점수 195개와 일치해야 한다.
+- 적용 후 프로덕션 목록·상세·비교·가이드, 공개 점수 범위, 은퇴 중복 차단, DB 집계와 Omega 무변경 상태를 다시 검증한다.
+- 후속 P2는 은퇴 중복 데이터의 DB·관리자 수집 처리와 미래 후보의 evidence role 강제다.
