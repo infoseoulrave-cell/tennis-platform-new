@@ -2,8 +2,8 @@ export const dynamic = "force-dynamic";
 
 import Link from "next/link";
 import {
-  formatPublicScore,
-  publicScoreToPercent,
+  formatPublicAxisScore,
+  publicAxisScoreToPercent,
 } from "@/lib/score-display";
 
 const axes = [
@@ -46,13 +46,13 @@ function AxisScaleDemo({
   label: string;
   value: number;
 }) {
-  const pct = publicScoreToPercent(value);
+  const pct = publicAxisScoreToPercent(value);
   return (
     <div className="space-y-1">
       <div className="flex justify-between text-[10px] text-[var(--color-text-muted)] uppercase tracking-wide">
-        <span>10</span>
+        <span>0</span>
         <span className="text-[var(--color-text-secondary)]">{label}</span>
-        <span>15</span>
+        <span>5</span>
       </div>
       <div className="relative h-2 rounded-full bg-[var(--color-border)]">
         <div
@@ -61,7 +61,7 @@ function AxisScaleDemo({
         />
       </div>
       <p className="text-right text-xs font-medium text-[var(--color-text)]">
-        예: {formatPublicScore(value)}
+        예: {formatPublicAxisScore(value)}
       </p>
     </div>
   );
@@ -83,10 +83,12 @@ export default function GuideDnaPage() {
           5축 점수 이해하기
         </h1>
         <p className="mt-3 text-[var(--color-text-secondary)] leading-relaxed">
-          각 축은 <strong className="text-[var(--color-text)]">10.0/15</strong>
-          부터 <strong className="text-[var(--color-text)]">15.0/15</strong>까지의
-          공개 척도이며, 중립 기준은 12.5/15입니다. 절대적인 ‘정답 숫자’가
-          아니라 같은 카탈로그 안에서의 성향 비교에 쓰입니다.
+          각 축은 <strong className="text-[var(--color-text)]">0/5</strong>부터{" "}
+          <strong className="text-[var(--color-text)]">5/5</strong>까지의 정수로
+          표시하며, 다섯 축 합계는 정확히{" "}
+          <strong className="text-[var(--color-text)]">10/15~15/15</strong>입니다.
+          절대적인 ‘정답 숫자’나 품질 등급이 아니라 같은 카탈로그 안에서의
+          성향 비교에 쓰입니다.
         </p>
       </header>
 
@@ -137,7 +139,7 @@ export default function GuideDnaPage() {
           시각 예시
         </h2>
         <p className="text-sm text-[var(--color-text-secondary)] mb-6">
-          아래는 같은 척도(10~15) 위에 마커를 올린 예시입니다. 실제 라켓
+          아래는 같은 축 척도(0~5) 위에 마커를 올린 예시입니다. 실제 라켓
           카드에서는 다섯 축이 함께 표시됩니다.
         </p>
         <div className="grid gap-6 sm:grid-cols-2">
@@ -146,8 +148,8 @@ export default function GuideDnaPage() {
               스핀 특화형 (예시)
             </p>
             <div className="space-y-5">
-              <AxisScaleDemo label="스핀" value={14.5} />
-              <AxisScaleDemo label="파워" value={13} />
+              <AxisScaleDemo label="스핀" value={5} />
+              <AxisScaleDemo label="파워" value={3} />
             </div>
           </div>
           <div className="rounded-2xl border border-[var(--color-border)] p-5 bg-white">
@@ -155,8 +157,8 @@ export default function GuideDnaPage() {
               안정·컨트롤형 (예시)
             </p>
             <div className="space-y-5">
-              <AxisScaleDemo label="안정성" value={14} />
-              <AxisScaleDemo label="컨트롤" value={13.5} />
+              <AxisScaleDemo label="안정성" value={4} />
+              <AxisScaleDemo label="컨트롤" value={3} />
             </div>
           </div>
         </div>

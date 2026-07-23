@@ -4,10 +4,18 @@ import test from "node:test";
 
 import {
   generateSlug,
+  rawScoresFromSpec,
+  resolveRacketRawScores,
+  rowToRawScores,
   rowToScores,
   scoresFromSpec,
   unwrapSupabaseData,
 } from "../src/lib/queries";
+import {
+  PUBLIC_AXIS_KEYS,
+  rawScoresToPublicAxisScores,
+  sumPublicAxisScores,
+} from "../src/lib/score-display";
 
 const VERIFIED_SNAPSHOT = {
   scoringVersion: "v3",
@@ -54,17 +62,29 @@ test("an incomplete axis set is not presented as a complete five-axis score", ()
   );
 });
 
-test("complete in-range score sets are converted to the public range", () => {
-  assert.deepEqual(
-    rowToScores([
-      { score: 100, axis_key: "power", input_snapshot: VERIFIED_SNAPSHOT },
-      { score: 60, axis_key: "control", input_snapshot: VERIFIED_SNAPSHOT },
-      { score: 50, axis_key: "spin", input_snapshot: VERIFIED_SNAPSHOT },
-      { score: 40, axis_key: "comfort", input_snapshot: VERIFIED_SNAPSHOT },
-      { score: 0, axis_key: "stability", input_snapshot: VERIFIED_SNAPSHOT },
-    ]),
-    { power: 15, control: 13, spin: 12.5, comfort: 12, stability: 10 },
-  );
+test("complete persisted rows preserve raw scores and derive bounded public axes", () => {
+  const rows = [
+    { score: 100, axis_key: "power", input_snapshot: VERIFIED_SNAPSHOT },
+    { score: 60, axis_key: "control", input_snapshot: VERIFIED_SNAPSHOT },
+    { score: 50, axis_key: "spin", input_snapshot: VERIFIED_SNAPSHOT },
+    { score: 40, axis_key: "comfort", input_snapshot: VERIFIED_SNAPSHOT },
+    { score: 0, axis_key: "stability", input_snapshot: VERIFIED_SNAPSHOT },
+  ];
+
+  assert.deepEqual(rowToRawScores(rows), {
+    power: 100,
+    control: 60,
+    spin: 50,
+    comfort: 40,
+    stability: 0,
+  });
+  assert.deepEqual(rowToScores(rows), {
+    power: 5,
+    control: 3,
+    spin: 3,
+    comfort: 2,
+    stability: 0,
+  });
 });
 
 test("persisted raw scores outside 0-100 fail closed instead of being clamped", () => {
@@ -151,8 +171,8 @@ test("persisted scores without reliable v3 snapshots are hidden", () => {
   }))), null);
 });
 
-test("missing persisted v3 rows fall back to a fresh v3 calculation from complete specs", () => {
-  const scores = scoresFromSpec({
+test("missing persisted v3 rows retain raw v3 fallback scores and derive integer axes", () => {
+  const spec = {
     headSizeSqIn: 100,
     weightG: 300,
     balanceMm: 320,
@@ -160,13 +180,29 @@ test("missing persisted v3 rows fall back to a fresh v3 calculation from complet
     stiffnessRa: 65,
     beamWidthMm: "23/26/23",
     stringPattern: "16x19",
-  });
+  };
+  const rawScores = rawScoresFromSpec(spec);
+  const scores = scoresFromSpec(spec);
 
+  assert.ok(rawScores);
   assert.ok(scores);
-  assert.deepEqual(Object.keys(scores).sort(), ["comfort", "control", "power", "spin", "stability"]);
+  assert.deepEqual(Object.keys(rawScores), [...PUBLIC_AXIS_KEYS]);
+  assert.deepEqual(Object.keys(scores), [...PUBLIC_AXIS_KEYS]);
   assert.equal(
-    Object.values(scores).every((score) => score >= 10 && score <= 15),
+    Object.values(rawScores).every((score) => score >= 0 && score <= 100),
     true,
+  );
+  assert.equal(
+    Object.values(scores).every((score) =>
+      Number.isInteger(score) && score >= 0 && score <= 5
+    ),
+    true,
+  );
+  assert.equal(
+    sumPublicAxisScores(scores),
+    Math.round(
+      10 + Object.values(rawScores).reduce((sum, score) => sum + score, 0) / 100,
+    ),
   );
 });
 
@@ -201,5 +237,116 @@ test("read-time fallback requires at least five verified inputs and 0.60 confide
     stiffnessRa: 65,
     beamWidthMm: null,
     stringPattern: "16x19",
+  }), null);
+});
+
+test("exact Speed 2026 evidence identities resolve raw v3 scores and 13/15 public totals", () => {
+  const incompleteDatabaseSpec = {
+    headSizeSqIn: 100,
+    weightG: 300,
+    balanceMm: 320,
+    swingWeightKgCm2: null,
+    stiffnessRa: null,
+    beamWidthMm: "23",
+    stringPattern: "16x19",
+  };
+  const cases = [
+    {
+      model: "Speed Pro 2026",
+      raw: { power: 59, control: 72, spin: 19, comfort: 62, stability: 70 },
+    },
+    {
+      model: "Speed MP 2026",
+      raw: { power: 59, control: 51, spin: 53, comfort: 63, stability: 66 },
+    },
+    {
+      model: "Speed MP L 2026",
+      raw: { power: 50, control: 50, spin: 57, comfort: 54, stability: 49 },
+    },
+  ] as const;
+
+  for (const { model, raw } of cases) {
+    const resolved = resolveRacketRawScores({
+      persistedRawScores: null,
+      databaseSpec: incompleteDatabaseSpec,
+      identity: { brand: "Head", model, year: 2026 },
+    });
+
+    assert.deepEqual(resolved, raw);
+    assert.equal(
+      sumPublicAxisScores(rawScoresToPublicAxisScores(resolved)),
+      13,
+    );
+  }
+});
+
+test("raw score resolution preserves persisted then reliable database precedence", () => {
+  const persisted = {
+    power: 1,
+    control: 2,
+    spin: 3,
+    comfort: 4,
+    stability: 5,
+  };
+  const databaseSpec = {
+    headSizeSqIn: 98,
+    weightG: 315,
+    balanceMm: 310,
+    swingWeightKgCm2: 340,
+    stiffnessRa: 70,
+    beamWidthMm: "20",
+    stringPattern: "18x20",
+  };
+  const databaseRaw = rawScoresFromSpec(databaseSpec);
+  assert.ok(databaseRaw);
+
+  assert.deepEqual(resolveRacketRawScores({
+    persistedRawScores: persisted,
+    databaseSpec,
+    identity: {
+      brand: "Head",
+      model: "Speed Pro 2026",
+      year: 2026,
+    },
+  }), persisted);
+  assert.deepEqual(resolveRacketRawScores({
+    persistedRawScores: null,
+    databaseSpec,
+    identity: {
+      brand: "Head",
+      model: "Speed Pro 2026",
+      year: 2026,
+    },
+  }), databaseRaw);
+});
+
+test("incomplete database specs outside an exact evidence identity fail closed", () => {
+  const incompleteDatabaseSpec = {
+    headSizeSqIn: 100,
+    weightG: null,
+    balanceMm: null,
+    swingWeightKgCm2: null,
+    stiffnessRa: null,
+    beamWidthMm: null,
+    stringPattern: null,
+  };
+
+  assert.equal(resolveRacketRawScores({
+    persistedRawScores: null,
+    databaseSpec: incompleteDatabaseSpec,
+    identity: {
+      brand: "Head",
+      model: "Speed Pro",
+      year: 2026,
+    },
+  }), null);
+  assert.equal(resolveRacketRawScores({
+    persistedRawScores: null,
+    databaseSpec: incompleteDatabaseSpec,
+    identity: {
+      brand: "Head",
+      model: "Speed Pro 2026",
+      year: 2025,
+    },
   }), null);
 });

@@ -1,6 +1,9 @@
 import type { Scores } from "@/components/radar-chart";
 import type { RacketCatalogIdentity, RacketListItem } from "@/lib/queries";
-import { formatPublicScore } from "@/lib/score-display";
+import {
+  formatPublicAxisScore,
+  formatPublicTotal,
+} from "@/lib/score-display";
 
 type ScoreAxis = keyof Scores;
 
@@ -140,12 +143,16 @@ export function featuredRacketTags(racket: FeaturedRacket): FeaturedRacketTag[] 
   if (!racket.scores) return racket.fallbackTags;
 
   return [
+    {
+      icon: "Σ",
+      label: "총점",
+      value: formatPublicTotal(racket.scores),
+    },
     ...racket.scoreAxes.map(({ icon, axis }) => ({
       icon,
       label: scoreLabels[axis],
-      value: formatPublicScore(racket.scores![axis]),
+      value: formatPublicAxisScore(racket.scores![axis]),
     })),
-    { icon: "◇", label: "데이터", value: "카탈로그 연동" },
   ];
 }
 

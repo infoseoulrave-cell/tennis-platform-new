@@ -1,10 +1,11 @@
 import {
-  formatPublicScore,
-  publicScoreToFraction,
-  type PublicScores15,
+  formatPublicAxisScore,
+  PUBLIC_AXIS_KEYS,
+  publicAxisScoreToFraction,
+  type PublicAxisScores5,
 } from "@/lib/score-display";
 
-export type Scores = PublicScores15;
+export type Scores = PublicAxisScores5;
 
 export const AXIS_LABELS: Record<keyof Scores, string> = {
   power: "파워",
@@ -14,14 +15,12 @@ export const AXIS_LABELS: Record<keyof Scores, string> = {
   stability: "안정성",
 };
 
-const AXES: (keyof Scores)[] = ["power", "control", "spin", "comfort", "stability"];
-
 const ACTIVE_COLOR = "#C4E538";
 const GRID_COLOR = "#E2E2D8";
 const LABEL_COLOR = "#525252";
 
 function scoreToFraction(score: number): number {
-  return publicScoreToFraction(score);
+  return publicAxisScoreToFraction(score);
 }
 
 function getPoint(cx: number, cy: number, r: number, index: number, fraction: number) {
@@ -31,7 +30,7 @@ function getPoint(cx: number, cy: number, r: number, index: number, fraction: nu
 }
 
 function polygon(scores: Scores, cx: number, cy: number, r: number): string {
-  return AXES.map((axis, i) => {
+  return PUBLIC_AXIS_KEYS.map((axis, i) => {
     const p = getPoint(cx, cy, r, i, scoreToFraction(scores[axis]));
     return `${p.x},${p.y}`;
   }).join(" ");
@@ -84,7 +83,7 @@ export function RadarChart({
         <polygon
           key={level}
           data-radar-grid={level}
-          points={AXES.map((_, i) => {
+          points={PUBLIC_AXIS_KEYS.map((_, i) => {
             const p = getPoint(cx, cy, r, i, level === 0 ? 0.001 : level);
             return `${p.x},${p.y}`;
           }).join(" ")}
@@ -96,7 +95,7 @@ export function RadarChart({
       ))}
 
       {/* Axis lines */}
-      {AXES.map((_, i) => {
+      {PUBLIC_AXIS_KEYS.map((_, i) => {
         const p = getPoint(cx, cy, r, i, 1);
         return <line key={i} x1={cx} y1={cy} x2={p.x} y2={p.y} stroke={GRID_COLOR} strokeWidth={0.5} />;
       })}
@@ -111,7 +110,7 @@ export function RadarChart({
             strokeWidth={item.dashed ? 1.5 : 2}
             strokeDasharray={item.dashed ? "4 2" : undefined}
           />
-          {AXES.map((axis, i) => {
+          {PUBLIC_AXIS_KEYS.map((axis, i) => {
             const p = getPoint(cx, cy, r, i, scoreToFraction(item.scores[axis]));
             return <circle key={axis} cx={p.x} cy={p.y} r={pointRadius} fill={item.color} />;
           })}
@@ -119,7 +118,7 @@ export function RadarChart({
       ))}
 
       {/* Axis labels + score */}
-      {AXES.map((axis, i) => {
+      {PUBLIC_AXIS_KEYS.map((axis, i) => {
         const labelR = r + 18;
         const angle = (Math.PI * 2 * i) / 5 - Math.PI / 2;
         const lx = cx + labelR * Math.cos(angle);
@@ -147,7 +146,7 @@ export function RadarChart({
                 dominantBaseline="middle"
                 style={{ fill: color, fontSize: 10, fontWeight: "bold" }}
               >
-                {formatPublicScore(score)}
+                {formatPublicAxisScore(score)}
               </text>
             )}
           </g>

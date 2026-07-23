@@ -25,11 +25,18 @@ function catalogRacket(overrides: Partial<RacketListItem> = {}): RacketListItem 
     priceKrw: null,
     imageUrl: null,
     scores: {
-      power: 12.4,
-      control: 12.6,
-      spin: 14.2,
-      comfort: 11.9,
-      stability: 13.3,
+      power: 3,
+      control: 2,
+      spin: 4,
+      comfort: 2,
+      stability: 2,
+    },
+    rawScores: {
+      power: 68,
+      control: 52,
+      spin: 90,
+      comfort: 43,
+      stability: 60,
     },
     availableInKorea: true,
     ...overrides,
@@ -48,9 +55,9 @@ test("featured hero hydrates scores and specs directly from catalog input", () =
   assert.deepEqual(
     featuredRacketTags(hero).map(({ label, value }) => [label, value]),
     [
-      ["스핀", "14.2/15"],
-      ["파워", "12.4/15"],
-      ["데이터", "카탈로그 연동"],
+      ["총점", "13/15"],
+      ["스핀", "4/5"],
+      ["파워", "3/5"],
     ],
   );
 });

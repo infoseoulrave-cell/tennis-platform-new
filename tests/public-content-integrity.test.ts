@@ -15,7 +15,14 @@ test("featured product image and manufacturer specification sources are distinct
 
 test("player cards request a small Commons thumbnail", () => {
   const original = "https://upload.wikimedia.org/wikipedia/commons/thumb/a/b/File.jpg/960px-File.jpg";
-  assert.equal(playerThumbnailUrl(original), "https://upload.wikimedia.org/wikipedia/commons/thumb/a/b/File.jpg/240px-File.jpg");
+  assert.equal(playerThumbnailUrl(original), "https://upload.wikimedia.org/wikipedia/commons/thumb/a/b/File.jpg/250px-File.jpg");
+});
+
+test("the players page derives its verification date from the player dataset", () => {
+  const page = read("src/app/players/page.tsx");
+
+  assert.match(page, /PLAYERS_VERIFIED_AT/);
+  assert.doesNotMatch(page, /2026년 7월 21일/);
 });
 
 test("recommendation detail links use canonical racket pages instead of deleted mock pages", () => {
@@ -50,28 +57,48 @@ test("official 2026 catalog values keep an explicit unstrung basis", () => {
   assert.match(catalog, /measurementBasis: "unstrung"/);
 });
 
-test("public score UI consistently documents and formats the 10-15 scale", () => {
+test("public score UI consistently formats integer axes and the derived 10-15 total", () => {
   const scoreDisplay = read("src/lib/score-display.ts");
   const queries = read("src/lib/queries.ts");
   const radar = read("src/components/radar-chart.tsx");
   const bars = read("src/components/axis-bars.tsx");
   const card = read("src/components/racket-card.tsx");
   const detail = read("src/app/rackets/[slug]/page.tsx");
+  const compare = read("src/app/compare/page.tsx");
+  const featured = read("src/data/featured-rackets.ts");
   const guide = read("src/app/guide/dna/page.tsx");
   const methodology = read("src/components/scoring-methodology-note.tsx");
   const publicScoreCopy = [guide, methodology].join("\n");
 
-  assert.match(scoreDisplay, /export type PublicScores15/);
-  assert.match(scoreDisplay, /PUBLIC_SCORE_MIN \+ clampedRaw \/ 20/);
-  assert.match(scoreDisplay, /toFixed\(1\)\}\/15/);
-  assert.match(queries, /rawScoreToPublicScore\(value\)/);
-  assert.match(radar, /publicScoreToFraction/);
-  assert.match(bars, /publicScoreToPercent/);
-  assert.match(card, /formatPublicScore\(score\)/);
+  assert.match(scoreDisplay, /export type PublicAxisScores5/);
+  assert.match(scoreDisplay, /export type RawAxisScores100/);
+  assert.match(scoreDisplay, /rawScoresToPublicAxisScores/);
+  assert.match(scoreDisplay, /formatPublicAxisScore/);
+  assert.match(scoreDisplay, /formatPublicTotal/);
+  assert.match(scoreDisplay, /sumPublicAxisScores/);
+  assert.match(queries, /rawScoresToPublicAxisScores\(rawScores\)/);
+  assert.match(radar, /publicAxisScoreToFraction/);
+  assert.match(bars, /publicAxisScoreToPercent/);
+  assert.match(card, /formatPublicAxisScore\(scores\[axis\]\)/);
+  assert.match(card, /formatPublicTotal\(scores\)/);
+  assert.match(card, /PUBLIC_AXIS_KEYS\.map\(\(axis\)/);
+  assert.match(card, /data-racket-axis=\{axis\}/);
+  assert.match(card, /grid grid-cols-5/);
+  assert.match(detail, /formatPublicTotal\(racket\.scores\)/);
+  assert.match(compare, /formatPublicTotal\(r\.scores\)/);
+  assert.match(compare, /formatPublicAxisScore\(r\.scores\[axis\]\)/);
+  assert.match(compare, /PUBLIC_AXIS_KEYS\.map\(\(axis\)/);
+  assert.match(compare, /AXIS_LABELS\[axis\]/);
+  assert.match(compare, /showValues=\{false\}/);
+  assert.match(compare, /aria-label="5축 점수 비교"/);
+  assert.match(compare, /<table/);
+  assert.match(compare, /overflow-x-auto/);
+  assert.match(featured, /formatPublicTotal\(racket\.scores\)/);
   assert.doesNotMatch(publicScoreCopy, /-5\s*~\s*\+5|−5|\+5/);
-  assert.match(detail, /scores\.spin >= 14/);
-  assert.match(detail, /scores\.comfort >= 13\.5/);
-  assert.match(detail, /scores\.comfort <= 11\.5/);
+  assert.doesNotMatch(publicScoreCopy, /\d+\.\d+\/(?:5|15)/);
+  assert.match(detail, /rawScores\.spin >= 80/);
+  assert.match(detail, /rawScores\.comfort >= 70/);
+  assert.match(detail, /rawScores\.comfort <= 30/);
 });
 
 test("public five-axis copy matches the official v3 proxy definitions and labels", () => {
@@ -131,6 +158,7 @@ test("methodology names the evidence basis and its limits", () => {
 
   for (const phrase of [
     "스펙 기반 비교 추정치",
+    "0~5",
     "10~15",
     "비스트링(unstrung)",
     "스트링 장착(strung)",

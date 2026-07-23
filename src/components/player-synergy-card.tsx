@@ -65,7 +65,7 @@ export function PlayerCard({ player }: { player: Player }) {
       </div>
 
       <div className="bg-amber-50/50 border border-amber-100 rounded-xl p-4 mb-4">
-        <p className="text-xs font-semibold text-amber-900 mb-1">검증 메모</p>
+        <p className="text-xs font-semibold text-amber-900 mb-1">플레이 × 라켓 궁합</p>
         <p className="text-xs text-amber-900/80 leading-relaxed">{player.synergy}</p>
       </div>
 
@@ -137,7 +137,7 @@ function OmegaShowcaseCard({ player }: { player: OmegaPlayerShowcase }) {
       </div>
 
       <div className="bg-amber-50/50 border border-amber-100 rounded-xl p-4 mb-4">
-        <p className="text-xs font-semibold text-amber-900 mb-1">검증 메모</p>
+        <p className="text-xs font-semibold text-amber-900 mb-1">플레이 × 라켓 궁합</p>
         <p className="text-xs text-amber-900/80 leading-relaxed">{player.synergy}</p>
       </div>
 

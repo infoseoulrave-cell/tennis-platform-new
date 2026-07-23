@@ -59,3 +59,12 @@
 - 이유: 점수 계산, 가격 오퍼, 이미지, 액세서리 연결을 안정적으로 관리하기 위해
 - 핵심 테이블: `rackets`, `racket_specs`, `racket_scores`, `gear_pairings`, `offers`, `media_assets`
 - 반영 위치: `docs/specs/database-schema-draft-ko.md`
+
+### 결정 11. 공개 점수 명칭과 정수 척도를 현행 UI 계약으로 통일한다
+
+- 날짜: 2026-07-24
+- 현행 공개 축: 파워, 컨트롤, 스핀, 편안함, 안정성
+- 현행 표시: 각 축 정수 `N/5`, 다섯 축 합계 정수 `N/15`, 총점 범위 `10~15`, 소수점 없음
+- 내부 계약: raw v3 `0~100`은 보존해 정렬·추천에 사용하고, 공개 축은 bounded projection과 deterministic largest-remainder로 합계 불변식을 맞춘다.
+- 효력: 결정 2와 결정 6의 과거 명칭 및 이전 공개 척도 설명을 대체하며 과거 항목은 의사결정 이력으로만 보존한다.
+- 반영 위치: `CANONICAL.md`, `docs/project-memory.md`, 활성 scoring·detail·recommendation·PRD 문서

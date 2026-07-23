@@ -1,7 +1,10 @@
 import { getSupabaseAdmin } from "./supabase";
 import {
-  rawScoreToPublicScore,
-  type PublicScores15,
+  PUBLIC_AXIS_KEYS,
+  rawScoresToPublicAxisScores,
+  type PublicAxisKey,
+  type PublicAxisScores5,
+  type RawAxisScores100,
 } from "./score-display";
 import { resolveRacketImage } from "./racket-images";
 import {
@@ -10,6 +13,7 @@ import {
   SCORING_VERSION,
   type RacketSpecInput,
 } from "@/modules/recommendation/scoring-core";
+import { RACKET_SCORE_EVIDENCE } from "@/data/racket-score-evidence";
 
 export function generateSlug(brand: string, model: string, year?: number | null): string {
   const modelHasYear = year != null && new RegExp(`(?:^|\\D)${year}(?:\\D|$)`).test(model);
@@ -103,7 +107,8 @@ export type RacketListItem = {
   pattern: string | null;
   priceKrw: number | null;
   imageUrl: string | null;
-  scores: PublicScores15 | null;
+  scores: PublicAxisScores5 | null;
+  rawScores: RawAxisScores100 | null;
   availableInKorea: boolean;
 };
 
@@ -120,13 +125,6 @@ type AxisScoreRow = {
   input_snapshot?: unknown;
 };
 
-const PUBLIC_AXIS_KEYS = [
-  "power",
-  "control",
-  "spin",
-  "comfort",
-  "stability",
-] as const satisfies readonly (keyof PublicScores15)[];
 const PUBLIC_AXIS_KEY_SET = new Set<string>(PUBLIC_AXIS_KEYS);
 
 export function unwrapSupabaseData<T>(
@@ -138,10 +136,12 @@ export function unwrapSupabaseData<T>(
   return data ?? fallback;
 }
 
-export function rowToScores(axisScores: AxisScoreRow[]): PublicScores15 | null {
+export function rowToRawScores(
+  axisScores: AxisScoreRow[],
+): RawAxisScores100 | null {
   if (axisScores.length !== PUBLIC_AXIS_KEYS.length) return null;
 
-  const out: Partial<PublicScores15> = {};
+  const out: Partial<RawAxisScores100> = {};
   const seen = new Set<string>();
   for (const r of axisScores) {
     if (
@@ -152,22 +152,65 @@ export function rowToScores(axisScores: AxisScoreRow[]): PublicScores15 | null {
 
     const value = Number(r.score);
     if (!Number.isFinite(value) || value < 0 || value > 100) return null;
-    const key = r.axis_key as keyof PublicScores15;
+    const key = r.axis_key as PublicAxisKey;
     seen.add(key);
-    out[key] = rawScoreToPublicScore(value);
+    out[key] = value;
   }
 
-  return out as PublicScores15;
+  return out as RawAxisScores100;
 }
 
-export function scoresFromSpec(spec: RacketSpecInput): PublicScores15 | null {
-  return rowToScores(
+export function rowToScores(
+  axisScores: AxisScoreRow[],
+): PublicAxisScores5 | null {
+  const rawScores = rowToRawScores(axisScores);
+  return rawScores ? rawScoresToPublicAxisScores(rawScores) : null;
+}
+
+export function rawScoresFromSpec(
+  spec: RacketSpecInput,
+): RawAxisScores100 | null {
+  return rowToRawScores(
     computeAxisScores(spec).map(({ axisKey, score, inputSnapshot }) => ({
       axis_key: axisKey,
       score,
       input_snapshot: inputSnapshot,
     })),
   );
+}
+
+export function resolveRacketRawScores({
+  persistedRawScores,
+  databaseSpec,
+  identity,
+}: {
+  persistedRawScores: RawAxisScores100 | null | undefined;
+  databaseSpec: RacketSpecInput;
+  identity: {
+    brand: string;
+    model: string;
+    year: number | null;
+  };
+}): RawAxisScores100 | null {
+  if (persistedRawScores) return persistedRawScores;
+
+  const databaseRawScores = rawScoresFromSpec(databaseSpec);
+  if (databaseRawScores) return databaseRawScores;
+
+  const evidence = RACKET_SCORE_EVIDENCE.find(({ identity: candidate }) =>
+    candidate.brand === identity.brand
+    && candidate.releaseYear === identity.year
+    && (
+      candidate.lookupModelName === identity.model
+      || candidate.modelName === identity.model
+    )
+  );
+  return evidence ? rawScoresFromSpec(evidence.normalizedSpec) : null;
+}
+
+export function scoresFromSpec(spec: RacketSpecInput): PublicAxisScores5 | null {
+  const rawScores = rawScoresFromSpec(spec);
+  return rawScores ? rawScoresToPublicAxisScores(rawScores) : null;
 }
 
 type VariantRow = {
@@ -300,9 +343,9 @@ function rowToSpec(specs: Record<string, unknown> | null): RacketSpecInput {
   };
 }
 
-async function fetchScoresForRackets(
+async function fetchRawScoresForRackets(
   racketIds: string[],
-): Promise<Record<string, PublicScores15 | null>> {
+): Promise<Record<string, RawAxisScores100 | null>> {
   if (!racketIds.length) return {};
 
   const supabaseAdmin = getSupabaseAdmin();
@@ -332,16 +375,16 @@ async function fetchScoresForRackets(
     });
   }
 
-  const result: Record<string, PublicScores15 | null> = {};
+  const result: Record<string, RawAxisScores100 | null> = {};
   for (const id of racketIds) {
-    result[id] = rowToScores(grouped[id] || []);
+    result[id] = rowToRawScores(grouped[id] || []);
   }
   return result;
 }
 
 function toListItem(
   r: Record<string, unknown>,
-  scoresMap: Record<string, PublicScores15 | null>,
+  rawScoresMap: Record<string, RawAxisScores100 | null>,
 ): RacketListItem {
   const specs = r.racket_specs as Record<string, unknown> | null;
   // racket_variants is a 1-to-many join — PostgREST returns an array
@@ -356,6 +399,15 @@ function toListItem(
   const id = r.id as string;
   const year = r.release_year as number | null;
   const slug = generateSlug(brand?.name ?? "", r.name as string, year);
+  const rawScores = resolveRacketRawScores({
+    persistedRawScores: rawScoresMap[id],
+    databaseSpec: rowToSpec(specs),
+    identity: {
+      brand: brand?.name ?? "",
+      model: r.name as string,
+      year,
+    },
+  });
 
   return {
     id,
@@ -368,7 +420,8 @@ function toListItem(
     pattern: (specs?.string_pattern as string | null) ?? null,
     priceKrw: koreanVariant.priceKrw,
     imageUrl: resolveRacketImage(r.image_url as string | null, slug)?.url ?? null,
-    scores: scoresMap[id] ?? scoresFromSpec(rowToSpec(specs)),
+    scores: rawScores ? rawScoresToPublicAxisScores(rawScores) : null,
+    rawScores,
     availableInKorea: koreanVariant.availableInKorea,
   };
 }
@@ -422,11 +475,13 @@ export async function getRacketsByCatalogIdentities(
   if (error || !data) return [];
 
   const ids = data.map((racket) => racket.id);
-  const scoresMap = await fetchScoresForRackets(ids).catch(
-    () => ({} as Record<string, PublicScores15 | null>),
+  const rawScoresMap = await fetchRawScoresForRackets(ids).catch(
+    () => ({} as Record<string, RawAxisScores100 | null>),
   );
   const rackets = data
-    .map((racket) => toListItem(racket as unknown as Record<string, unknown>, scoresMap))
+    .map((racket) =>
+      toListItem(racket as unknown as Record<string, unknown>, rawScoresMap)
+    )
     .filter((racket) => racket.availableInKorea);
 
   return selectRacketsByCatalogIdentities(rackets, identities);
@@ -452,12 +507,12 @@ export async function getTopRackets(limit: number = 5): Promise<RacketListItem[]
   if (error || !data) return [];
 
   const ids = data.map((r) => r.id);
-  const scoresMap = await fetchScoresForRackets(ids).catch(
-    () => ({} as Record<string, PublicScores15 | null>),
+  const rawScoresMap = await fetchRawScoresForRackets(ids).catch(
+    () => ({} as Record<string, RawAxisScores100 | null>),
   );
 
   return data
-    .map((r) => toListItem(r as unknown as Record<string, unknown>, scoresMap))
+    .map((r) => toListItem(r as unknown as Record<string, unknown>, rawScoresMap))
     .filter((racket) => racket.availableInKorea);
 }
 
@@ -499,8 +554,8 @@ export async function getRacketBySlug(slug: string): Promise<RacketDetail | null
   const match = rows[resolution.index];
   const canonicalSlug = resolution.canonicalSlug;
 
-  const scoresMap = await fetchScoresForRackets([match.id]).catch(
-    () => ({} as Record<string, PublicScores15 | null>),
+  const rawScoresMap = await fetchRawScoresForRackets([match.id]).catch(
+    () => ({} as Record<string, RawAxisScores100 | null>),
   );
 
   const specs = (match.racket_specs as unknown) as Record<string, unknown> | null;
@@ -512,6 +567,15 @@ export async function getRacketBySlug(slug: string): Promise<RacketDetail | null
       : [];
   const koreanVariant = selectKoreanVariant(variants);
   const brand = (match.brands as unknown) as { name: string; name_ko: string | null } | null;
+  const rawScores = resolveRacketRawScores({
+    persistedRawScores: rawScoresMap[match.id],
+    databaseSpec: rowToSpec(specs),
+    identity: {
+      brand: brand?.name ?? "",
+      model: match.name,
+      year: match.release_year,
+    },
+  });
 
   return {
     id: match.id,
@@ -534,7 +598,8 @@ export async function getRacketBySlug(slug: string): Promise<RacketDetail | null
     beamWidth: (specs?.beam_width_mm as string | null) ?? null,
     priceKrw: koreanVariant.priceKrw,
     imageUrl: resolveRacketImage(match.image_url, canonicalSlug)?.url ?? null,
-    scores: scoresMap[match.id] ?? scoresFromSpec(rowToSpec(specs)),
+    scores: rawScores ? rawScoresToPublicAxisScores(rawScores) : null,
+    rawScores,
     availableInKorea: koreanVariant.availableInKorea,
     specSources: pickSpecSourcesByRole(
       specs?.spec_sources as Array<Record<string, unknown>> | null,
@@ -613,7 +678,13 @@ export function filterSortPaginateRackets(
     case "control":
     case "spin": {
       const axis = filters.sort;
-      rackets.sort((a, b) => compareNullable(a.scores?.[axis] ?? null, b.scores?.[axis] ?? null, "desc"));
+      rackets.sort((a, b) =>
+        compareNullable(
+          a.rawScores?.[axis] ?? null,
+          b.rawScores?.[axis] ?? null,
+          "desc",
+        )
+      );
       break;
     }
   }
@@ -658,12 +729,14 @@ export async function getRackets(filters: RacketFilters = {}): Promise<{
   const rows = unwrapSupabaseData(data, error, []);
 
   const ids = rows.map((r) => r.id);
-  const scoresMap = await fetchScoresForRackets(ids).catch(
-    () => ({} as Record<string, PublicScores15 | null>),
+  const rawScoresMap = await fetchRawScoresForRackets(ids).catch(
+    () => ({} as Record<string, RawAxisScores100 | null>),
   );
 
   return filterSortPaginateRackets(
-    rows.map((r) => toListItem(r as unknown as Record<string, unknown>, scoresMap)),
+    rows.map((r) =>
+      toListItem(r as unknown as Record<string, unknown>, rawScoresMap)
+    ),
     filters,
   );
 }
@@ -689,12 +762,12 @@ export async function getSimilarRackets(racketId: string, brand: string, limit: 
   if (error || !data) return [];
 
   const ids = data.map((r) => r.id);
-  const scoresMap = await fetchScoresForRackets(ids).catch(
-    () => ({} as Record<string, PublicScores15 | null>),
+  const rawScoresMap = await fetchRawScoresForRackets(ids).catch(
+    () => ({} as Record<string, RawAxisScores100 | null>),
   );
 
   return data
-    .map((r) => toListItem(r as unknown as Record<string, unknown>, scoresMap))
+    .map((r) => toListItem(r as unknown as Record<string, unknown>, rawScoresMap))
     .filter((racket) => racket.availableInKorea);
 }
 

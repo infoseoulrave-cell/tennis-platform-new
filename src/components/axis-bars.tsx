@@ -1,11 +1,10 @@
 import { AXIS_LABELS } from "./radar-chart";
 import {
-  formatPublicScore,
-  publicScoreToPercent,
-  type PublicScores15,
+  formatPublicAxisScore,
+  PUBLIC_AXIS_KEYS,
+  publicAxisScoreToPercent,
+  type PublicAxisScores5,
 } from "@/lib/score-display";
-
-const AXES: (keyof PublicScores15)[] = ["power", "control", "spin", "comfort", "stability"];
 
 const ACTIVE_COLOR = "#C4E538";
 const TRACK_COLOR = "#E8E8E0";
@@ -17,15 +16,15 @@ export function AxisBars({
   className = "",
   dark = false,
 }: {
-  scores: PublicScores15;
+  scores: PublicAxisScores5;
   className?: string;
   dark?: boolean;
 }) {
   return (
     <div className={`flex flex-col gap-3 ${className}`}>
-      {AXES.map((axis) => {
+      {PUBLIC_AXIS_KEYS.map((axis) => {
         const score = scores[axis];
-        const pct = publicScoreToPercent(score);
+        const pct = publicAxisScoreToPercent(score);
         const scoreColor = dark ? ACTIVE_COLOR : "#9BBB30";
         const labelColor = dark ? "rgba(255,255,255,0.6)" : "#5A5A4A";
         const trackColor = dark ? DARK_TRACK_COLOR : TRACK_COLOR;
@@ -40,7 +39,7 @@ export function AxisBars({
                 className={`${dark ? "text-sm" : "w-14 text-xs text-right"} font-bold tabular-nums`}
                 style={{ color: scoreColor }}
               >
-                {formatPublicScore(score)}
+                {formatPublicAxisScore(score)}
               </span>
             </div>
             <div

@@ -3,9 +3,10 @@ export function ScoringMethodologyNote({ compact = false }: { compact?: boolean 
     <aside className="rounded-xl border border-sky-100 bg-sky-50/70 p-4 text-xs leading-relaxed text-sky-950">
       <p className="font-semibold">스펙 기반 비교 추정치</p>
       <p className="mt-1">
-        공개 점수는 10~15 범위입니다. 제조사 공개 비스트링(unstrung) 정적
-        스펙을 기준으로, 가능한 경우 제조사와 별개의 리테일러가 공개한
-        스트링 장착(strung) 스윙웨이트(SW)·강성(RA) 측정을 보완합니다.
+        공개 점수는 각 축 0~5의 정수이며, 다섯 축 합계는 정확히 10~15
+        범위입니다. 제조사 공개 비스트링(unstrung) 정적 스펙을 기준으로,
+        가능한 경우 제조사와 별개의 리테일러가 공개한 스트링 장착(strung)
+        스윙웨이트(SW)·강성(RA) 측정을 보완합니다.
       </p>
       {!compact && (
         <p className="mt-2 text-sky-900/75">

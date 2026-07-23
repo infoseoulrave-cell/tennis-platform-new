@@ -3,8 +3,11 @@ import Image from "next/image";
 import { AXIS_LABELS } from "./radar-chart";
 import { formatRacketName } from "@/lib/racket-name";
 import {
-  formatPublicScore,
-  type PublicScores15,
+  formatPublicAxisScore,
+  formatPublicTotal,
+  PUBLIC_AXIS_KEYS,
+  type PublicAxisScores5,
+  type RawAxisScores100,
 } from "@/lib/score-display";
 
 export type RacketCardData = {
@@ -17,7 +20,8 @@ export type RacketCardData = {
   pattern?: string | null;
   priceKrw?: number | null;
   imageUrl?: string | null;
-  scores?: PublicScores15 | null;
+  scores?: PublicAxisScores5 | null;
+  rawScores?: RawAxisScores100 | null;
 };
 
 function formatPrice(price: number): string {
@@ -25,17 +29,9 @@ function formatPrice(price: number): string {
   return `₩${price.toLocaleString()}`;
 }
 
-function topAxes(
-  scores: PublicScores15,
-  count = 2,
-): { key: keyof PublicScores15; score: number }[] {
-  return (Object.entries(scores) as [keyof PublicScores15, number][])
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, count)
-    .map(([key, score]) => ({ key, score }));
-}
-
 export function RacketCard({ racket }: { racket: RacketCardData }) {
+  const scores = racket.scores;
+
   return (
     <Link
       href={`/rackets/${racket.slug}`}
@@ -73,17 +69,28 @@ export function RacketCard({ racket }: { racket: RacketCardData }) {
           </div>
         )}
 
-        {/* Top axes */}
-        {racket.scores && (
-          <div className="flex gap-2 mt-2">
-            {topAxes(racket.scores).map(({ key, score }) => (
-              <span
-                key={key}
-                className="text-xs px-2 py-0.5 bg-[var(--color-bg-subtle)] rounded-full text-[var(--color-text-secondary)]"
-              >
-                {AXIS_LABELS[key]} {formatPublicScore(score)}
-              </span>
-            ))}
+        {/* Scores */}
+        {scores && (
+          <div className="mt-3">
+            <span className="text-xs px-2 py-0.5 bg-[var(--color-bg-subtle)] rounded-full font-semibold text-[var(--color-text)]">
+              총점 {formatPublicTotal(scores)}
+            </span>
+            <div className="mt-2 grid grid-cols-5 divide-x divide-[var(--color-border)] overflow-hidden rounded-lg bg-[var(--color-bg-subtle)]">
+              {PUBLIC_AXIS_KEYS.map((axis) => (
+                <div
+                  key={axis}
+                  data-racket-axis={axis}
+                  className="min-w-0 py-1.5 text-center"
+                >
+                  <span className="block truncate text-[10px] leading-none text-[var(--color-text-muted)]">
+                    {AXIS_LABELS[axis]}
+                  </span>
+                  <span className="mt-1 block text-[11px] font-semibold leading-none tabular-nums text-[var(--color-text)]">
+                    {formatPublicAxisScore(scores[axis])}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 

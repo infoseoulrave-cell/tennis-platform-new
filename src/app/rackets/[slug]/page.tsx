@@ -12,7 +12,10 @@ import { RacketDetailActions } from "@/components/racket-detail-actions";
 import { PriceComparison } from "@/components/price-comparison";
 import { ScoringMethodologyNote } from "@/components/scoring-methodology-note";
 import type { Metadata } from "next";
-import type { PublicScores15 } from "@/lib/score-display";
+import {
+  formatPublicTotal,
+  type RawAxisScores100,
+} from "@/lib/score-display";
 import { formatRacketName } from "@/lib/racket-name";
 
 export const dynamic = "force-dynamic";
@@ -43,20 +46,20 @@ const SEGMENT_LABELS: Record<string, string> = {
   pro: "프로",
 };
 
-function getRecommendation(scores: PublicScores15 | null) {
-  if (!scores) return null;
+function getRecommendation(rawScores: RawAxisScores100 | null) {
+  if (!rawScores) return null;
   const forWhom: string[] = [];
   const notForWhom: string[] = [];
 
-  if (scores.spin >= 14) forWhom.push("탑스핀 위주의 공격적 플레이어");
-  if (scores.control >= 14) forWhom.push("정밀한 배치를 중시하는 올라운더");
-  if (scores.power >= 14) forWhom.push("파워풀한 플랫 히팅을 원하는 플레이어");
-  if (scores.comfort >= 13.5) forWhom.push("상대적으로 낮은 강성 후보를 비교하려는 플레이어");
-  if (scores.stability >= 14) forWhom.push("안정적인 랠리를 선호하는 플레이어");
+  if (rawScores.spin >= 80) forWhom.push("탑스핀 위주의 공격적 플레이어");
+  if (rawScores.control >= 80) forWhom.push("정밀한 배치를 중시하는 올라운더");
+  if (rawScores.power >= 80) forWhom.push("파워풀한 플랫 히팅을 원하는 플레이어");
+  if (rawScores.comfort >= 70) forWhom.push("상대적으로 낮은 강성 후보를 비교하려는 플레이어");
+  if (rawScores.stability >= 80) forWhom.push("안정적인 랠리를 선호하는 플레이어");
 
-  if (scores.comfort <= 11.5) notForWhom.push("높은 강성 후보를 피하려는 플레이어");
-  if (scores.power <= 11.5) notForWhom.push("스윙 스피드가 느린 초보자");
-  if (scores.spin <= 11.5) notForWhom.push("스핀을 적극 활용하는 스타일");
+  if (rawScores.comfort <= 30) notForWhom.push("높은 강성 후보를 피하려는 플레이어");
+  if (rawScores.power <= 30) notForWhom.push("스윙 스피드가 느린 초보자");
+  if (rawScores.spin <= 30) notForWhom.push("스핀을 적극 활용하는 스타일");
 
   if (forWhom.length === 0) forWhom.push("다양한 스타일에 적합한 올라운드 라켓");
   if (notForWhom.length === 0) notForWhom.push("특별한 제한 없음");
@@ -64,15 +67,15 @@ function getRecommendation(scores: PublicScores15 | null) {
   return { forWhom, notForWhom };
 }
 
-function getStringRecommendation(scores: PublicScores15 | null) {
-  if (!scores) return null;
-  if (scores.spin >= 14) {
+function getStringRecommendation(rawScores: RawAxisScores100 | null) {
+  if (!rawScores) return null;
+  if (rawScores.spin >= 80) {
     return { string: "Luxilon ALU Power / Babolat RPM Blast", tension: "초기 시타 48-52 lbs", reason: "오픈 패턴에서 비교해 볼 수 있는 폴리 조합 예시." };
   }
-  if (scores.control >= 14) {
+  if (rawScores.control >= 80) {
     return { string: "Tecnifibre Razor Code / Solinco Confidential", tension: "초기 시타 50-54 lbs", reason: "컨트롤 성향을 비교하기 위한 폴리 조합 예시." };
   }
-  if (scores.comfort >= 13.5) {
+  if (rawScores.comfort >= 70) {
     return { string: "Wilson NXT / Tecnifibre X-One", tension: "초기 시타 48-52 lbs", reason: "멀티필라멘트 타구감을 비교하기 위한 출발 조합." };
   }
   return { string: "Yonex Poly Tour Pro / Head Lynx", tension: "초기 시타 48-52 lbs", reason: "중립적인 폴리 조합을 비교하기 위한 출발점." };
@@ -100,8 +103,8 @@ export default async function RacketDetailPage({
   if (slug !== racket.slug) permanentRedirect(`/rackets/${racket.slug}`);
 
   const similarRackets = await getSimilarRackets(racket.id, racket.brand).catch(() => []);
-  const recommendation = getRecommendation(racket.scores);
-  const stringRec = getStringRecommendation(racket.scores);
+  const recommendation = getRecommendation(racket.rawScores);
+  const stringRec = getStringRecommendation(racket.rawScores);
 
   return (
     <div className="max-w-6xl mx-auto px-6 py-8">
@@ -158,7 +161,15 @@ export default async function RacketDetailPage({
 
           {racket.scores && (
             <section className="border border-[var(--color-border)] rounded-2xl p-6">
-              <h2 className="text-sm font-semibold mb-4">5축 스펙 성향</h2>
+              <div className="mb-4 flex items-baseline justify-between gap-4">
+                <h2 className="text-sm font-semibold">5축 스펙 성향</h2>
+                <p className="text-xs text-[var(--color-text-muted)]">
+                  총점{" "}
+                  <strong className="font-semibold text-[var(--color-text)] tabular-nums">
+                    {formatPublicTotal(racket.scores)}
+                  </strong>
+                </p>
+              </div>
               <RadarBarCombo scores={racket.scores} />
               <div className="mt-5">
                 <ScoringMethodologyNote />

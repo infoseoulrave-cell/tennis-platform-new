@@ -150,6 +150,7 @@ function racket(overrides: Partial<RacketListItem>): RacketListItem {
     priceKrw: 200_000,
     imageUrl: null,
     scores: null,
+    rawScores: null,
     availableInKorea: true,
     ...overrides,
   };
@@ -190,6 +191,47 @@ test("weight, head-size, and Korean availability filters affect the total before
 
   assert.equal(result.total, 1);
   assert.deepEqual(result.rackets.map(({ id }) => id), ["match"]);
+});
+
+test("axis sorting preserves raw v3 order when public integer axes tie", () => {
+  const publicScores = {
+    power: 3,
+    control: 3,
+    spin: 2,
+    comfort: 2,
+    stability: 2,
+  };
+  const result = filterSortPaginateRackets([
+    racket({
+      id: "lower-raw",
+      scores: publicScores,
+      rawScores: {
+        power: 71,
+        control: 60,
+        spin: 50,
+        comfort: 40,
+        stability: 30,
+      },
+    }),
+    racket({
+      id: "higher-raw",
+      scores: publicScores,
+      rawScores: {
+        power: 79,
+        control: 60,
+        spin: 50,
+        comfort: 40,
+        stability: 30,
+      },
+    }),
+  ], {
+    sort: "power",
+  });
+
+  assert.deepEqual(
+    result.rackets.map(({ id }) => id),
+    ["higher-raw", "lower-raw"],
+  );
 });
 
 test("spec provenance keeps the latest source for each explicit evidence role", () => {

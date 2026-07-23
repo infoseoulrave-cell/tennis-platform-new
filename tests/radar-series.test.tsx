@@ -3,10 +3,16 @@ import test from "node:test";
 import * as React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 
-import { RadarChart, type Scores } from "../src/components/radar-chart";
+import { RacketCard } from "../src/components/racket-card";
+import {
+  AXIS_LABELS,
+  RadarChart,
+  type Scores,
+} from "../src/components/radar-chart";
+import { PUBLIC_AXIS_KEYS } from "../src/lib/score-display";
 
-const FIRST: Scores = { power: 10, control: 11.5, spin: 12.5, comfort: 14, stability: 15 };
-const SECOND: Scores = { power: 15, control: 14, spin: 12.5, comfort: 11.5, stability: 10 };
+const FIRST: Scores = { power: 0, control: 1, spin: 2, comfort: 4, stability: 5 };
+const SECOND: Scores = { power: 5, control: 4, spin: 3, comfort: 1, stability: 0 };
 
 Object.assign(globalThis, { React });
 
@@ -39,7 +45,7 @@ test("comparison series share one SVG grid and one set of labels", () => {
   assert.equal((html.match(/data-radar-label=/g) ?? []).length, 5);
 });
 
-test("radar geometry maps 10 to center, 12.5 halfway, and 15 to the edge", () => {
+test("radar geometry maps 0 to center, 3 proportionally, and 5 to the edge", () => {
   const renderUniform = (score: number) => renderToStaticMarkup(
     React.createElement(RadarChart, {
       scores: {
@@ -54,23 +60,55 @@ test("radar geometry maps 10 to center, 12.5 halfway, and 15 to the edge", () =>
     }),
   );
 
-  const minimum = primaryPoints(renderUniform(10));
-  const midpoint = primaryPoints(renderUniform(12.5));
-  const maximum = primaryPoints(renderUniform(15));
+  const minimum = primaryPoints(renderUniform(0));
+  const upperMiddle = primaryPoints(renderUniform(3));
+  const maximum = primaryPoints(renderUniform(5));
 
   assert.deepEqual(minimum[0], [100, 100]);
-  assert.deepEqual(midpoint[0], [100, 62]);
+  assert.equal(upperMiddle[0][0], 100);
+  assert.ok(Math.abs(upperMiddle[0][1] - 54.4) < 1e-9);
   assert.deepEqual(maximum[0], [100, 24]);
   assert.equal(new Set(minimum.map((point) => point.join(","))).size, 1);
 });
 
-test("radar value labels use the public /15 format without signs", () => {
+test("radar value labels use integer public-axis /5 format without signs or decimals", () => {
   const html = renderToStaticMarkup(
     React.createElement(RadarChart, { scores: FIRST }),
   );
 
-  for (const label of ["10.0/15", "11.5/15", "12.5/15", "14.0/15", "15.0/15"]) {
-    assert.match(html, new RegExp(label.replace(".", "\\.")));
+  for (const label of ["0/5", "1/5", "2/5", "4/5", "5/5"]) {
+    assert.match(html, new RegExp(label));
   }
   assert.doesNotMatch(html, />[+-]\d/);
+  assert.doesNotMatch(html, /\d+\.\d+\/5/);
+});
+
+test("racket card shows the derived total and every public axis once in canonical order", () => {
+  const html = renderToStaticMarkup(
+    React.createElement(RacketCard, {
+      racket: {
+        slug: "five-axis",
+        brand: "Test",
+        model: "Five Axis",
+        scores: FIRST,
+      },
+    }),
+  );
+
+  assert.match(html, /총점 12\/15/);
+  assert.deepEqual(
+    [...html.matchAll(/data-racket-axis="([^"]+)"/g)].map((match) => match[1]),
+    [...PUBLIC_AXIS_KEYS],
+  );
+  for (const axis of PUBLIC_AXIS_KEYS) {
+    const cell = html.match(
+      new RegExp(`data-racket-axis="${axis}"[^>]*>([\\s\\S]*?)</div>`),
+    );
+    assert.ok(cell);
+    assert.match(
+      cell[1],
+      new RegExp(`${AXIS_LABELS[axis]}[\\s\\S]*${FIRST[axis]}\\/5`),
+    );
+  }
+  assert.doesNotMatch(html, /\d+\.\d+\/(?:5|15)/);
 });
