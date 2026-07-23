@@ -1,12 +1,10 @@
-import { clampPublicScore, formatPublicScore } from "@/lib/score-display";
+import {
+  formatPublicScore,
+  publicScoreToFraction,
+  type PublicScores15,
+} from "@/lib/score-display";
 
-export type Scores = {
-  power: number;
-  control: number;
-  spin: number;
-  comfort: number;
-  stability: number;
-};
+export type Scores = PublicScores15;
 
 export const AXIS_LABELS: Record<keyof Scores, string> = {
   power: "파워",
@@ -23,7 +21,7 @@ const GRID_COLOR = "#E2E2D8";
 const LABEL_COLOR = "#525252";
 
 function scoreToFraction(score: number): number {
-  return (clampPublicScore(score) + 5) / 10;
+  return publicScoreToFraction(score);
 }
 
 function getPoint(cx: number, cy: number, r: number, index: number, fraction: number) {
@@ -79,7 +77,7 @@ export function RadarChart({
       width={size}
       height={size}
       viewBox={`0 0 ${size} ${size}`}
-      className={className}
+      className={`overflow-visible ${className}`}
     >
       {/* Grid rings */}
       {gridLevels.map((level, li) => (
@@ -127,7 +125,6 @@ export function RadarChart({
         const lx = cx + labelR * Math.cos(angle);
         const ly = cy + labelR * Math.sin(angle);
         const score = scores[axis];
-        const scoreColor = score > 0 ? color : "#aaaaaa";
 
         return (
           <g key={i} data-radar-label={axis}>
@@ -148,7 +145,7 @@ export function RadarChart({
                 textAnchor="middle"
                 className="text-[10px] font-bold"
                 dominantBaseline="middle"
-                style={{ fill: scoreColor, fontSize: 10, fontWeight: "bold" }}
+                style={{ fill: color, fontSize: 10, fontWeight: "bold" }}
               >
                 {formatPublicScore(score)}
               </text>

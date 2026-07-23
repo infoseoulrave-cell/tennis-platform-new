@@ -1,5 +1,6 @@
 import { readFileSync } from "fs";
 import { createClient } from "@supabase/supabase-js";
+import { disableLegacyCatalogMutation } from "./legacy-catalog-mutation-disabled";
 
 const env: Record<string, string> = {};
 for (const l of readFileSync(".env.local", "utf-8").split("\n")) {
@@ -115,6 +116,7 @@ const KNOWN_CODES: Record<string, string> = {
 };
 
 async function main() {
+  disableLegacyCatalogMutation();
   const { data: models } = await supabase
     .from("racket_models")
     .select("id, name, brands!inner(name)")

@@ -1,13 +1,13 @@
-import { type Scores } from "./radar-chart";
 import { RadarChart } from "./radar-chart";
 import { AxisBars } from "./axis-bars";
+import type { PublicScores15 } from "@/lib/score-display";
 
 export function RadarBarCombo({
   scores,
   className = "",
   dark = false,
 }: {
-  scores: Scores;
+  scores: PublicScores15;
   className?: string;
   dark?: boolean;
 }) {

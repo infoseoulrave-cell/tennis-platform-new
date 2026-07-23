@@ -32,7 +32,7 @@ export default function AboutPage() {
               5축 스코어링
             </h3>
             <p className="mt-2 text-sm text-[var(--color-text-secondary)] leading-relaxed">
-              직구력·컨트롤·스핀·충격흡수·안정감을 한눈에 비교할 수 있도록
+              파워·컨트롤·스핀·편안함·안정성을 한눈에 비교할 수 있도록
               스펙 기반으로 정리합니다.
             </p>
           </li>

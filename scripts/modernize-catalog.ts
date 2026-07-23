@@ -1,5 +1,6 @@
 import { readFileSync } from "fs";
 import { createClient } from "@supabase/supabase-js";
+import { disableLegacyCatalogMutation } from "./legacy-catalog-mutation-disabled";
 
 const env: Record<string, string> = {};
 for (const l of readFileSync(".env.local", "utf-8").split("\n")) {
@@ -101,6 +102,7 @@ const NEW_RACKETS: NewRacket[] = [
 ];
 
 async function main() {
+  disableLegacyCatalogMutation();
   // Step 1: Discontinue old models
   console.log("=== Step 1: 2022-2023 구형 단종 처리 ===\n");
   let discCount = 0;

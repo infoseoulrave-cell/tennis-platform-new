@@ -1,13 +1,15 @@
-import { type Scores, AXIS_LABELS } from "./radar-chart";
-import { formatPublicScore, publicScoreToPercent } from "@/lib/score-display";
+import { AXIS_LABELS } from "./radar-chart";
+import {
+  formatPublicScore,
+  publicScoreToPercent,
+  type PublicScores15,
+} from "@/lib/score-display";
 
-const AXES: (keyof Scores)[] = ["power", "control", "spin", "comfort", "stability"];
+const AXES: (keyof PublicScores15)[] = ["power", "control", "spin", "comfort", "stability"];
 
 const ACTIVE_COLOR = "#C4E538";
-const NEGATIVE_COLOR = "#E2E2E2";
 const TRACK_COLOR = "#E8E8E0";
 
-const DARK_NEGATIVE_COLOR = "rgba(255,255,255,0.2)";
 const DARK_TRACK_COLOR = "rgba(255,255,255,0.1)";
 
 export function AxisBars({
@@ -15,7 +17,7 @@ export function AxisBars({
   className = "",
   dark = false,
 }: {
-  scores: Scores;
+  scores: PublicScores15;
   className?: string;
   dark?: boolean;
 }) {
@@ -24,20 +26,7 @@ export function AxisBars({
       {AXES.map((axis) => {
         const score = scores[axis];
         const pct = publicScoreToPercent(score);
-        const barColor = dark
-          ? score > 0
-            ? ACTIVE_COLOR
-            : DARK_NEGATIVE_COLOR
-          : score >= 0
-            ? ACTIVE_COLOR
-            : NEGATIVE_COLOR;
-        const scoreColor = dark
-          ? score > 0
-            ? ACTIVE_COLOR
-            : "rgba(255,255,255,0.4)"
-          : score > 0
-            ? "#9BBB30"
-            : "#171717";
+        const scoreColor = dark ? ACTIVE_COLOR : "#9BBB30";
         const labelColor = dark ? "rgba(255,255,255,0.6)" : "#5A5A4A";
         const trackColor = dark ? DARK_TRACK_COLOR : TRACK_COLOR;
 
@@ -48,7 +37,7 @@ export function AxisBars({
                 {AXIS_LABELS[axis]}
               </span>
               <span
-                className={`${dark ? "text-sm" : "w-7 text-xs text-right"} font-bold tabular-nums`}
+                className={`${dark ? "text-sm" : "w-14 text-xs text-right"} font-bold tabular-nums`}
                 style={{ color: scoreColor }}
               >
                 {formatPublicScore(score)}
@@ -62,7 +51,7 @@ export function AxisBars({
                 className="h-full rounded-full transition-all duration-500"
                 style={{
                   width: `${pct}%`,
-                  backgroundColor: barColor,
+                  backgroundColor: ACTIVE_COLOR,
                 }}
               />
             </div>

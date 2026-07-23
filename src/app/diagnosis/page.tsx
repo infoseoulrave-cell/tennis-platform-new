@@ -518,7 +518,7 @@ export default function DiagnosisPage() {
                     맞춤 라켓을 찾고 있습니다...
                   </h3>
                   <p className="text-sm text-gray-500">
-                    AI가 80개 이상의 라켓을 분석하고 있습니다
+                    검증된 현재 카탈로그 39종을 분석하고 있습니다
                   </p>
                 </>
               )}

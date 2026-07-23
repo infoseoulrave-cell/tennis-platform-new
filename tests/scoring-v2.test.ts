@@ -17,23 +17,23 @@ const EMPTY_SPEC: RacketSpecInput = {
   stringPattern: null,
 };
 
-test("v2 does not invent average scores when every source field is missing", () => {
-  assert.equal(SCORING_VERSION, "v2");
+test("v3 does not invent average scores when every source field is missing", () => {
+  assert.equal(SCORING_VERSION, "v3");
   assert.deepEqual(computeAxisScores(EMPTY_SPEC), []);
 });
 
-test("v2 re-normalizes each formula over only the inputs actually present", () => {
+test("v3 re-normalizes each formula over only the inputs actually present", () => {
   const scores = computeAxisScores({ ...EMPTY_SPEC, headSizeSqIn: 115 });
   const power = scores.find((score) => score.axisKey === "power");
 
   assert.ok(power);
   assert.equal(power.score, 100);
   assert.equal(power.inputSnapshot.completeness, 1 / 7);
-  assert.equal(power.inputSnapshot.confidence, 0.2);
+  assert.equal(power.inputSnapshot.confidence, 0.15);
   assert.deepEqual(power.inputSnapshot.usedInputs, ["headSize"]);
 });
 
-test("spin ignores balance and comfort ignores beam width in v2", () => {
+test("spin ignores balance and comfort ignores beam width in v3", () => {
   const scores = computeAxisScores({
     ...EMPTY_SPEC,
     balanceMm: 350,
@@ -57,7 +57,7 @@ test("a complete verified spec records full completeness and confidence", () => 
 
   assert.equal(scores.length, 5);
   for (const score of scores) {
-    assert.equal(score.inputSnapshot.scoringVersion, "v2");
+    assert.equal(score.inputSnapshot.scoringVersion, "v3");
     assert.equal(score.inputSnapshot.completeness, 1);
     assert.equal(score.inputSnapshot.confidence, 1);
   }

@@ -2,6 +2,7 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import { racketModels, racketAliases } from "./schema";
 import { eq } from "drizzle-orm";
+import { disableLegacyCatalogMutation } from "../../scripts/legacy-catalog-mutation-disabled";
 
 // ---------------------------------------------------------------------------
 // Korean community aliases for ~80 racket models
@@ -604,6 +605,7 @@ const ALIAS_DATA: AliasEntry[] = [
 // ---------------------------------------------------------------------------
 
 async function seedAliases() {
+  disableLegacyCatalogMutation();
   const client = postgres(process.env.DATABASE_URL!);
   const db = drizzle(client);
 

@@ -7,7 +7,8 @@ import { normalizeNavSearchResults } from "../src/components/global-nav";
 import { canonicalizeRacketSearchRow } from "../src/app/api/diagnosis/racket-search/route";
 import {
   filterSortPaginateRackets,
-  pickLatestSpecSource,
+  pickSpecSourcesByRole,
+  resolveRacketSlug,
   selectKoreanVariant,
   type RacketListItem,
 } from "../src/lib/queries";
@@ -37,6 +38,70 @@ test("search API and global navigation preserve the server canonical slug and ye
   assert.equal(apiResult.slug, "head-speed-mp-2026");
   assert.equal(navResult.slug, apiResult.slug);
   assert.equal(navResult.year, 2026);
+});
+
+test("legacy identity aliases resolve to canonical detail paths and unknown slugs stay null", () => {
+  const rows = [
+    {
+      name: "Prestige MP 2023",
+      release_year: 2023,
+      brands: { name: "Head" },
+      racket_aliases: [{ alias: "Prestige MP 2025" }],
+    },
+    {
+      name: "T-Fight 305 Isoflex 2022",
+      release_year: 2022,
+      brands: { name: "Tecnifibre" },
+      racket_aliases: [{ alias: "T-Fight 305 Isoflex 2024" }],
+    },
+  ];
+
+  const prestige = resolveRacketSlug(rows, "head-prestige-mp-2025");
+  const tfight = resolveRacketSlug(
+    rows,
+    "tecnifibre-t-fight-305-isoflex-2024",
+  );
+
+  assert.equal(
+    prestige && `/rackets/${prestige.canonicalSlug}`,
+    "/rackets/head-prestige-mp-2023",
+  );
+  assert.equal(
+    tfight && `/rackets/${tfight.canonicalSlug}`,
+    "/rackets/tecnifibre-t-fight-305-isoflex-2022",
+  );
+  assert.equal(resolveRacketSlug(rows, "head-unknown-racket-2099"), null);
+  assert.equal(resolveRacketSlug([
+    rows[0],
+    {
+      ...rows[0],
+      racket_aliases: [],
+    },
+  ], "head-prestige-mp-2023"), null);
+});
+
+test("detail lookup selects aliases and permanently redirects non-canonical requests", () => {
+  const queries = readFileSync(
+    new URL("../src/lib/queries.ts", import.meta.url),
+    "utf8",
+  );
+  const detail = readFileSync(
+    new URL("../src/app/rackets/[slug]/page.tsx", import.meta.url),
+    "utf8",
+  );
+  const detailLookupQuery = queries.slice(
+    queries.indexOf("export async function getRacketBySlug"),
+    queries.indexOf("export type RacketFilters"),
+  );
+
+  assert.match(detailLookupQuery, /racket_aliases\(alias\)/);
+  assert.match(detailLookupQuery, /\.eq\("discontinued", false\)/);
+  assert.match(detailLookupQuery, /slug: canonicalSlug/);
+  assert.match(detail, /if \(slug !== racket\.slug\)/);
+  assert.match(
+    detail,
+    /permanentRedirect\(`\/rackets\/\$\{racket\.slug\}`\)/,
+  );
 });
 
 test("global search exposes an accessible modal and restores contained focus", () => {
@@ -127,13 +192,122 @@ test("weight, head-size, and Korean availability filters affect the total before
   assert.deepEqual(result.rackets.map(({ id }) => id), ["match"]);
 });
 
-test("latest spec provenance exposes measurement basis from raw values", () => {
-  assert.deepEqual(pickLatestSpecSource([
-    { source_url: "https://old.example", raw_values: { measurement_basis: "strung" }, captured_at: "2025-01-01" },
-    { source_url: "https://new.example", raw_values: { measurement_basis: "unstrung" }, captured_at: "2026-07-21" },
+test("spec provenance keeps the latest source for each explicit evidence role", () => {
+  assert.deepEqual(pickSpecSourcesByRole([
+    {
+      source_url: "https://manufacturer-old.example",
+      raw_values: {
+        source_role: "manufacturer_static",
+        measurement_basis: "unstrung",
+      },
+      captured_at: "2026-07-21",
+      verified_by_admin: true,
+    },
+    {
+      source_url: "https://manufacturer-new.example",
+      raw_values: {
+        source_role: "manufacturer_static",
+        measurement_basis: "unstrung",
+      },
+      captured_at: "2026-07-23",
+      verified_by_admin: true,
+    },
+    {
+      source_url: "https://manufacturer-unverified.example",
+      raw_values: {
+        source_role: "manufacturer_static",
+        measurement_basis: "unstrung",
+      },
+      captured_at: "2026-07-24",
+      verified_by_admin: false,
+    },
+    {
+      source_url: "https://measurement.example",
+      raw_values: {
+        source_role: "tennis_warehouse_measured",
+        measurement_basis: "strung",
+      },
+      captured_at: "2026-07-22",
+      verified_by_admin: true,
+    },
   ]), {
-    sourceUrl: "https://new.example",
-    measurementBasis: "unstrung",
-    capturedAt: "2026-07-21",
+    manufacturer_static: {
+      role: "manufacturer_static",
+      sourceUrl: "https://manufacturer-new.example",
+      measurementBasis: "unstrung",
+      capturedAt: "2026-07-23",
+    },
+    tennis_warehouse_measured: {
+      role: "tennis_warehouse_measured",
+      sourceUrl: "https://measurement.example",
+      measurementBasis: "strung",
+      capturedAt: "2026-07-22",
+    },
   });
+});
+
+test("legacy measurement basis falls back to roles and malformed rows stay null", () => {
+  assert.deepEqual(pickSpecSourcesByRole([
+    {
+      source_url: "https://legacy-manufacturer.example",
+      raw_values: { measurement_basis: "unstrung" },
+      captured_at: "2026-07-21",
+      verified_by_admin: true,
+    },
+    {
+      source_url: "https://legacy-unverified.example",
+      raw_values: { measurement_basis: "unstrung" },
+      captured_at: "2026-07-24",
+      verified_by_admin: false,
+    },
+    {
+      source_url: "https://legacy-measurement.example",
+      raw_values: { measurement_basis: "strung" },
+      captured_at: "2026-07-22",
+      verified_by_admin: true,
+    },
+    {
+      source_url: "javascript:alert(1)",
+      raw_values: { source_role: "manufacturer_static" },
+      captured_at: "2026-07-24",
+      verified_by_admin: true,
+    },
+    {
+      source_url: "https://unknown.example",
+      raw_values: {},
+      captured_at: "2026-07-24",
+      verified_by_admin: true,
+    },
+  ]), {
+    manufacturer_static: {
+      role: "manufacturer_static",
+      sourceUrl: "https://legacy-manufacturer.example",
+      measurementBasis: "unstrung",
+      capturedAt: "2026-07-21",
+    },
+    tennis_warehouse_measured: {
+      role: "tennis_warehouse_measured",
+      sourceUrl: "https://legacy-measurement.example",
+      measurementBasis: "strung",
+      capturedAt: "2026-07-22",
+    },
+  });
+
+  assert.deepEqual(pickSpecSourcesByRole(null), {
+    manufacturer_static: null,
+    tennis_warehouse_measured: null,
+  });
+});
+
+test("racket detail query selects the admin verification flag for provenance", () => {
+  const queries = readFileSync(
+    new URL("../src/lib/queries.ts", import.meta.url),
+    "utf8",
+  );
+
+  assert.match(
+    queries,
+    /spec_sources\(source_url, raw_values, captured_at, verified_by_admin\)/,
+  );
+  assert.match(queries, /row\.verified_by_admin !== true/);
 });

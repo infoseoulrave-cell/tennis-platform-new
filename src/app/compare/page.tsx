@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { getRacketBySlug, type RacketDetail } from "@/lib/queries";
-import { RadarChart, type Scores } from "@/components/radar-chart";
+import { RadarChart } from "@/components/radar-chart";
 import { ScoringMethodologyNote } from "@/components/scoring-methodology-note";
 import { formatRacketName } from "@/lib/racket-name";
 import { colorForRacket } from "@/lib/compare-colors";
+import type { PublicScores15 } from "@/lib/score-display";
 
 export const dynamic = "force-dynamic";
 
@@ -56,7 +57,9 @@ export default async function ComparePage({
   }
 
   // Combine all scores into a single radar chart with multiple polygons
-  const racketsWithScores = rackets.filter((r): r is RacketDetail & { scores: Scores } => r.scores !== null);
+  const racketsWithScores = rackets.filter(
+    (r): r is RacketDetail & { scores: PublicScores15 } => r.scores !== null,
+  );
   const orderedRacketIds = rackets.map((r) => r.id);
 
   return (
@@ -70,9 +73,9 @@ export default async function ComparePage({
 
       {/* Racket headers row */}
       <div className="grid gap-6 mb-10" style={{ gridTemplateColumns: `repeat(${rackets.length}, minmax(0, 1fr))` }}>
-        {rackets.map((r, i) => (
+        {rackets.map((r) => (
           <div key={r.id} className="text-center">
-            <div className="aspect-square bg-[var(--color-bg-subtle)] rounded-xl flex items-center justify-center mb-3">
+            <div className="aspect-square bg-white rounded-xl flex items-center justify-center mb-3">
               {r.imageUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={r.imageUrl} alt={r.model} className="object-contain w-full h-full p-4" />

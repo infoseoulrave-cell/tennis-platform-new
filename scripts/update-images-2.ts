@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import * as dotenv from "fs";
+import { disableLegacyCatalogMutation } from "./legacy-catalog-mutation-disabled";
 
 const envContent = dotenv.readFileSync(".env.local", "utf-8");
 const env: Record<string, string> = {};
@@ -62,6 +63,7 @@ const IMAGE_MAP: Record<string, string> = {
 };
 
 async function main() {
+  disableLegacyCatalogMutation();
   const { data: models } = await supabase
     .from("racket_models")
     .select("id, name, brands!inner(name)")

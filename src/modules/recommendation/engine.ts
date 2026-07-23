@@ -3,14 +3,16 @@ import {
   axisDefinitions,
   racketModels,
   racketSpecs,
+  racketVariants,
   specSources,
   playerProfiles,
   recommendationRuns,
   recommendationResults,
 } from "@/db/schema";
-import { eq, inArray } from "drizzle-orm";
+import { and, eq, exists, inArray } from "drizzle-orm";
 import {
   computeAxisScores,
+  hasReliableAxisScores,
   SCORING_VERSION,
   type RacketSpecInput,
 } from "./scoring-core";
@@ -228,15 +230,56 @@ function computeDelta(
   return delta;
 }
 
+type EvidenceRole = "manufacturer_static" | "tennis_warehouse_measured";
+
+type EvidenceSourceRow = {
+  racketModelId: string;
+  verifiedByAdmin: boolean;
+  rawValues: unknown;
+};
+
+function evidenceRole(rawValues: unknown): EvidenceRole | null {
+  if (!rawValues || typeof rawValues !== "object" || Array.isArray(rawValues)) {
+    return null;
+  }
+  const values = rawValues as Record<string, unknown>;
+  if (
+    values.source_role === "manufacturer_static"
+    || values.source_role === "tennis_warehouse_measured"
+  ) {
+    return values.source_role;
+  }
+  if (values.measurement_basis === "unstrung") return "manufacturer_static";
+  if (values.measurement_basis === "strung") return "tennis_warehouse_measured";
+  return null;
+}
+
+export function collectVerifiedEvidenceRoles(
+  rows: readonly EvidenceSourceRow[],
+): Map<string, Set<EvidenceRole>> {
+  const rolesByRacket = new Map<string, Set<EvidenceRole>>();
+  for (const row of rows) {
+    if (!row.verifiedByAdmin) continue;
+    const role = evidenceRole(row.rawValues);
+    if (!role) continue;
+    const roles = rolesByRacket.get(row.racketModelId) ?? new Set<EvidenceRole>();
+    roles.add(role);
+    rolesByRacket.set(row.racketModelId, roles);
+  }
+  return rolesByRacket;
+}
+
 // Determine confidence level
-function computeConfidence(
+export function computeRecommendationConfidence(
   answersCount: number,
-  specSourceCount: number
+  evidenceRoles: ReadonlySet<EvidenceRole> | undefined,
 ): { level: "high" | "medium" | "low"; reasonKo: string } {
-  if (answersCount >= 6 && specSourceCount >= 3) {
+  const hasManufacturer = evidenceRoles?.has("manufacturer_static") ?? false;
+  const hasMeasured = evidenceRoles?.has("tennis_warehouse_measured") ?? false;
+  if (answersCount >= 6 && hasManufacturer && hasMeasured) {
     return { level: "high", reasonKo: "모든 진단 답변과 충분한 스펙 소스가 확인되었습니다" };
   }
-  if (answersCount >= 5 && specSourceCount >= 1) {
+  if (answersCount >= 5 && (hasManufacturer || hasMeasured)) {
     return { level: "medium", reasonKo: "대부분의 진단 답변과 스펙이 확인되었습니다" };
   }
   return { level: "low", reasonKo: "일부 답변 또는 스펙 데이터가 부족합니다" };
@@ -288,7 +331,7 @@ export async function runRecommendation(input: {
     .from(axisDefinitions)
     .where(eq(axisDefinitions.version, SCORING_VERSION));
 
-  // A deployment can receive the application code before the v2 definition
+  // A deployment can receive the application code before the v3 definition
   // rows are migrated. The recommendation calculation itself is spec-based,
   // so keep the five equal default weights available as a safe fallback.
   const axisDefs = persistedAxisDefs.length === 5
@@ -306,8 +349,8 @@ export async function runRecommendation(input: {
   // 2. Compute player weights
   const playerWeights = calculatePlayerWeights(axisDefs, answers);
 
-  // 3. Load published specs and calculate every candidate with v2. This
-  // avoids silently reusing stale v1 rows and works before v2 rows persist.
+  // 3. Load published specs and calculate every candidate with v3. This
+  // avoids silently reusing stale rows and works before v3 rows persist.
   const publishedModelIds = await db
     .select({
       id: racketModels.id,
@@ -322,7 +365,20 @@ export async function runRecommendation(input: {
     })
     .from(racketModels)
     .innerJoin(racketSpecs, eq(racketSpecs.racketModelId, racketModels.id))
-    .where(eq(racketSpecs.ingestionState, "published"));
+    .where(and(
+      eq(racketSpecs.ingestionState, "published"),
+      eq(racketModels.discontinued, false),
+      exists(
+        db
+          .select({ id: racketVariants.id })
+          .from(racketVariants)
+          .where(and(
+            eq(racketVariants.racketModelId, racketModels.id),
+            eq(racketVariants.regionCode, "KR"),
+            eq(racketVariants.availableInKorea, true),
+          )),
+      ),
+    ));
 
   if (publishedModelIds.length === 0) {
     throw new Error("No published racket models found for recommendation");
@@ -343,7 +399,7 @@ export async function runRecommendation(input: {
       stringPattern: row.stringPattern,
     };
     const scores = computeAxisScores(spec);
-    if (scores.length !== 5) continue;
+    if (!hasReliableAxisScores(scores)) continue;
     specsByRacket.set(row.id, spec);
     computedScoresByRacket.set(
       row.id,
@@ -420,22 +476,22 @@ export async function runRecommendation(input: {
     currentAxes = axisScoresByRacket.get(currentRacketId) ?? null;
   }
 
-  // 11. Count spec sources for the top 3 rackets (for confidence)
+  // 11. Load verified evidence roles for the top 3 rackets (for confidence)
   const top3Ids = top3.map((r) => r.racket.id);
-  const sourceCountRows = await db
-    .select({ count: specSources.id, racketModelId: racketModels.id })
+  const evidenceSourceRows = await db
+    .select({
+      racketModelId: racketModels.id,
+      verifiedByAdmin: specSources.verifiedByAdmin,
+      rawValues: specSources.rawValues,
+    })
     .from(specSources)
     .innerJoin(racketSpecs, eq(specSources.racketSpecsId, racketSpecs.id))
     .innerJoin(racketModels, eq(racketSpecs.racketModelId, racketModels.id))
-    .where(inArray(racketModels.id, top3Ids));
-
-  const sourceCountByRacket = new Map<string, number>();
-  for (const row of sourceCountRows) {
-    sourceCountByRacket.set(
-      row.racketModelId,
-      (sourceCountByRacket.get(row.racketModelId) ?? 0) + 1
-    );
-  }
+    .where(and(
+      inArray(racketModels.id, top3Ids),
+      eq(specSources.verifiedByAdmin, true),
+    ));
+  const evidenceRolesByRacket = collectVerifiedEvidenceRoles(evidenceSourceRows);
 
   // 12. Build final recommendations
   const playstyleArchetype = deriveArchetype(answers);
@@ -451,11 +507,11 @@ export async function runRecommendation(input: {
       currentAxes
     );
     const delta = currentAxes ? computeDelta(scored.axisScores, currentAxes) : null;
-    const specSourceCount = sourceCountByRacket.get(scored.racket.id) ?? 0;
-    const { level: confidenceLevel, reasonKo: confidenceReasonKo } = computeConfidence(
-      answersCount,
-      specSourceCount
-    );
+    const { level: confidenceLevel, reasonKo: confidenceReasonKo } =
+      computeRecommendationConfidence(
+        answersCount,
+        evidenceRolesByRacket.get(scored.racket.id),
+      );
 
     return {
       rank,

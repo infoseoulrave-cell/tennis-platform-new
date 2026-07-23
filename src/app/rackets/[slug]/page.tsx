@@ -1,14 +1,18 @@
 import Link from "next/link";
 import Image from "next/image";
-import { notFound } from "next/navigation";
-import { getRacketBySlug, getSimilarRackets } from "@/lib/queries";
+import { notFound, permanentRedirect } from "next/navigation";
+import {
+  getRacketBySlug,
+  getSimilarRackets,
+  type RacketSpecSources,
+} from "@/lib/queries";
 import { RadarBarCombo } from "@/components/radar-bar-combo";
 import { RacketCard } from "@/components/racket-card";
 import { RacketDetailActions } from "@/components/racket-detail-actions";
 import { PriceComparison } from "@/components/price-comparison";
 import { ScoringMethodologyNote } from "@/components/scoring-methodology-note";
 import type { Metadata } from "next";
-import type { Scores } from "@/components/radar-chart";
+import type { PublicScores15 } from "@/lib/score-display";
 import { formatRacketName } from "@/lib/racket-name";
 
 export const dynamic = "force-dynamic";
@@ -39,20 +43,20 @@ const SEGMENT_LABELS: Record<string, string> = {
   pro: "프로",
 };
 
-function getRecommendation(scores: Scores | null) {
+function getRecommendation(scores: PublicScores15 | null) {
   if (!scores) return null;
   const forWhom: string[] = [];
   const notForWhom: string[] = [];
 
-  if (scores.spin >= 3) forWhom.push("탑스핀 위주의 공격적 플레이어");
-  if (scores.control >= 3) forWhom.push("정밀한 배치를 중시하는 올라운더");
-  if (scores.power >= 3) forWhom.push("파워풀한 플랫 히팅을 원하는 플레이어");
-  if (scores.comfort >= 2) forWhom.push("상대적으로 낮은 강성 후보를 비교하려는 플레이어");
-  if (scores.stability >= 3) forWhom.push("안정적인 랠리를 선호하는 플레이어");
+  if (scores.spin >= 14) forWhom.push("탑스핀 위주의 공격적 플레이어");
+  if (scores.control >= 14) forWhom.push("정밀한 배치를 중시하는 올라운더");
+  if (scores.power >= 14) forWhom.push("파워풀한 플랫 히팅을 원하는 플레이어");
+  if (scores.comfort >= 13.5) forWhom.push("상대적으로 낮은 강성 후보를 비교하려는 플레이어");
+  if (scores.stability >= 14) forWhom.push("안정적인 랠리를 선호하는 플레이어");
 
-  if (scores.comfort <= -2) notForWhom.push("높은 강성 후보를 피하려는 플레이어");
-  if (scores.power <= -2) notForWhom.push("스윙 스피드가 느린 초보자");
-  if (scores.spin <= -2) notForWhom.push("스핀을 적극 활용하는 스타일");
+  if (scores.comfort <= 11.5) notForWhom.push("높은 강성 후보를 피하려는 플레이어");
+  if (scores.power <= 11.5) notForWhom.push("스윙 스피드가 느린 초보자");
+  if (scores.spin <= 11.5) notForWhom.push("스핀을 적극 활용하는 스타일");
 
   if (forWhom.length === 0) forWhom.push("다양한 스타일에 적합한 올라운드 라켓");
   if (notForWhom.length === 0) notForWhom.push("특별한 제한 없음");
@@ -60,15 +64,15 @@ function getRecommendation(scores: Scores | null) {
   return { forWhom, notForWhom };
 }
 
-function getStringRecommendation(scores: Scores | null) {
+function getStringRecommendation(scores: PublicScores15 | null) {
   if (!scores) return null;
-  if (scores.spin >= 3) {
+  if (scores.spin >= 14) {
     return { string: "Luxilon ALU Power / Babolat RPM Blast", tension: "초기 시타 48-52 lbs", reason: "오픈 패턴에서 비교해 볼 수 있는 폴리 조합 예시." };
   }
-  if (scores.control >= 3) {
+  if (scores.control >= 14) {
     return { string: "Tecnifibre Razor Code / Solinco Confidential", tension: "초기 시타 50-54 lbs", reason: "컨트롤 성향을 비교하기 위한 폴리 조합 예시." };
   }
-  if (scores.comfort >= 2) {
+  if (scores.comfort >= 13.5) {
     return { string: "Wilson NXT / Tecnifibre X-One", tension: "초기 시타 48-52 lbs", reason: "멀티필라멘트 타구감을 비교하기 위한 출발 조합." };
   }
   return { string: "Yonex Poly Tour Pro / Head Lynx", tension: "초기 시타 48-52 lbs", reason: "중립적인 폴리 조합을 비교하기 위한 출발점." };
@@ -93,6 +97,7 @@ export default async function RacketDetailPage({
   }
 
   if (!racket) notFound();
+  if (slug !== racket.slug) permanentRedirect(`/rackets/${racket.slug}`);
 
   const similarRackets = await getSimilarRackets(racket.id, racket.brand).catch(() => []);
   const recommendation = getRecommendation(racket.scores);
@@ -110,7 +115,7 @@ export default async function RacketDetailPage({
 
       <div className="grid lg:grid-cols-[1fr_1.2fr] gap-12">
         <div className="lg:sticky lg:top-20 lg:self-start">
-          <div className="relative aspect-square bg-[var(--color-bg-subtle)] rounded-2xl flex items-center justify-center overflow-hidden">
+          <div className="relative aspect-square bg-white rounded-2xl flex items-center justify-center overflow-hidden">
             {racket.imageUrl ? (
               <Image
                 src={racket.imageUrl}
@@ -153,7 +158,7 @@ export default async function RacketDetailPage({
 
           {racket.scores && (
             <section className="border border-[var(--color-border)] rounded-2xl p-6">
-              <h2 className="text-sm font-semibold mb-4">5축 능력 분석</h2>
+              <h2 className="text-sm font-semibold mb-4">5축 스펙 성향</h2>
               <RadarBarCombo scores={racket.scores} />
               <div className="mt-5">
                 <ScoringMethodologyNote />
@@ -254,6 +259,7 @@ export default async function RacketDetailPage({
           <SpecRow label="밸런스" value={racket.balanceMm ? `${racket.balanceMm}mm` : null} />
           <SpecRow label="스윙웨이트" value={racket.swingWeight?.toString()} />
         </dl>
+        <SpecSourceLinks sources={racket.specSources} />
       </section>
 
       {similarRackets.length > 0 && (
@@ -280,6 +286,43 @@ function SpecRow({ label, value }: { label: string; value: string | null | undef
     <div className="flex justify-between py-3 border-b border-[var(--color-border)] last:border-0">
       <dt className="text-sm text-[var(--color-text-secondary)]">{label}</dt>
       <dd className="text-sm font-medium">{value ?? "—"}</dd>
+    </div>
+  );
+}
+
+function SpecSourceLinks({ sources }: { sources: RacketSpecSources }) {
+  const items = [
+    {
+      source: sources.manufacturer_static,
+      label: "정적 스펙 · 제조사 비스트링",
+    },
+    {
+      source: sources.tennis_warehouse_measured,
+      label: "SW/RA 측정 · 스트링 장착",
+    },
+  ].filter((item) => item.source !== null);
+
+  if (items.length === 0) return null;
+
+  return (
+    <div className="mt-4 space-y-1.5 text-xs text-[var(--color-text-muted)]">
+      {items.map(({ source, label }) => source && (
+        <p key={source.role} className="flex flex-wrap items-center gap-x-2 gap-y-1">
+          <a
+            href={source.sourceUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="font-medium text-[var(--color-text-secondary)] underline underline-offset-2 hover:text-[var(--color-text)]"
+          >
+            {label}
+          </a>
+          {source.capturedAt && (
+            <time dateTime={source.capturedAt}>
+              검증 {source.capturedAt.slice(0, 10)}
+            </time>
+          )}
+        </p>
+      ))}
     </div>
   );
 }

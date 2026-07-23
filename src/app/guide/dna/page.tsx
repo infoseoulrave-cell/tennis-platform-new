@@ -1,37 +1,41 @@
 export const dynamic = "force-dynamic";
 
 import Link from "next/link";
+import {
+  formatPublicScore,
+  publicScoreToPercent,
+} from "@/lib/score-display";
 
 const axes = [
   {
     key: "power",
-    labelKo: "직구력",
+    labelKo: "파워",
     labelEn: "Power",
-    desc: "평타·서브에서 볼이 나가는 쉬움과 깊이. 헤드 라이트·낮은 스윙웨이트는 상대적으로 낮게, 헤드 헤비·긴 레버리지는 높게 평가될 수 있어요.",
+    desc: "스윙웨이트(SW)를 중심으로 강성(RA), 헤드 크기, 빔 두께를 조합한 파워 성향 추정치입니다.",
   },
   {
     key: "control",
     labelKo: "컨트롤",
     labelEn: "Control",
-    desc: "원하는 코스와 길이로 볼을 묶는 느낌. 패턴 스윙에서 실수 여지가 줄어드는 방향으로 해석됩니다.",
+    desc: "작은 헤드, 높은 스트링 밀도, 얇은 빔, 낮은 강성(RA)을 조합한 컨트롤 성향 프록시입니다.",
   },
   {
     key: "spin",
     labelKo: "스핀",
     labelEn: "Spin",
-    desc: "스트링 패턴·프레임 형상·스윙 피벗과 맞물려 탑스핀/슬라이스가 ‘묻는’ 정도를 나타냅니다.",
+    desc: "낮은 스트링 밀도와 큰 헤드, 같은 노력에서 낮은 스윙웨이트(SW)를 조합한 스핀 접근성 프록시입니다.",
   },
   {
     key: "comfort",
-    labelKo: "충격흡수",
+    labelKo: "편안함",
     labelEn: "Comfort",
-    desc: "팔·팔꿈치로 전달되는 진동과 충격. 재질·두께·밸런스·추천 스트링 조합이 함께 반영됩니다.",
+    desc: "낮은 강성(RA)을 중심으로 스윙웨이트(SW)와 정적 무게를 조합한 편안함 추정치입니다.",
   },
   {
     key: "stability",
-    labelKo: "안정감",
+    labelKo: "안정성",
     labelEn: "Stability",
-    desc: "오프센터 타구에서 흔들림이 적고 방향성이 유지되는 성향입니다. 트위스트·비틀림 강성 등이 관련됩니다.",
+    desc: "스윙웨이트(SW)와 정적 무게를 조합한 안정성 추정치입니다.",
   },
 ];
 
@@ -42,13 +46,13 @@ function AxisScaleDemo({
   label: string;
   value: number;
 }) {
-  const pct = ((value + 5) / 10) * 100;
+  const pct = publicScoreToPercent(value);
   return (
     <div className="space-y-1">
       <div className="flex justify-between text-[10px] text-[var(--color-text-muted)] uppercase tracking-wide">
-        <span>−5</span>
+        <span>10</span>
         <span className="text-[var(--color-text-secondary)]">{label}</span>
-        <span>+5</span>
+        <span>15</span>
       </div>
       <div className="relative h-2 rounded-full bg-[var(--color-border)]">
         <div
@@ -57,8 +61,7 @@ function AxisScaleDemo({
         />
       </div>
       <p className="text-right text-xs font-medium text-[var(--color-text)]">
-        예: {value > 0 ? "+" : ""}
-        {value}
+        예: {formatPublicScore(value)}
       </p>
     </div>
   );
@@ -80,10 +83,10 @@ export default function GuideDnaPage() {
           5축 점수 이해하기
         </h1>
         <p className="mt-3 text-[var(--color-text-secondary)] leading-relaxed">
-          각 축은 <strong className="text-[var(--color-text)]">−5</strong>부터{" "}
-          <strong className="text-[var(--color-text)]">+5</strong>까지의 상대
-          척도입니다. 절대적인 ‘정답 숫자’가 아니라, 같은 카탈로그 안에서의 성향
-          비교에 쓰입니다.
+          각 축은 <strong className="text-[var(--color-text)]">10.0/15</strong>
+          부터 <strong className="text-[var(--color-text)]">15.0/15</strong>까지의
+          공개 척도이며, 중립 기준은 12.5/15입니다. 절대적인 ‘정답 숫자’가
+          아니라 같은 카탈로그 안에서의 성향 비교에 쓰입니다.
         </p>
       </header>
 
@@ -92,17 +95,16 @@ export default function GuideDnaPage() {
           점수는 어떻게 나오나요?
         </h2>
         <p className="mt-2 text-sm text-[var(--color-text-secondary)] leading-relaxed">
-          스펙(헤드 크기, 무게, 밸런스, 스트링 패턴, 프레임 단면, 재질 등)과
-          공개된 설계 특성을 입력으로,{" "}
-          <span className="text-[var(--color-text)]">
-            AI 기반 분석 파이프라인
-          </span>
-          이 각 축에 대한 상대 점수를 산출합니다. 사람이 라켓을 직접 쳐본
-          주관적 평가가 아니라,{" "}
+          제조사가 공개한 비스트링 정적 스펙(헤드 크기, 무게, 스트링 패턴,
+          빔)을 기준으로, 가능한 경우 제조사와 별개의 리테일러가 공개한 스트링 장착
+          스윙웨이트와 강성 측정을 보완해 각 축의 상대 점수를 산출합니다.
+          사람이 라켓을 직접 쳐본 주관적 평가가 아니라,{" "}
           <span className="text-[var(--color-text)]">
             스펙에서 추론 가능한 성향
           </span>
-          을 숫자로 정리한 것입니다.
+          을 프록시와 추정치로 정리한 것입니다. 실제 체감은 플레이어의 기술과
+          스윙, 스트링 종류와 장력, 개별 라켓의 실측 편차에 따라 달라질 수
+          있습니다.
         </p>
       </section>
 
@@ -135,7 +137,7 @@ export default function GuideDnaPage() {
           시각 예시
         </h2>
         <p className="text-sm text-[var(--color-text-secondary)] mb-6">
-          아래는 같은 척도(−5 ~ +5) 위에 마커를 올린 예시입니다. 실제 라켓
+          아래는 같은 척도(10~15) 위에 마커를 올린 예시입니다. 실제 라켓
           카드에서는 다섯 축이 함께 표시됩니다.
         </p>
         <div className="grid gap-6 sm:grid-cols-2">
@@ -144,8 +146,8 @@ export default function GuideDnaPage() {
               스핀 특화형 (예시)
             </p>
             <div className="space-y-5">
-              <AxisScaleDemo label="스핀" value={4} />
-              <AxisScaleDemo label="직구력" value={1} />
+              <AxisScaleDemo label="스핀" value={14.5} />
+              <AxisScaleDemo label="파워" value={13} />
             </div>
           </div>
           <div className="rounded-2xl border border-[var(--color-border)] p-5 bg-white">
@@ -153,8 +155,8 @@ export default function GuideDnaPage() {
               안정·컨트롤형 (예시)
             </p>
             <div className="space-y-5">
-              <AxisScaleDemo label="안정감" value={3} />
-              <AxisScaleDemo label="컨트롤" value={2} />
+              <AxisScaleDemo label="안정성" value={14} />
+              <AxisScaleDemo label="컨트롤" value={13.5} />
             </div>
           </div>
         </div>

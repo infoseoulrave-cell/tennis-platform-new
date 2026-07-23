@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "라켓 찾기",
-  description: "한국에서 실제 판매 중인 80개 이상의 테니스 라켓을 5축 점수와 스펙으로 비교해 보세요.",
+  description: "현재 카탈로그 39종의 테니스 라켓을 5축 점수와 스펙으로 비교해 보세요.",
 };
 
 type SearchParams = {
@@ -199,7 +199,7 @@ export default async function RacketsPage({
       <header className="mb-8">
         <h1 className="text-3xl font-bold">라켓 찾기</h1>
         <p className="text-sm text-[var(--color-text-secondary)] mt-2">
-          한국에서 실제 판매 중인 라켓을 5축 점수와 스펙으로 비교해 보세요.
+          현재 카탈로그 39종의 라켓을 5축 점수와 스펙으로 비교해 보세요.
         </p>
       </header>
 

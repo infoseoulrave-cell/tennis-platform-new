@@ -1,4 +1,6 @@
-export const SCORING_VERSION = "v2";
+export const SCORING_VERSION = "v3";
+export const MIN_SCORE_COMPLETENESS = 5 / 7;
+export const MIN_AXIS_CONFIDENCE = 0.60;
 
 const NORM_RANGES = {
   headSize: { min: 93, max: 115 },
@@ -52,6 +54,8 @@ interface NormalizedInputs {
 
 type InputKey = keyof NormalizedInputs;
 type AvailableInputs = Partial<NormalizedInputs>;
+const INPUT_KEYS = Object.keys(NORM_RANGES) as InputKey[];
+const INPUT_KEY_SET = new Set<string>(INPUT_KEYS);
 
 function normalizeValue(value: number | null, rangeKey: InputKey): number | undefined {
   return value != null && Number.isFinite(value) ? norm(value, rangeKey) : undefined;
@@ -81,34 +85,84 @@ interface FormulaInput {
   inverse?: boolean;
 }
 
-const AXIS_FORMULAS: Record<string, FormulaInput[]> = {
-  power: [
-    { key: "swingWeight", weight: 0.35 },
-    { key: "stiffness", weight: 0.25 },
-    { key: "beamWidth", weight: 0.20 },
-    { key: "headSize", weight: 0.20 },
-  ],
-  control: [
-    { key: "headSize", weight: 0.30, inverse: true },
-    { key: "stringDensity", weight: 0.25 },
-    { key: "beamWidth", weight: 0.20, inverse: true },
-    { key: "stiffness", weight: 0.25, inverse: true },
-  ],
-  spin: [
-    { key: "stringDensity", weight: 0.65, inverse: true },
-    { key: "headSize", weight: 0.35 },
-  ],
-  comfort: [
-    { key: "stiffness", weight: 0.60, inverse: true },
-    { key: "swingWeight", weight: 0.25 },
-    { key: "weight", weight: 0.15 },
-  ],
-  stability: [
-    { key: "swingWeight", weight: 0.45 },
-    { key: "weight", weight: 0.35 },
-    { key: "beamWidth", weight: 0.20 },
-  ],
-};
+export interface AxisDefinition {
+  axisKey: "power" | "control" | "spin" | "comfort" | "stability";
+  axisName: string;
+  axisNameKo: string;
+  description: string;
+  scoringFormula: string;
+  weightDefault: number;
+  formula: FormulaInput[];
+}
+
+export const AXIS_DEFINITIONS: readonly AxisDefinition[] = [
+  {
+    axisKey: "power",
+    axisName: "Power",
+    axisNameKo: "파워",
+    description: "Swingweight-centered power estimate from measured and static specifications.",
+    scoringFormula: "0.55*SW + 0.20*RA + 0.15*head + 0.10*beam",
+    weightDefault: 0.20,
+    formula: [
+      { key: "swingWeight", weight: 0.55 },
+      { key: "stiffness", weight: 0.20 },
+      { key: "headSize", weight: 0.15 },
+      { key: "beamWidth", weight: 0.10 },
+    ],
+  },
+  {
+    axisKey: "control",
+    axisName: "Control",
+    axisNameKo: "컨트롤",
+    description: "Control proxy from head size, string density, beam, and stiffness; not a direct measurement.",
+    scoringFormula: "0.35*inverse(head) + 0.35*density + 0.15*inverse(beam) + 0.15*inverse(RA)",
+    weightDefault: 0.20,
+    formula: [
+      { key: "headSize", weight: 0.35, inverse: true },
+      { key: "stringDensity", weight: 0.35 },
+      { key: "beamWidth", weight: 0.15, inverse: true },
+      { key: "stiffness", weight: 0.15, inverse: true },
+    ],
+  },
+  {
+    axisKey: "spin",
+    axisName: "Spin",
+    axisNameKo: "스핀",
+    description: "Spin-access proxy from string density, head size, and inverse swingweight for comparable effort.",
+    scoringFormula: "0.55*inverse(density) + 0.25*head + 0.20*inverse(SW)",
+    weightDefault: 0.20,
+    formula: [
+      { key: "stringDensity", weight: 0.55, inverse: true },
+      { key: "headSize", weight: 0.25 },
+      { key: "swingWeight", weight: 0.20, inverse: true },
+    ],
+  },
+  {
+    axisKey: "comfort",
+    axisName: "Comfort",
+    axisNameKo: "편안함",
+    description: "Comfort estimate led by inverse stiffness with measured swingweight and static weight.",
+    scoringFormula: "0.60*inverse(RA) + 0.25*SW + 0.15*weight",
+    weightDefault: 0.20,
+    formula: [
+      { key: "stiffness", weight: 0.60, inverse: true },
+      { key: "swingWeight", weight: 0.25 },
+      { key: "weight", weight: 0.15 },
+    ],
+  },
+  {
+    axisKey: "stability",
+    axisName: "Stability",
+    axisNameKo: "안정성",
+    description: "Stability estimate from measured swingweight and static weight only.",
+    scoringFormula: "0.55*SW + 0.45*weight",
+    weightDefault: 0.20,
+    formula: [
+      { key: "swingWeight", weight: 0.55 },
+      { key: "weight", weight: 0.45 },
+    ],
+  },
+] as const;
 
 function computeFormula(
   inputs: AvailableInputs,
@@ -142,11 +196,91 @@ export interface AxisScore {
   };
 }
 
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+  const prototype = Object.getPrototypeOf(value);
+  return prototype === Object.prototype || prototype === null;
+}
+
+export function isReliableScoreSnapshot(snapshot: unknown): boolean {
+  if (!isPlainObject(snapshot)) return false;
+  const value = snapshot as {
+    scoringVersion?: unknown;
+    normalizedInputs?: unknown;
+    usedInputs?: unknown;
+    completeness?: unknown;
+    confidence?: unknown;
+  };
+  if (!isPlainObject(value.normalizedInputs) || !Array.isArray(value.usedInputs)) {
+    return false;
+  }
+
+  const normalizedKeys = Reflect.ownKeys(value.normalizedInputs);
+  if (
+    normalizedKeys.some((key) =>
+      typeof key !== "string" || !INPUT_KEY_SET.has(key)
+    )
+  ) {
+    return false;
+  }
+  for (const key of normalizedKeys) {
+    const normalizedValue = value.normalizedInputs[key as InputKey];
+    if (
+      typeof normalizedValue !== "number"
+      || !Number.isFinite(normalizedValue)
+      || normalizedValue < 0
+      || normalizedValue > 100
+    ) {
+      return false;
+    }
+  }
+
+  if (
+    value.usedInputs.length === 0
+    || value.usedInputs.some((key) =>
+      typeof key !== "string" || !INPUT_KEY_SET.has(key)
+    )
+    || new Set(value.usedInputs).size !== value.usedInputs.length
+    || value.usedInputs.some((key) =>
+      !Object.prototype.hasOwnProperty.call(value.normalizedInputs, key)
+    )
+  ) {
+    return false;
+  }
+
+  if (
+    value.scoringVersion !== SCORING_VERSION
+    || typeof value.completeness !== "number"
+    || !Number.isFinite(value.completeness)
+    || value.completeness < 0
+    || value.completeness > 1
+    || typeof value.confidence !== "number"
+    || !Number.isFinite(value.confidence)
+    || value.confidence < 0
+    || value.confidence > 1
+  ) {
+    return false;
+  }
+
+  const expectedCompleteness = normalizedKeys.length / INPUT_KEYS.length;
+  return Math.abs(value.completeness - expectedCompleteness) <= 1e-9
+    && value.completeness >= MIN_SCORE_COMPLETENESS
+    && value.confidence >= MIN_AXIS_CONFIDENCE;
+}
+
+export function hasReliableAxisScores(scores: readonly AxisScore[]): boolean {
+  if (scores.length !== AXIS_DEFINITIONS.length) return false;
+  const required = new Set<string>(AXIS_DEFINITIONS.map(({ axisKey }) => axisKey));
+  return scores.every(({ axisKey, inputSnapshot }) =>
+    required.delete(axisKey) && isReliableScoreSnapshot(inputSnapshot)
+  ) && required.size === 0;
+}
+
 export function computeAxisScores(spec: RacketSpecInput): AxisScore[] {
   const inputs = normalizeInputs(spec);
   const completeness = Object.keys(inputs).length / Object.keys(NORM_RANGES).length;
 
-  return Object.entries(AXIS_FORMULAS).flatMap(([axisKey, formula]) => {
+  return AXIS_DEFINITIONS.flatMap(({ axisKey, formula }) => {
     const result = computeFormula(inputs, formula);
     if (!result) return [];
 

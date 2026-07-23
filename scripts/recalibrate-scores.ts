@@ -1,5 +1,6 @@
 import { readFileSync } from "fs";
 import { createClient } from "@supabase/supabase-js";
+import { disableLegacyCatalogMutation } from "./legacy-catalog-mutation-disabled";
 
 const env: Record<string, string> = {};
 for (const l of readFileSync(".env.local", "utf-8").split("\n")) {
@@ -9,6 +10,7 @@ for (const l of readFileSync(".env.local", "utf-8").split("\n")) {
 const supabase = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY);
 
 async function main() {
+  disableLegacyCatalogMutation();
   const { data: allScores } = await supabase
     .from("racket_axis_scores")
     .select("id, racket_model_id, score, axis_definitions!inner(axis_key)");

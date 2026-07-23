@@ -1,5 +1,6 @@
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
+import { disableLegacyCatalogMutation } from "../../scripts/legacy-catalog-mutation-disabled";
 import {
   brands,
   racketModels,
@@ -1827,6 +1828,7 @@ export const KOREAN_MARKET_RACKETS: RacketSeedRow[] = [
 // ---------------------------------------------------------------------------
 
 export async function seedRackets(): Promise<void> {
+  disableLegacyCatalogMutation();
   const client = postgres(process.env.DATABASE_URL!);
   const db = drizzle(client);
 

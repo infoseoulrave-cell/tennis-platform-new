@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import { disableLegacyCatalogMutation } from "./legacy-catalog-mutation-disabled";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
@@ -106,6 +107,7 @@ const IMAGE_MAP: Record<string, string> = {
 };
 
 async function updateImages() {
+  disableLegacyCatalogMutation();
   console.log("Fetching all racket models...");
 
   const { data: models, error } = await supabase

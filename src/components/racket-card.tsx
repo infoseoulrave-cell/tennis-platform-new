@@ -1,8 +1,11 @@
 import Link from "next/link";
 import Image from "next/image";
-import { type Scores, AXIS_LABELS } from "./radar-chart";
+import { AXIS_LABELS } from "./radar-chart";
 import { formatRacketName } from "@/lib/racket-name";
-import { formatPublicScore } from "@/lib/score-display";
+import {
+  formatPublicScore,
+  type PublicScores15,
+} from "@/lib/score-display";
 
 export type RacketCardData = {
   slug: string;
@@ -14,7 +17,7 @@ export type RacketCardData = {
   pattern?: string | null;
   priceKrw?: number | null;
   imageUrl?: string | null;
-  scores?: Scores | null;
+  scores?: PublicScores15 | null;
 };
 
 function formatPrice(price: number): string {
@@ -22,8 +25,11 @@ function formatPrice(price: number): string {
   return `₩${price.toLocaleString()}`;
 }
 
-function topAxes(scores: Scores, count = 2): { key: keyof Scores; score: number }[] {
-  return (Object.entries(scores) as [keyof Scores, number][])
+function topAxes(
+  scores: PublicScores15,
+  count = 2,
+): { key: keyof PublicScores15; score: number }[] {
+  return (Object.entries(scores) as [keyof PublicScores15, number][])
     .sort((a, b) => b[1] - a[1])
     .slice(0, count)
     .map(([key, score]) => ({ key, score }));
@@ -36,7 +42,7 @@ export function RacketCard({ racket }: { racket: RacketCardData }) {
       className="group block bg-[var(--color-bg-white)] rounded-xl overflow-hidden shadow-sm hover:shadow-md hover:-translate-y-0.5 hover:ring-1 hover:ring-[var(--color-brand-light)]/30 transition-all duration-200"
     >
       {/* Image area */}
-      <div className="relative aspect-[4/3] bg-[var(--color-bg-subtle)] flex items-center justify-center">
+      <div className="relative aspect-[4/3] bg-white flex items-center justify-center">
         {racket.imageUrl ? (
           <Image
             src={racket.imageUrl}

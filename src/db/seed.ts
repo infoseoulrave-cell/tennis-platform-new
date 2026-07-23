@@ -1,8 +1,10 @@
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
+import { disableLegacyCatalogMutation } from "../../scripts/legacy-catalog-mutation-disabled";
 import { brands, axisDefinitions } from "./schema";
 
 async function seed() {
+  disableLegacyCatalogMutation();
   const client = postgres(process.env.DATABASE_URL!);
   const db = drizzle(client);
 
