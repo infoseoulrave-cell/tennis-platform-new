@@ -121,3 +121,42 @@
 - 코드 기준 검증은 테스트 120/120, typecheck 통과, lint 통과, build 29/29 통과, diff-check 통과다.
 - 다음 단계는 새 프리뷰에서 목록·상세·비교·가이드·선수 카드를 확인하는 것이며 실제 URL과 배포 ID는 검증 후에만 기록한다.
 - 사용자 승인 전에는 canonical `main` push, 프로덕션 반영, DB 적용을 수행하지 않는다.
+
+## 10. 2026-07-24 FINAL PREVIEW 상태
+
+이 절은 Section 9 이후의 최종 프리뷰 검증 상태이며 Production 또는 DB 반영 완료를 뜻하지 않는다.
+
+### Git 및 배포 상태
+
+- 로컬 브랜치: `main`
+- 로컬 기능 커밋: `c48119e`
+- 기능 커밋 시점 원격 상태: `origin/main` 대비 ahead 3, 미푸시
+- 프리뷰 URL: `https://racketlab-einla3sf2-rachel-flower.vercel.app/`
+- 프리뷰 배포 ID: `dpl_AZ7bsuMJuzidWcxUtASU68QSjT8g`
+- Vercel 대상/상태: `Preview` / `Ready`
+- 운영 alias `https://racketlab-one.vercel.app/`는 변경하지 않았다.
+
+### 점수 읽기 계약
+
+- 공개 점수 데이터는 `persisted v3 > reliable DB spec > exact brand/model/year evidence manifest > null` 순서로만 결정한다.
+- 근거가 없는 값은 추정하거나 임의의 숫자로 채우지 않고 `null`을 반환한다.
+- 축 순서는 `[파워, 컨트롤, 스핀, 편안함, 안정성]`이다.
+- HEAD Speed Pro 2026: `[3,3,1,3,3]`, 총 `13/15`
+- HEAD Speed MP 2026: `[3,2,2,3,3]`, 총 `13/15`
+- HEAD Speed MP L 2026: `[3,2,3,3,2]`, 총 `13/15`
+
+### 최종 검증
+
+- 활성 라켓 39종과 공개 축 195개가 브라우저 전수 검사에서 모두 유효했다.
+- 선수 20명의 이미지와 기능 문구를 확인했고 검증일은 `2026-07-24`, 기존 메모는 0건이다.
+- `/strings`, `/knowledge`, `/partners`, `/guide/strings`는 404 없이 정상 응답했다.
+- 모바일 오버플로가 없고 브라우저 콘솔 warning/error는 0건이다.
+- 테스트 124/124, typecheck 통과, lint 통과, build 29/29 통과, 코드 diff-check 통과다.
+- 최종 코드 리뷰 결과는 `APPROVE`다.
+
+### 변경 금지 상태
+
+- Omega URL `https://racketlab-omega.vercel.app/`와 기존 배포는 변경하지 않았다.
+- 운영 `racketlab-one`과 DB는 변경하지 않았다.
+- 백필 `--apply`와 Production 배포는 명시적 사용자 승인 전까지 금지한다.
+- 승인 전에는 미푸시 로컬 커밋을 원격에 push하지 않는다.
