@@ -1,0 +1,9 @@
+# Local environment and Vercel linkage
+.env
+.env.*
+!.env.example
+.vercel/
+
+# Local-only agent workflow artifacts
+.superpowers/
+.gstack/
