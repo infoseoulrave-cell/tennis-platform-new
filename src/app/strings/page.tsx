@@ -1,6 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { stringProducts } from "@/data/strings";
+import {
+  STRING_TENSION_METHODOLOGY,
+  stringOfferId,
+  stringProducts,
+  type StringEditorialTag,
+  type StringMaterialType,
+} from "@/data/strings";
 import {
   getActiveOffersForProductKeys,
   lowestPriceOfferId,
@@ -20,7 +26,45 @@ function formatKrw(value: number): string {
   return `₩${value.toLocaleString()}`;
 }
 
-export default async function StringsPage() {
+type MaterialFilter = "all" | StringMaterialType;
+
+const MATERIAL_FILTERS: Array<{
+  value: MaterialFilter;
+  label: string;
+}> = [
+  { value: "all", label: "전체" },
+  { value: "polyester", label: "폴리에스터" },
+  { value: "multifilament", label: "멀티필라멘트" },
+  { value: "natural_gut", label: "내추럴 거트" },
+  { value: "synthetic_gut", label: "신세틱 거트" },
+];
+
+const EDITORIAL_TAG_LABELS: Record<StringEditorialTag, string> = {
+  balanced: "균형형 비교",
+  "beginner-friendly": "입문자 우선 비교",
+  comfort: "고강성·낮은 편안함 보완 비교",
+  control: "컨트롤 성향 비교",
+  durability: "내구성 우선 비교",
+  "fast-swing": "빠른 스윙 비교",
+  hybrid: "하이브리드 후보",
+  power: "낮은 파워·덴스 패턴 비교",
+  "soft-poly": "상대적 저강성 폴리 비교",
+  spin: "오픈 패턴·스핀 비교",
+};
+
+function materialFilter(value: string | string[] | undefined): MaterialFilter {
+  const candidate = Array.isArray(value) ? value[0] : value;
+  return MATERIAL_FILTERS.some((filter) => filter.value === candidate)
+    ? candidate as MaterialFilter
+    : "all";
+}
+
+export default async function StringsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ type?: string | string[] }>;
+}) {
+  const selectedMaterial = materialFilter((await searchParams).type);
   let offersByProductKey: Record<string, Offer[]> = {};
   let offersUnavailable = false;
   try {
@@ -30,10 +74,14 @@ export default async function StringsPage() {
   } catch {
     offersUnavailable = true;
   }
-  const catalog = stringProducts.map((product) => ({
-    product,
-    offers: offersByProductKey[product.offerKey] ?? [],
-  }));
+  const catalog = stringProducts
+    .filter((product) => (
+      selectedMaterial === "all" || product.materialType === selectedMaterial
+    ))
+    .map((product) => ({
+      product,
+      offers: offersByProductKey[product.offerKey] ?? [],
+    }));
 
   return (
     <div className="max-w-6xl mx-auto px-6 py-12 md:py-16">
@@ -59,9 +107,47 @@ export default async function StringsPage() {
       </header>
 
       <aside className="mb-10 border-y border-[var(--color-border)] py-4 text-xs leading-relaxed text-[var(--color-text-secondary)]">
-        일부 판매처 링크는 제휴 링크입니다. 링크를 통해 구매하면 운영에 수수료가 지원될 수 있으며,
-        제품 선정과 정렬에는 영향을 주지 않습니다. 가격·배송비·재고는 판매처에서 최종 확인하세요.
+        <p>
+          일부 판매처 링크는 제휴 링크입니다. 링크를 통해 구매하면 운영에 수수료가 지원될 수 있으며,
+          제품 선정과 정렬에는 영향을 주지 않습니다. 가격·배송비·재고는 판매처에서 최종 확인하세요.
+        </p>
+        <p className="mt-2">
+          <strong className="font-semibold text-[var(--color-text)]">장력 범위 산정 방법:</strong>{" "}
+          장력은 제조사 제품 수치가 아니라{" "}
+          <a
+            href={STRING_TENSION_METHODOLOGY.sourceUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="font-medium text-[var(--color-text)] underline underline-offset-2"
+          >
+            Wilson 소재별 일반 가이드
+          </a>
+          를 제품 소재와 공식 포지셔닝에 맞춰 좁힌 편집 시작값입니다. 라켓 표시 허용 범위를 우선하세요.
+        </p>
       </aside>
+
+      <nav aria-label="스트링 소재 필터" className="mb-8 flex flex-wrap gap-2">
+        {MATERIAL_FILTERS.map((filter) => {
+          const selected = filter.value === selectedMaterial;
+          const count = filter.value === "all"
+            ? stringProducts.length
+            : stringProducts.filter((product) => product.materialType === filter.value).length;
+          return (
+            <Link
+              key={filter.value}
+              href={filter.value === "all" ? "/strings" : `/strings?type=${filter.value}`}
+              aria-current={selected ? "page" : undefined}
+              className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
+                selected
+                  ? "border-[var(--color-text)] bg-[var(--color-text)] text-[var(--color-bg)]"
+                  : "border-[var(--color-border)] text-[var(--color-text-secondary)] hover:border-[var(--color-text-muted)]"
+              }`}
+            >
+              {filter.label} {count}
+            </Link>
+          );
+        })}
+      </nav>
 
       {offersUnavailable && (
         <div
@@ -81,7 +167,8 @@ export default async function StringsPage() {
           return (
             <article
               key={product.offerKey}
-              className="grid gap-6 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-white)] p-6 md:p-8 lg:grid-cols-[0.9fr_1.1fr]"
+              id={stringOfferId(product.offerKey)}
+              className="scroll-mt-24 grid gap-6 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-white)] p-6 md:p-8 lg:grid-cols-[0.9fr_1.1fr]"
             >
               <div>
                 <p className="text-xs font-medium tracking-wider text-[var(--color-text-muted)] uppercase">
@@ -89,18 +176,44 @@ export default async function StringsPage() {
                 </p>
                 <h2 className="mt-1 text-xl font-bold tracking-tight">{product.name}</h2>
                 <div className="mt-4 flex flex-wrap gap-2">
-                  {product.facts.map((fact) => (
-                    <span
-                      key={fact}
-                      className="rounded-full bg-[var(--color-bg-subtle)] px-3 py-1 text-xs text-[var(--color-text-secondary)]"
-                    >
-                      {fact}
-                    </span>
-                  ))}
+                  <span className="rounded-full bg-[var(--color-bg-subtle)] px-3 py-1 text-xs text-[var(--color-text-secondary)]">
+                    {product.material}
+                  </span>
+                  <span className="rounded-full bg-[var(--color-bg-subtle)] px-3 py-1 text-xs text-[var(--color-text-secondary)]">
+                    {product.gaugeMm.toFixed(2)} mm
+                  </span>
+                  <span className="rounded-full bg-[var(--color-bg-subtle)] px-3 py-1 text-xs text-[var(--color-text-secondary)]">
+                    편집 시작 범위 {product.startTensionLbs.min}–{product.startTensionLbs.max} lbs
+                  </span>
                 </div>
-                <p className="mt-4 max-w-lg text-sm leading-relaxed text-[var(--color-text-secondary)]">
-                  {product.description}
-                </p>
+                <ul className="mt-4 space-y-2">
+                  {product.officialTraits.map((trait) => (
+                    <li
+                      key={`${trait.evidence}:${trait.text}`}
+                      className="flex items-start gap-2 text-sm leading-relaxed text-[var(--color-text-secondary)]"
+                    >
+                      <span className="mt-0.5 shrink-0 rounded bg-[var(--color-bg-subtle)] px-1.5 py-0.5 text-[10px] font-medium text-[var(--color-text-muted)]">
+                        {trait.evidence === "manufacturer_claim" ? "제조사 표현" : "공식 사실"}
+                      </span>
+                      <span>{trait.text}</span>
+                    </li>
+                  ))}
+                </ul>
+                <div className="mt-4">
+                  <p className="text-[10px] font-semibold tracking-wider text-[var(--color-text-muted)] uppercase">
+                    편집 궁합 기준
+                  </p>
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    {product.editorialTags.map((tag) => (
+                      <span
+                        key={tag}
+                        className="rounded-full border border-[var(--color-border)] px-2 py-1 text-[10px] text-[var(--color-text-secondary)]"
+                      >
+                        {EDITORIAL_TAG_LABELS[tag]}
+                      </span>
+                    ))}
+                  </div>
+                </div>
                 <a
                   href={product.sourceUrl}
                   target="_blank"
@@ -109,6 +222,9 @@ export default async function StringsPage() {
                 >
                   제조사 공식 정보 ↗
                 </a>
+                <p className="mt-2 text-[10px] text-[var(--color-text-muted)]">
+                  공식 페이지 확인일 {product.verifiedAt}
+                </p>
               </div>
 
               <div className="border-t border-[var(--color-border)] pt-5 lg:border-l lg:border-t-0 lg:pl-7 lg:pt-0">
@@ -195,8 +311,8 @@ export default async function StringsPage() {
       <section className="mt-10 rounded-2xl bg-[var(--color-bg-subtle)] p-6 text-sm leading-relaxed text-[var(--color-text-secondary)]">
         <h2 className="font-semibold text-[var(--color-text)]">선택 전 안전 안내</h2>
         <p className="mt-2">
-          스트링 종류와 장력은 플레이 스타일, 라켓의 제조사 권장 범위, 스트링 게이지, 부상 이력에 따라 달라집니다.
-          통증이나 부상 이력이 있다면 전문점과 의료 전문가에게 상담하고, 라켓에 표시된 제조사 장력 범위 안에서 조정하세요.
+          스트링 종류와 장력은 플레이 스타일, 라켓 표시 범위, 스트링 게이지, 부상 이력에 따라 달라집니다.
+          통증이나 부상 이력이 있다면 전문점과 의료 전문가에게 상담하고, 라켓 표시 장력 범위 안에서 조정하세요.
         </p>
       </section>
     </div>

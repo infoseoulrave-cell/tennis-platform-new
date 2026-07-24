@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { notFound, permanentRedirect } from "next/navigation";
+import { Suspense } from "react";
 import {
   getRacketBySlug,
   getSimilarRackets,
@@ -17,6 +18,8 @@ import {
   type RawAxisScores100,
 } from "@/lib/score-display";
 import { formatRacketName } from "@/lib/racket-name";
+import { recommendStringPairings } from "@/lib/string-pairing";
+import { stringOfferId } from "@/data/strings";
 
 export const dynamic = "force-dynamic";
 
@@ -67,18 +70,10 @@ function getRecommendation(rawScores: RawAxisScores100 | null) {
   return { forWhom, notForWhom };
 }
 
-function getStringRecommendation(rawScores: RawAxisScores100 | null) {
-  if (!rawScores) return null;
-  if (rawScores.spin >= 80) {
-    return { string: "Luxilon ALU Power / Babolat RPM Blast", tension: "초기 시타 48-52 lbs", reason: "오픈 패턴에서 비교해 볼 수 있는 폴리 조합 예시." };
-  }
-  if (rawScores.control >= 80) {
-    return { string: "Tecnifibre Razor Code / Solinco Confidential", tension: "초기 시타 50-54 lbs", reason: "컨트롤 성향을 비교하기 위한 폴리 조합 예시." };
-  }
-  if (rawScores.comfort >= 70) {
-    return { string: "Wilson NXT / Tecnifibre X-One", tension: "초기 시타 48-52 lbs", reason: "멀티필라멘트 타구감을 비교하기 위한 출발 조합." };
-  }
-  return { string: "Yonex Poly Tour Pro / Head Lynx", tension: "초기 시타 48-52 lbs", reason: "중립적인 폴리 조합을 비교하기 위한 출발점." };
+function racketNumber(value: string | null): number | null {
+  if (!value) return null;
+  const parsed = Number.parseFloat(value);
+  return Number.isFinite(parsed) ? parsed : null;
 }
 
 export default async function RacketDetailPage({
@@ -102,9 +97,15 @@ export default async function RacketDetailPage({
   if (!racket) notFound();
   if (slug !== racket.slug) permanentRedirect(`/rackets/${racket.slug}`);
 
-  const similarRackets = await getSimilarRackets(racket.id, racket.brand).catch(() => []);
   const recommendation = getRecommendation(racket.rawScores);
-  const stringRec = getStringRecommendation(racket.rawScores);
+  const stringPairings = recommendStringPairings({
+    stiffnessRa: racket.stiffness,
+    weightG: racketNumber(racket.weight),
+    headSizeSqIn: racketNumber(racket.headSize),
+    stringPattern: racket.pattern,
+    segment: racket.segment,
+    rawScores: racket.rawScores,
+  });
 
   return (
     <div className="max-w-6xl mx-auto px-6 py-8">
@@ -194,7 +195,9 @@ export default async function RacketDetailPage({
             </div>
           </div>
 
-          <PriceComparison slug={racket.slug} />
+          <Suspense fallback={<PriceComparisonFallback />}>
+            <PriceComparison slug={racket.slug} />
+          </Suspense>
         </div>
       </div>
 
@@ -229,34 +232,51 @@ export default async function RacketDetailPage({
         </section>
       )}
 
-      {stringRec && (
-        <section className="mt-8 border border-[var(--color-border)] rounded-2xl p-6">
-          <h2 className="text-sm font-semibold mb-2">스트링 시타 출발점</h2>
-          <p className="mb-4 text-xs leading-relaxed text-[var(--color-text-muted)]">
-            아래 범위는 처방이 아닌 비교용 예시입니다. 실제 장력은 제조사 허용 범위, 스트링 게이지, 부상 이력에 따라 전문점 또는 의료 전문가와 결정하세요.
+      <section className="mt-8 border border-[var(--color-border)] rounded-2xl p-6">
+        <h2 className="text-sm font-semibold mb-2">스트링 시타 출발점</h2>
+        <p className="mb-4 text-xs leading-relaxed text-[var(--color-text-muted)]">
+          확인 가능한 라켓 사양(RA·무게·헤드·패턴)과 5축 성향으로 만든 비교용 출발점입니다. 장력은 소재별 일반 가이드 안의 편집 시작값이며, 라켓 표시 범위와 부상 이력을 우선해 전문점 또는 의료 전문가와 결정하세요.
+        </p>
+        {stringPairings.length === 0 ? (
+          <p className="rounded-xl bg-[var(--color-bg-subtle)] p-4 text-xs text-[var(--color-text-secondary)]">
+            추천을 만들 근거가 부족합니다. 라켓 사양이 확인되면 조합을 표시합니다.
           </p>
-          <div className="grid sm:grid-cols-3 gap-4">
-            <div>
-              <p className="text-xs text-[var(--color-text-muted)] mb-1">비교 스트링</p>
-              <p className="text-sm font-medium">{stringRec.string}</p>
-            </div>
-            <div>
-              <p className="text-xs text-[var(--color-text-muted)] mb-1">초기 시타 범위</p>
-              <p className="text-sm font-medium">{stringRec.tension}</p>
-            </div>
-            <div className="sm:col-span-1">
-              <p className="text-xs text-[var(--color-text-muted)] mb-1">이유</p>
-              <p className="text-sm text-[var(--color-text-secondary)]">{stringRec.reason}</p>
-            </div>
-          </div>
-          <Link
-            href="/strings"
-            className="mt-5 inline-flex text-sm font-semibold text-[var(--color-text)] hover:underline"
-          >
-            스트링 판매처 보기 →
-          </Link>
-        </section>
-      )}
+        ) : (
+        <div className="grid gap-4 lg:grid-cols-3">
+          {stringPairings.map((pairing) => (
+            <article
+              key={pairing.mode}
+              className="rounded-xl bg-[var(--color-bg-subtle)] p-4"
+            >
+              <p className="text-[10px] font-semibold tracking-wider text-[var(--color-text-muted)] uppercase">
+                {pairing.modeLabel}
+              </p>
+              <Link
+                href={`/strings#${stringOfferId(pairing.product.offerKey)}`}
+                className="mt-1 inline-flex text-sm font-semibold hover:underline"
+              >
+                {pairing.product.brand} {pairing.product.name}
+              </Link>
+              <p className="mt-2 text-xs font-medium">
+                편집 시작값 {pairing.tensionLbs.min}–{pairing.tensionLbs.max} lbs
+              </p>
+              <p className="mt-3 text-xs leading-relaxed text-[var(--color-text-secondary)]">
+                {pairing.reason}
+              </p>
+              <p className="mt-2 text-[11px] leading-relaxed text-[var(--color-text-muted)]">
+                주의: {pairing.tradeoff}
+              </p>
+            </article>
+          ))}
+        </div>
+        )}
+        <Link
+          href="/strings"
+          className="mt-5 inline-flex text-sm font-semibold text-[var(--color-text)] hover:underline"
+        >
+          스트링 전체 카탈로그 보기 →
+        </Link>
+      </section>
 
       <section className="mt-16 border-t border-[var(--color-border)] pt-12">
         <h2 className="text-xl font-bold mb-6">상세 스펙</h2>
@@ -273,22 +293,66 @@ export default async function RacketDetailPage({
         <SpecSourceLinks sources={racket.specSources} />
       </section>
 
-      {similarRackets.length > 0 && (
-        <section className="mt-16 border-t border-[var(--color-border)] pt-12">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold">비슷한 라켓</h2>
-            <Link href={`/rackets?brand=${encodeURIComponent(racket.brand)}`} className="text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-text)]">
-              {racket.brand} 전체 보기 →
-            </Link>
-          </div>
-          <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-4">
-            {similarRackets.map((r) => (
-              <RacketCard key={r.id} racket={r} />
-            ))}
-          </div>
-        </section>
-      )}
+      <Suspense fallback={<SimilarRacketsFallback />}>
+        <SimilarRacketsSection racketId={racket.id} brand={racket.brand} />
+      </Suspense>
     </div>
+  );
+}
+
+function PriceComparisonFallback() {
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      className="rounded-2xl border border-[var(--color-border)] p-6"
+    >
+      <span className="sr-only">판매처 가격을 불러오는 중입니다.</span>
+      <div aria-hidden className="h-4 w-32 rounded bg-[var(--color-bg-subtle)]" />
+    </div>
+  );
+}
+
+async function SimilarRacketsSection({
+  racketId,
+  brand,
+}: {
+  racketId: string;
+  brand: string;
+}) {
+  const similarRackets = await getSimilarRackets(racketId, brand).catch(() => []);
+  if (similarRackets.length === 0) return null;
+
+  return (
+    <section className="mt-16 border-t border-[var(--color-border)] pt-12">
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-xl font-bold">비슷한 라켓</h2>
+        <Link
+          href={`/rackets?brand=${encodeURIComponent(brand)}`}
+          className="text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-text)]"
+        >
+          {brand} 전체 보기 →
+        </Link>
+      </div>
+      <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-4">
+        {similarRackets.map((racket) => (
+          <RacketCard key={racket.id} racket={racket} />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function SimilarRacketsFallback() {
+  return (
+    <section
+      role="status"
+      aria-live="polite"
+      className="mt-16 border-t border-[var(--color-border)] pt-12"
+    >
+      <span className="sr-only">비슷한 라켓을 불러오는 중입니다.</span>
+      <div aria-hidden className="h-6 w-28 rounded bg-[var(--color-bg-subtle)]" />
+    </section>
   );
 }
 

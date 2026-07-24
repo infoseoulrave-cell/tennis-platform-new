@@ -43,15 +43,11 @@ export default async function ComparePage({
     );
   }
 
-  const rackets: RacketDetail[] = [];
-  for (const slug of slugs.slice(0, 3)) {
-    try {
-      const r = await getRacketBySlug(slug);
-      if (r) rackets.push(r);
-    } catch {
-      // skip
-    }
-  }
+  const rackets = (await Promise.all(
+    slugs.slice(0, 3).map((slug) =>
+      getRacketBySlug(slug).catch(() => null),
+    ),
+  )).filter((racket): racket is RacketDetail => racket !== null);
 
   if (rackets.length === 0) {
     return (

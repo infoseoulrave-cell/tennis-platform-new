@@ -1,5 +1,3 @@
-export const dynamic = "force-dynamic";
-
 import { newsItems } from "@/data/news";
 
 export default function UpdatesPage() {

@@ -55,6 +55,21 @@ const TENNIS_WAREHOUSE_CODE_TO_SLUGS: Record<string, readonly string[]> = {
     "tecnifibre-t-fight-305-isoflex-2022",
     "tecnifibre-t-fight-305-isoflex-2024",
   ],
+  WB9810: ["wilson-blade-98-16x19-v10-2026"],
+  WU1005: ["wilson-ultra-100-v5-2025"],
+  HRMP: ["head-radical-mp-2025"],
+  PD98R: ["babolat-pure-drive-98-gen11-2025"],
+  CL103V: ["wilson-clash-100-v3-2025"],
+  VC958G: ["yonex-vcore-95-8th-gen-2026"],
+  TEZ98B: ["yonex-ezone-98-tour-2025"],
+  TF30ST: ["tecnifibre-t-fight-300-2025"],
+  PTR698: ["prince-tour-98-2026"],
+  WB1001: ["wilson-blade-100-v10-2026"],
+  WU99P5: ["wilson-ultra-99-pro-v5-2025"],
+  HPRR: ["head-radical-pro-2025"],
+  HREP24: ["head-extreme-pro-2024"],
+  HRTMPG: ["head-gravity-team-2025"],
+  PTR61P: ["prince-tour-100p-305g-2026"],
 };
 
 function productCode(url: URL): string | null {

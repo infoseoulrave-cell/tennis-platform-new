@@ -45,7 +45,6 @@ export default function WishlistPage() {
                     alt={`${item.brand} ${item.model}`}
                     fill
                     sizes="64px"
-                    unoptimized
                     className="object-contain p-2"
                   />
                 ) : (

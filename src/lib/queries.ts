@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { getSupabaseAdmin } from "./supabase";
 import {
   PUBLIC_AXIS_KEYS,
@@ -531,6 +532,12 @@ export type RacketDetail = RacketListItem & {
 };
 
 export async function getRacketBySlug(slug: string): Promise<RacketDetail | null> {
+  return getRacketBySlugCached(slug);
+}
+
+const getRacketBySlugCached = cache(async (
+  slug: string,
+): Promise<RacketDetail | null> => {
   const supabaseAdmin = getSupabaseAdmin();
   const { data, error } = await supabaseAdmin
     .from("racket_models")
@@ -605,7 +612,7 @@ export async function getRacketBySlug(slug: string): Promise<RacketDetail | null
       specs?.spec_sources as Array<Record<string, unknown>> | null,
     ),
   };
-}
+});
 
 export type RacketFilters = {
   brand?: string[];

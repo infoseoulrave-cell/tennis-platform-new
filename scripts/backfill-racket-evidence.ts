@@ -5,6 +5,11 @@ import { pathToFileURL } from "node:url";
 import postgres from "postgres";
 
 import {
+  CATALOG_EXPANSION_COUNT,
+  CATALOG_EXPANSION_MANIFEST_VERSION,
+  RACKET_CATALOG_EXPANSION,
+} from "../src/data/racket-catalog-expansion";
+import {
   activeIdentityKey,
   CANONICAL_SUPABASE_PROJECT_REF,
   EVIDENCE_MANIFEST_VERSION,
@@ -37,12 +42,43 @@ const REVIEWED_FIELDS = [
   "stiffnessRa",
 ] as const;
 
-type ActiveCatalogRow = {
+type ExpansionSourceRecord = {
+  source_role: string | null;
+  source_url: string | null;
+  source_type: string;
+  raw_values: Record<string, unknown>;
+  verified_by_admin: boolean;
+};
+
+type ExpansionDecisionRecord = {
+  field: string;
+  resolved_value: string;
+  reason: string;
+};
+
+type ExpansionScoreRecord = {
+  axis_key: string;
+  score: string | number;
+};
+
+export type ActiveCatalogRow = {
   model_id: string;
   spec_id: string;
   brand: string;
   model_name: string;
   release_year: number | null;
+  head_size_sq_in: string | number | null;
+  weight_g: string | number | null;
+  balance_mm: string | number | null;
+  swing_weight_kg_cm2: string | number | null;
+  stiffness_ra: string | number | null;
+  length_mm: string | number | null;
+  beam_width_mm: string | null;
+  string_pattern: string | null;
+  ingestion_state: string | null;
+  expansion_sources: ExpansionSourceRecord[];
+  expansion_decisions: ExpansionDecisionRecord[];
+  expansion_scores: ExpansionScoreRecord[];
 };
 
 type BackfillTarget = {
@@ -50,7 +86,145 @@ type BackfillTarget = {
   evidence: RacketScoreEvidence;
 };
 
-function loadEnvironment(): Record<string, string> {
+function catalogIdentityKey(
+  brand: string,
+  modelName: string,
+  releaseYear: number | null,
+): string {
+  return `${activeIdentityKey(brand, modelName)}\u0000${releaseYear ?? ""}`;
+}
+
+function numericSpecMatches(
+  actual: string | number | null,
+  expected: number,
+): boolean {
+  return actual !== null && Number(actual) === expected;
+}
+
+export function validateExpansionState(
+  rows: readonly ActiveCatalogRow[],
+): 0 | typeof CATALOG_EXPANSION_COUNT {
+  const expectedByModelIdentity = new Map(
+    RACKET_CATALOG_EXPANSION.map((entry) => [
+      activeIdentityKey(entry.brand, entry.modelName),
+      entry,
+    ]),
+  );
+  const expansionRows = rows.filter(({ brand, model_name }) =>
+    expectedByModelIdentity.has(activeIdentityKey(brand, model_name))
+  );
+
+  if (expansionRows.length === 0) return 0;
+  if (expansionRows.length !== CATALOG_EXPANSION_COUNT) {
+    throw new Error(
+      `Catalog expansion state must contain exactly 0 or ${CATALOG_EXPANSION_COUNT} `
+      + `rows; received ${expansionRows.length}.`,
+    );
+  }
+
+  const expectedIdentities = new Set(
+    RACKET_CATALOG_EXPANSION.map(({ brand, modelName, releaseYear }) =>
+      catalogIdentityKey(brand, modelName, releaseYear)
+    ),
+  );
+  const actualIdentities = expansionRows.map(
+    ({ brand, model_name, release_year }) =>
+      catalogIdentityKey(brand, model_name, release_year),
+  );
+  if (
+    new Set(actualIdentities).size !== CATALOG_EXPANSION_COUNT
+    || actualIdentities.some((identity) => !expectedIdentities.has(identity))
+  ) {
+    throw new Error(
+      "Catalog expansion must contain exactly 15 unique expected brand/model/year identities.",
+    );
+  }
+
+  for (const row of expansionRows) {
+    const entry = expectedByModelIdentity.get(
+      activeIdentityKey(row.brand, row.model_name),
+    );
+    if (!entry || !row.spec_id) {
+      throw new Error(`Catalog expansion is missing a required spec for ${row.brand} ${row.model_name}.`);
+    }
+    const spec = entry.normalizedSpec;
+    const specMatches =
+      numericSpecMatches(row.head_size_sq_in, spec.headSizeSqIn)
+      && numericSpecMatches(row.weight_g, spec.weightG)
+      && numericSpecMatches(row.balance_mm, spec.balanceMm)
+      && numericSpecMatches(row.swing_weight_kg_cm2, spec.swingWeightKgCm2)
+      && numericSpecMatches(row.stiffness_ra, spec.stiffnessRa)
+      && numericSpecMatches(row.length_mm, spec.lengthMm)
+      && row.beam_width_mm === spec.beamWidthMm
+      && row.string_pattern === spec.stringPattern
+      && row.ingestion_state === "published";
+    if (!specMatches) {
+      throw new Error(`Catalog expansion spec verification failed for ${entry.slug}.`);
+    }
+
+    if (row.expansion_sources.length !== entry.sources.length) {
+      throw new Error(`Catalog expansion source verification failed for ${entry.slug}.`);
+    }
+    for (const expectedSource of entry.sources) {
+      const source = row.expansion_sources.find(
+        ({ source_role }) => source_role === expectedSource.role,
+      );
+      if (
+        !source
+        || source.source_url !== expectedSource.sourceUrl
+        || source.source_type !== expectedSource.sourceType
+        || source.verified_by_admin
+      ) {
+        throw new Error(`Catalog expansion source verification failed for ${entry.slug}.`);
+      }
+      for (const [field, expectedValue] of Object.entries(expectedSource.rawValues)) {
+        if (source.raw_values[field] !== expectedValue) {
+          throw new Error(`Catalog expansion raw evidence verification failed for ${entry.slug} ${field}.`);
+        }
+      }
+      const reviewedFields = source.raw_values.reviewed_fields;
+      if (
+        !Array.isArray(reviewedFields)
+        || reviewedFields.length !== expectedSource.reviewedFields.length
+        || expectedSource.reviewedFields.some((field) => !reviewedFields.includes(field))
+      ) {
+        throw new Error(`Catalog expansion reviewed-field verification failed for ${entry.slug}.`);
+      }
+    }
+
+    if (row.expansion_decisions.length !== entry.normalizationDecisions.length) {
+      throw new Error(`Catalog expansion decision verification failed for ${entry.slug}.`);
+    }
+    for (const expectedDecision of entry.normalizationDecisions) {
+      const decision = row.expansion_decisions.find(
+        ({ field }) => field === expectedDecision.field,
+      );
+      if (
+        !decision
+        || decision.resolved_value !== String(spec[expectedDecision.field])
+        || decision.reason !== expectedDecision.reason
+      ) {
+        throw new Error(`Catalog expansion decision verification failed for ${entry.slug} ${expectedDecision.field}.`);
+      }
+    }
+
+    if (row.expansion_scores.length !== entry.axisScores.length) {
+      throw new Error(`Catalog expansion ${SCORING_VERSION} score verification failed for ${entry.slug}.`);
+    }
+    for (const expectedScore of entry.axisScores) {
+      const score = row.expansion_scores.find(
+        ({ axis_key }) => axis_key === expectedScore.axisKey,
+      );
+      if (!score || Number(score.score) !== expectedScore.score) {
+        throw new Error(`Catalog expansion ${SCORING_VERSION} score verification failed for ${entry.slug}.`);
+      }
+    }
+  }
+
+  return CATALOG_EXPANSION_COUNT;
+}
+
+export function loadEnvironment(): Record<string, string> {
   const loaded: Record<string, string> = {};
   for (const line of readFileSync(resolve(".env.local"), "utf8").split(/\r?\n/)) {
     const match = line.match(/^([^#=]+)=(.*)$/);
@@ -104,7 +278,7 @@ export function assertApplyWorkflowState(
   }
 }
 
-function assertCanonicalWorkflow(
+export function assertCanonicalWorkflow(
   environment: Record<string, string>,
   apply: boolean,
 ): string {
@@ -170,8 +344,18 @@ function assertCanonicalWorkflow(
 }
 
 function resolveTargets(rows: readonly ActiveCatalogRow[]): BackfillTarget[] {
+  validateExpansionState(rows);
+  const expansionIdentities = new Set(
+    RACKET_CATALOG_EXPANSION.map(({ brand, modelName }) =>
+      activeIdentityKey(brand, modelName)
+    ),
+  );
+  const legacyRows = rows.filter(({ brand, model_name }) =>
+    !expansionIdentities.has(activeIdentityKey(brand, model_name))
+  );
+
   validateActiveCatalogIdentities(
-    rows.map(({ brand, model_name }) => activeIdentityKey(brand, model_name)),
+    legacyRows.map(({ brand, model_name }) => activeIdentityKey(brand, model_name)),
   );
 
   const evidenceByAcceptedIdentity = new Map<string, RacketScoreEvidence>();
@@ -186,7 +370,10 @@ function resolveTargets(rows: readonly ActiveCatalogRow[]): BackfillTarget[] {
     );
   }
 
-  const targets = rows.map((row) => {
+  const targets = legacyRows.map((row) => {
+    if (!row.spec_id) {
+      throw new Error(`Active catalog is missing a required spec for ${row.brand} ${row.model_name}.`);
+    }
     const entry = evidenceByAcceptedIdentity.get(
       activeIdentityKey(row.brand, row.model_name),
     );
@@ -238,10 +425,62 @@ async function main(): Promise<void> {
           rs.id AS spec_id,
           b.name AS brand,
           rm.name AS model_name,
-          rm.release_year
+          rm.release_year,
+          rs.head_size_sq_in,
+          rs.weight_g,
+          rs.balance_mm,
+          rs.swing_weight_kg_cm2,
+          rs.stiffness_ra,
+          rs.length_mm,
+          rs.beam_width_mm,
+          rs.string_pattern,
+          rs.ingestion_state,
+          COALESCE((
+            SELECT jsonb_agg(
+              jsonb_build_object(
+                'source_role', ss.raw_values ->> 'source_role',
+                'source_url', ss.source_url,
+                'source_type', ss.source_type,
+                'raw_values', ss.raw_values,
+                'verified_by_admin', ss.verified_by_admin
+              )
+              ORDER BY ss.raw_values ->> 'source_role'
+            )
+            FROM spec_sources ss
+            WHERE ss.racket_specs_id = rs.id
+              AND ss.raw_values ->> 'evidence_manifest_version'
+                = ${CATALOG_EXPANSION_MANIFEST_VERSION}
+          ), '[]'::jsonb) AS expansion_sources,
+          COALESCE((
+            SELECT jsonb_agg(
+              jsonb_build_object(
+                'field', nd.field,
+                'resolved_value', nd.resolved_value,
+                'reason', nd.reason
+              )
+              ORDER BY nd.field
+            )
+            FROM normalization_decisions nd
+            WHERE nd.racket_specs_id = rs.id
+              AND nd.reviewed_by = ${CATALOG_EXPANSION_MANIFEST_VERSION}
+          ), '[]'::jsonb) AS expansion_decisions,
+          COALESCE((
+            SELECT jsonb_agg(
+              jsonb_build_object(
+                'axis_key', ad.axis_key,
+                'score', ras.score
+              )
+              ORDER BY ad.axis_key
+            )
+            FROM racket_axis_scores ras
+            JOIN axis_definitions ad ON ad.id = ras.axis_definition_id
+            WHERE ras.racket_model_id = rm.id
+              AND ras.scoring_version = ${SCORING_VERSION}
+              AND ad.version = ${SCORING_VERSION}
+          ), '[]'::jsonb) AS expansion_scores
         FROM racket_models rm
         JOIN brands b ON b.id = rm.brand_id
-        JOIN racket_specs rs ON rs.racket_model_id = rm.id
+        LEFT JOIN racket_specs rs ON rs.racket_model_id = rm.id
         WHERE rm.discontinued = FALSE
           AND EXISTS (
             SELECT 1
@@ -287,10 +526,62 @@ async function main(): Promise<void> {
           rs.id AS spec_id,
           b.name AS brand,
           rm.name AS model_name,
-          rm.release_year
+          rm.release_year,
+          rs.head_size_sq_in,
+          rs.weight_g,
+          rs.balance_mm,
+          rs.swing_weight_kg_cm2,
+          rs.stiffness_ra,
+          rs.length_mm,
+          rs.beam_width_mm,
+          rs.string_pattern,
+          rs.ingestion_state,
+          COALESCE((
+            SELECT jsonb_agg(
+              jsonb_build_object(
+                'source_role', ss.raw_values ->> 'source_role',
+                'source_url', ss.source_url,
+                'source_type', ss.source_type,
+                'raw_values', ss.raw_values,
+                'verified_by_admin', ss.verified_by_admin
+              )
+              ORDER BY ss.raw_values ->> 'source_role'
+            )
+            FROM spec_sources ss
+            WHERE ss.racket_specs_id = rs.id
+              AND ss.raw_values ->> 'evidence_manifest_version'
+                = ${CATALOG_EXPANSION_MANIFEST_VERSION}
+          ), '[]'::jsonb) AS expansion_sources,
+          COALESCE((
+            SELECT jsonb_agg(
+              jsonb_build_object(
+                'field', nd.field,
+                'resolved_value', nd.resolved_value,
+                'reason', nd.reason
+              )
+              ORDER BY nd.field
+            )
+            FROM normalization_decisions nd
+            WHERE nd.racket_specs_id = rs.id
+              AND nd.reviewed_by = ${CATALOG_EXPANSION_MANIFEST_VERSION}
+          ), '[]'::jsonb) AS expansion_decisions,
+          COALESCE((
+            SELECT jsonb_agg(
+              jsonb_build_object(
+                'axis_key', ad.axis_key,
+                'score', ras.score
+              )
+              ORDER BY ad.axis_key
+            )
+            FROM racket_axis_scores ras
+            JOIN axis_definitions ad ON ad.id = ras.axis_definition_id
+            WHERE ras.racket_model_id = rm.id
+              AND ras.scoring_version = ${SCORING_VERSION}
+              AND ad.version = ${SCORING_VERSION}
+          ), '[]'::jsonb) AS expansion_scores
         FROM racket_models rm
         JOIN brands b ON b.id = rm.brand_id
-        JOIN racket_specs rs ON rs.racket_model_id = rm.id
+        LEFT JOIN racket_specs rs ON rs.racket_model_id = rm.id
         WHERE rm.discontinued = FALSE
           AND EXISTS (
             SELECT 1
@@ -300,7 +591,7 @@ async function main(): Promise<void> {
               AND rv.available_in_korea = TRUE
           )
         ORDER BY b.name, rm.name
-        FOR UPDATE OF rm, rs
+        FOR UPDATE OF rm
       `;
       const targets = resolveTargets(activeRows);
       const scores = plannedScores(targets);
@@ -532,6 +823,9 @@ async function main(): Promise<void> {
             SELECT count(*)::int
             FROM racket_axis_scores
             WHERE scoring_version = ${SCORING_VERSION}
+              AND racket_model_id IN ${
+                transaction(targets.map(({ row }) => row.model_id))
+              }
           ) AS score_count,
           (
             SELECT count(*)::int

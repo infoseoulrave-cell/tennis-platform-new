@@ -176,12 +176,13 @@ test("methodology names the evidence basis and its limits", () => {
   assert.doesNotMatch([methodology, guide].join("\n"), /독립 기관/);
 });
 
-test("catalog copy reflects the current 39-model set", () => {
+test("catalog copy does not freeze the expanding model count", () => {
   const rackets = read("src/app/rackets/page.tsx");
   const diagnosis = read("src/app/diagnosis/page.tsx");
 
-  assert.match(rackets, /현재 카탈로그 39종/);
-  assert.match(diagnosis, /현재 카탈로그 39종/);
+  assert.match(rackets, /현재 카탈로그의/);
+  assert.match(diagnosis, /검증된 현재 카탈로그를/);
+  assert.doesNotMatch([rackets, diagnosis].join("\n"), /현재 카탈로그 \d+종/);
   assert.doesNotMatch([rackets, diagnosis].join("\n"), /80개 이상/);
 });
 

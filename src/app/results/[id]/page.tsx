@@ -9,60 +9,39 @@ import {
   racketSpecs,
   brands,
 } from "@/db/schema";
-import { eq, asc } from "drizzle-orm";
+import { asc, eq, inArray } from "drizzle-orm";
 import { RecommendationCard } from "@/components/recommendation-card";
 import { TrustBadge } from "@/components/trust-badge";
 import { NeutralityDisclaimer } from "@/components/neutrality-disclaimer";
 import { track } from "@/events/track";
 import { generateSlug } from "@/lib/queries";
+import {
+  recommendStringPairings,
+  requiresComfortSafetyGate,
+  type StringPairingInput,
+} from "@/lib/string-pairing";
+import { stringOfferId } from "@/data/strings";
+import type { RawAxisScores100 } from "@/lib/score-display";
 
 type ExplanationFragment = {
   type: "positive" | "tradeoff";
   textKo: string;
 };
 
-/**
- * Suggest string pairing based on racket specs and tier.
- * MVP heuristic — will be replaced by data-driven module later.
- */
-function suggestString(specs: {
-  stiffnessRa: string | null;
-  weightG: string | null;
-  stringPattern: string | null;
-}): { name: string; tension: string; reason: string } {
-  const stiffness = specs.stiffnessRa ? Number(specs.stiffnessRa) : 63;
-  const weight = specs.weightG ? Number(specs.weightG) : 300;
-
-  // Stiff + heavy → soft multifilament for comfort
-  if (stiffness >= 67 && weight >= 300) {
-    return {
-      name: "Wilson NXT Power",
-      tension: "50-52lbs",
-      reason: "높은 강성을 부드러운 멀티필라멘트로 보완",
-    };
-  }
-  // Flexible + control-oriented
-  if (stiffness < 63) {
-    return {
-      name: "Luxilon ALU Power",
-      tension: "48-50lbs",
-      reason: "유연한 프레임에 탄력 있는 폴리로 파워 보충",
-    };
-  }
-  // Spin-friendly (open pattern)
-  if (specs.stringPattern && specs.stringPattern.includes("16x19")) {
-    return {
-      name: "Babolat RPM Blast",
-      tension: "50-52lbs",
-      reason: "오픈 패턴과 궁합이 좋은 스핀 폴리스트링",
-    };
-  }
-  // Default balanced choice
-  return {
-    name: "Yonex Poly Tour Pro",
-    tension: "50lbs",
-    reason: "밸런스 잡힌 폴리스트링으로 폭넓은 호환성",
+type ProfileAnswers = {
+  current_racket?: {
+    selection?: string;
   };
+  play_profile?: {
+    experience?: string;
+  };
+  pain_points?: string[];
+};
+
+function numericSpec(value: string | null): number | null {
+  if (!value) return null;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
 }
 
 export default async function ResultsPage({
@@ -82,21 +61,40 @@ export default async function ResultsPage({
     notFound();
   }
 
-  // Fetch player profile
-  const [profile] = await db
-    .select()
-    .from(playerProfiles)
-    .where(eq(playerProfiles.id, run.playerProfileId));
+  const [[profile], results] = await Promise.all([
+    db
+      .select()
+      .from(playerProfiles)
+      .where(eq(playerProfiles.id, run.playerProfileId)),
+    db
+      .select()
+      .from(recommendationResults)
+      .where(eq(recommendationResults.recommendationRunId, id))
+      .orderBy(asc(recommendationResults.rank)),
+  ]);
 
-  // Fetch all recommendation results for this run, ordered by rank
-  const results = await db
-    .select()
-    .from(recommendationResults)
-    .where(eq(recommendationResults.recommendationRunId, id))
-    .orderBy(asc(recommendationResults.rank));
-
-  // Fetch racket info + specs for each result
   const racketIds = results.map((r) => r.racketModelId);
+  const racketRows = racketIds.length === 0
+    ? []
+    : await db
+      .select({
+        id: racketModels.id,
+        name: racketModels.name,
+        nameKo: racketModels.nameKo,
+        imageUrl: racketModels.imageUrl,
+        releaseYear: racketModels.releaseYear,
+        brandName: brands.name,
+        stiffnessRa: racketSpecs.stiffnessRa,
+        weightG: racketSpecs.weightG,
+        headSizeSqIn: racketSpecs.headSizeSqIn,
+        stringPattern: racketSpecs.stringPattern,
+        segment: racketModels.segment,
+      })
+      .from(racketModels)
+      .innerJoin(brands, eq(brands.id, racketModels.brandId))
+      .leftJoin(racketSpecs, eq(racketSpecs.racketModelId, racketModels.id))
+      .where(inArray(racketModels.id, racketIds));
+
   const racketInfo = new Map<
     string,
     {
@@ -109,39 +107,37 @@ export default async function ResultsPage({
   >();
   const racketSpecsMap = new Map<
     string,
-    { stiffnessRa: string | null; weightG: string | null; stringPattern: string | null }
+    {
+      stiffnessRa: number | null;
+      weightG: number | null;
+      headSizeSqIn: number | null;
+      stringPattern: string | null;
+      segment: string | null;
+    }
   >();
 
-  for (const racketId of racketIds) {
-    const [racket] = await db
-      .select({
-        name: racketModels.name,
-        nameKo: racketModels.nameKo,
-        imageUrl: racketModels.imageUrl,
-        releaseYear: racketModels.releaseYear,
-        brandName: brands.name,
-      })
-      .from(racketModels)
-      .innerJoin(brands, eq(brands.id, racketModels.brandId))
-      .where(eq(racketModels.id, racketId));
-
-    if (racket) {
-      racketInfo.set(racketId, racket);
-    }
-
-    const [spec] = await db
-      .select({
-        stiffnessRa: racketSpecs.stiffnessRa,
-        weightG: racketSpecs.weightG,
-        stringPattern: racketSpecs.stringPattern,
-      })
-      .from(racketSpecs)
-      .where(eq(racketSpecs.racketModelId, racketId));
-
-    if (spec) {
-      racketSpecsMap.set(racketId, spec);
-    }
+  for (const racket of racketRows) {
+    racketInfo.set(racket.id, {
+      name: racket.name,
+      nameKo: racket.nameKo,
+      imageUrl: racket.imageUrl,
+      releaseYear: racket.releaseYear,
+      brandName: racket.brandName,
+    });
+    racketSpecsMap.set(racket.id, {
+      stiffnessRa: numericSpec(racket.stiffnessRa),
+      weightG: numericSpec(racket.weightG),
+      headSizeSqIn: numericSpec(racket.headSizeSqIn),
+      stringPattern: racket.stringPattern,
+      segment: racket.segment,
+    });
   }
+
+  const profileAnswers = (profile?.answers ?? {}) as ProfileAnswers;
+  const painPoints = new Set(profileAnswers.pain_points ?? []);
+  const beginner = profileAnswers.play_profile?.experience === "less_1_year"
+    || profileAnswers.current_racket?.selection === "first_purchase";
+  const armSensitive = painPoints.has("elbow_pain") || painPoints.has("wrist_pain");
 
   // Track recommendation_view event (server-side, fire-and-forget)
   track(run.playerProfileId ?? "unknown", "recommendation_view", {
@@ -219,36 +215,69 @@ export default async function ResultsPage({
           <div className="mt-8">
             <h3 className="text-base font-bold mb-3">스트링 시타 출발점</h3>
             <p className="text-xs text-gray-400 mb-3">
-              아래 조합과 범위는 처방이 아닌 비교용 예시입니다. 제조사 허용 범위를 확인하고 전문점 또는 의료 전문가와 결정하세요.
+              확인 가능한 라켓 사양(RA·무게·헤드·패턴)과 5축 점수, 진단의 통증 이력을 함께 반영합니다. 장력은 소재별 일반 가이드 안의 편집 시작값이며, 라켓 표시 범위를 확인하고 전문점 또는 의료 전문가와 결정하세요.
             </p>
             <div className="space-y-2">
               {results.map((result) => {
                 const racket = racketInfo.get(result.racketModelId);
                 const specs = racketSpecsMap.get(result.racketModelId);
-                const suggestion = suggestString(
-                  specs ?? {
-                    stiffnessRa: null,
-                    weightG: null,
-                    stringPattern: null,
-                  },
-                );
+                const pairingInput: StringPairingInput = {
+                  stiffnessRa: specs?.stiffnessRa ?? null,
+                  weightG: specs?.weightG ?? null,
+                  headSizeSqIn: specs?.headSizeSqIn ?? null,
+                  stringPattern: specs?.stringPattern ?? null,
+                  segment: specs?.segment ?? null,
+                  rawScores: result.axisScores as Partial<RawAxisScores100>,
+                  beginner,
+                  armSensitive,
+                };
+                const suggestions = recommendStringPairings(pairingInput);
+                const safetyGate = requiresComfortSafetyGate(pairingInput);
                 return (
                   <div
                     key={`string-${result.id}`}
                     className="border border-gray-100 rounded-xl p-4"
                   >
-                    <div className="flex items-center gap-2 mb-1.5">
-                      <span className="text-sm font-semibold text-gray-800">
-                        {racket?.name ?? "Unknown"}
-                      </span>
-                      <span className="text-xs text-gray-400">+</span>
-                      <span className="text-sm font-medium text-blue-600">
-                        {suggestion.name}
-                      </span>
+                    <div className="mb-3 flex flex-wrap items-center gap-2">
+                      <span className="text-sm font-semibold text-gray-800">{racket?.name ?? "Unknown"}</span>
+                      {safetyGate && (
+                        <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-700">
+                          폴리에스터 제외 필터
+                        </span>
+                      )}
                     </div>
-                    <div className="text-xs text-gray-500">
-                      초기 시타 범위: {suggestion.tension} · {suggestion.reason}
+                    {suggestions.length === 0 ? (
+                      <p className="text-xs leading-relaxed text-gray-500">
+                        추천을 만들 근거가 부족합니다. 라켓 사양이 확인되면 조합을 표시합니다.
+                      </p>
+                    ) : (
+                    <div className="grid gap-3">
+                      {suggestions.map((suggestion) => (
+                        <div key={suggestion.mode} className="rounded-lg bg-gray-50 p-3">
+                          <div className="flex flex-wrap items-baseline justify-between gap-2">
+                            <span className="text-[10px] font-semibold tracking-wider text-gray-400 uppercase">
+                              {suggestion.modeLabel}
+                            </span>
+                            <span className="text-xs font-medium text-gray-700">
+                              편집 시작값 {suggestion.tensionLbs.min}–{suggestion.tensionLbs.max} lbs
+                            </span>
+                          </div>
+                          <Link
+                            href={`/strings#${stringOfferId(suggestion.product.offerKey)}`}
+                            className="mt-1 inline-flex text-sm font-medium text-blue-600 hover:underline"
+                          >
+                            {suggestion.product.brand} {suggestion.product.name}
+                          </Link>
+                          <p className="mt-1 text-xs leading-relaxed text-gray-500">
+                            {suggestion.reason}
+                          </p>
+                          <p className="mt-1 text-[11px] leading-relaxed text-gray-400">
+                            주의: {suggestion.tradeoff}
+                          </p>
+                        </div>
+                      ))}
                     </div>
+                    )}
                   </div>
                 );
               })}

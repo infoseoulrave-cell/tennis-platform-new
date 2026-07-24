@@ -5,8 +5,6 @@ import {
 } from "@/data/players";
 import { PlayerCard } from "@/components/player-synergy-card";
 
-export const dynamic = "force-dynamic";
-
 const MALE_COUNT = 10;
 const VERIFIED_AT_LABEL = new Intl.DateTimeFormat("ko-KR", {
   year: "numeric",

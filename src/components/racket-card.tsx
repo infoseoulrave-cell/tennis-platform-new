@@ -45,7 +45,6 @@ export function RacketCard({ racket }: { racket: RacketCardData }) {
             alt={`${racket.brand} ${racket.model}`}
             fill
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-            unoptimized
             className="object-contain p-4"
           />
         ) : (

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { stateTransitionSchema } from "@/modules/catalog/validation";
 import { transitionSpecState } from "@/modules/catalog/ingestion";
 import { isAdminRequest, unauthorizedAdminResponse } from "@/lib/admin-auth";
+import { revalidatePath } from "next/cache";
 
 export async function POST(
   request: NextRequest,
@@ -24,6 +25,10 @@ export async function POST(
 
   if (!result.ok) {
     return NextResponse.json({ error: result.error }, { status: 422 });
+  }
+
+  if (parsed.data.targetState === "published") {
+    revalidatePath("/");
   }
 
   return NextResponse.json({ ok: true });
