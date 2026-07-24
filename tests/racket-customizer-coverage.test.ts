@@ -39,7 +39,31 @@ const BABOLAT_DUNLOP_REMAINDER = [
   "dunlop-sx-300-tour-2025",
 ] as const;
 
-const EXPECTED_SLUGS = [...PILOT_SLUGS, ...BABOLAT_DUNLOP_REMAINDER];
+const HEAD_PRINCE_TECNIFIBRE_REMAINDER = [
+  "head-boom-mp-2026",
+  "head-boom-pro-2026",
+  "head-extreme-mp-2024",
+  "head-extreme-pro-2024",
+  "head-gravity-pro-2025",
+  "head-gravity-team-2025",
+  "head-prestige-mp-2023",
+  "head-radical-mp-2025",
+  "head-radical-pro-2025",
+  "head-speed-mp-2026",
+  "head-speed-mp-l-2026",
+  "head-speed-pro-2026",
+  "prince-tour-100p-305g-2026",
+  "prince-tour-98-2026",
+  "tecnifibre-t-fight-300-2025",
+  "tecnifibre-t-fight-305-isoflex-2022",
+  "tecnifibre-tf-40-305-2024",
+] as const;
+
+const EXPECTED_SLUGS = [
+  ...PILOT_SLUGS,
+  ...BABOLAT_DUNLOP_REMAINDER,
+  ...HEAD_PRINCE_TECNIFIBRE_REMAINDER,
+];
 
 const TASK_5_METADATA = {
   "babolat-pure-aero-98-2026": { productCode: "BPA98R", width: 500, height: 858, mains: 16, crosses: 20 },
@@ -58,6 +82,36 @@ const TASK_5_METADATA = {
   "dunlop-sx-300-tour-2025": { productCode: "DSXTR", width: 500, height: 857, mains: 16, crosses: 19 },
 } as const;
 
+const TASK_6_METADATA = {
+  "head-boom-mp-2026": { productCode: "HBOMP6", width: 500, height: 857, mains: 16, crosses: 19 },
+  "head-boom-pro-2026": { productCode: "HBOOP6", width: 500, height: 857, mains: 16, crosses: 19 },
+  "head-extreme-mp-2024": { productCode: "HREM24", width: 500, height: 857, mains: 16, crosses: 19 },
+  "head-extreme-pro-2024": { productCode: "HREP24", width: 500, height: 857, mains: 16, crosses: 19 },
+  "head-gravity-pro-2025": { productCode: "HGPRR", width: 500, height: 857, mains: 18, crosses: 20 },
+  "head-gravity-team-2025": { productCode: "HRTMPG", width: 500, height: 857, mains: 16, crosses: 20 },
+  "head-prestige-mp-2023": { productCode: "HPRMP", width: 500, height: 857, mains: 18, crosses: 19 },
+  "head-radical-mp-2025": { productCode: "HRMP", width: 500, height: 857, mains: 16, crosses: 19 },
+  "head-radical-pro-2025": { productCode: "HPRR", width: 500, height: 858, mains: 16, crosses: 19 },
+  "head-speed-mp-2026": { productCode: "HSPMP6", width: 500, height: 857, mains: 16, crosses: 19 },
+  "head-speed-mp-l-2026": { productCode: "HSMPL6", width: 500, height: 857, mains: 16, crosses: 19 },
+  "head-speed-pro-2026": { productCode: "HSPDP6", width: 500, height: 857, mains: 18, crosses: 20 },
+  "prince-tour-100p-305g-2026": { productCode: "PTR61P", width: 500, height: 857, mains: 18, crosses: 20 },
+  "prince-tour-98-2026": { productCode: "PTR698", width: 500, height: 857, mains: 16, crosses: 19 },
+  "tecnifibre-t-fight-300-2025": { productCode: "TF30ST", width: 500, height: 858, mains: 16, crosses: 19 },
+  "tecnifibre-t-fight-305-isoflex-2022": { productCode: "ISO305", width: 500, height: 857, mains: 18, crosses: 19 },
+  "tecnifibre-tf-40-305-2024": { productCode: "TF40R1", width: 500, height: 857, mains: 16, crosses: 19 },
+} as const;
+
+const CALIBRATED_REMAINDER = [
+  ...BABOLAT_DUNLOP_REMAINDER,
+  ...HEAD_PRINCE_TECNIFIBRE_REMAINDER,
+] as const;
+
+const CALIBRATED_METADATA = {
+  ...TASK_5_METADATA,
+  ...TASK_6_METADATA,
+} as const;
+
 const UNSAFE_SVG =
   /<(?:script|foreignObject|image|use|iframe|object|embed)\b|\bon[a-z][\w:-]*\s*=|(?:https?:|data:|javascript:)|(?:href|src|xlink:href)\s*=\s*["']\s*\/\//i;
 
@@ -65,7 +119,7 @@ function assertCanonicalSvg(actual: string, canonical: string, label: string): v
   assert.equal(actual, canonical, `${label} must byte-match canonical builder output`);
 }
 
-test("the pilot and Babolat/Dunlop remainder have generated profiles and masks", async () => {
+test("the pilot and calibrated Task 5/6 remainder have generated profiles and masks", async () => {
   assert.deepEqual(
     RACKET_CUSTOMIZER_PROFILES.map(({ slug }) => slug).sort(),
     [...EXPECTED_SLUGS].sort(),
@@ -87,9 +141,9 @@ function median(values: readonly number[]): number {
     : sorted[middle];
 }
 
-test("explicit Task 5 positions avoid degenerate edge lines and gross spacing outliers", () => {
+test("explicit Task 5/6 positions avoid degenerate edge lines and gross spacing outliers", () => {
   const taskGeometries = RACKET_CUSTOMIZER_MASK_GEOMETRIES.filter(({ slug }) =>
-    BABOLAT_DUNLOP_REMAINDER.includes(slug as (typeof BABOLAT_DUNLOP_REMAINDER)[number]),
+    CALIBRATED_REMAINDER.includes(slug as (typeof CALIBRATED_REMAINDER)[number]),
   );
   const violations: string[] = [];
 
@@ -134,14 +188,14 @@ test("explicit Task 5 positions avoid degenerate edge lines and gross spacing ou
   assert.deepEqual(violations, []);
 });
 
-test("Task 5 profiles and SVGs byte-match canonical inert builder output", async () => {
+test("Task 5/6 profiles and SVGs byte-match canonical inert builder output", async () => {
   const profilesBySlug = new Map<string, (typeof RACKET_CUSTOMIZER_PROFILES)[number]>(
     RACKET_CUSTOMIZER_PROFILES.map((profile) => [profile.slug, profile]),
   );
   const geometriesBySlug = new Map<string, (typeof RACKET_CUSTOMIZER_MASK_GEOMETRIES)[number]>(
     RACKET_CUSTOMIZER_MASK_GEOMETRIES.map((geometry) => [geometry.slug, geometry]),
   );
-  for (const [slug, expected] of Object.entries(TASK_5_METADATA)) {
+  for (const [slug, expected] of Object.entries(CALIBRATED_METADATA)) {
     const profile = profilesBySlug.get(slug);
     const geometry = geometriesBySlug.get(slug);
     assert.ok(profile, `${slug} profile missing`);
