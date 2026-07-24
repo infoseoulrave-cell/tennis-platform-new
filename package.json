@@ -15,7 +15,8 @@
     "db:seed": "tsx src/db/seed.ts",
     "db:seed-rackets": "tsx src/db/seed-rackets.ts",
     "db:seed-aliases": "tsx src/db/seed-aliases.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "customizer:masks": "tsx scripts/generate-racket-customizer-masks.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.110.7",
