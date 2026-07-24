@@ -1,10 +1,11 @@
 import assert from "node:assert/strict";
-import { access } from "node:fs/promises";
+import { access, readFile } from "node:fs/promises";
 import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 
 import { RACKET_CUSTOMIZER_PROFILES } from "../src/data/racket-customizer-profiles.generated";
+import { RACKET_CUSTOMIZER_MASK_GEOMETRIES } from "../scripts/racket-customizer-mask-geometry";
 
 const projectRoot = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -36,6 +37,23 @@ const BABOLAT_DUNLOP_REMAINDER = [
 
 const EXPECTED_SLUGS = [...PILOT_SLUGS, ...BABOLAT_DUNLOP_REMAINDER];
 
+const TASK_5_METADATA = {
+  "babolat-pure-aero-98-2026": { productCode: "BPA98R", width: 500, height: 858, mains: 16, crosses: 20 },
+  "babolat-pure-aero-lite-2026": { productCode: "BPALTR", width: 500, height: 857, mains: 16, crosses: 19 },
+  "babolat-pure-aero-team-2026": { productCode: "BPAT26", width: 500, height: 857, mains: 16, crosses: 19 },
+  "babolat-pure-drive-2025": { productCode: "BPD25R", width: 500, height: 857, mains: 16, crosses: 19 },
+  "babolat-pure-drive-98-gen11-2025": { productCode: "PD98R", width: 500, height: 857, mains: 16, crosses: 20 },
+  "babolat-pure-drive-lite-2025": { productCode: "BPDLR", width: 500, height: 857, mains: 16, crosses: 19 },
+  "babolat-pure-drive-team-2025": { productCode: "BRPTR", width: 500, height: 857, mains: 16, crosses: 19 },
+  "babolat-pure-strike-100-2024": { productCode: "PS1019", width: 500, height: 857, mains: 16, crosses: 19 },
+  "babolat-pure-strike-98-16x19-2024": { productCode: "PS9816", width: 500, height: 857, mains: 16, crosses: 19 },
+  "dunlop-cx-200-2025": { productCode: "DCX2S", width: 500, height: 857, mains: 16, crosses: 19 },
+  "dunlop-fx-500-2025": { productCode: "DF500", width: 500, height: 857, mains: 16, crosses: 19 },
+  "dunlop-fx-500-tour-2025": { productCode: "DF50T", width: 500, height: 858, mains: 16, crosses: 19 },
+  "dunlop-sx-300-2025": { productCode: "DSX3R", width: 500, height: 857, mains: 16, crosses: 19 },
+  "dunlop-sx-300-tour-2025": { productCode: "DSXTR", width: 500, height: 857, mains: 16, crosses: 19 },
+} as const;
+
 test("the pilot and Babolat/Dunlop remainder have generated profiles and masks", async () => {
   assert.deepEqual(
     RACKET_CUSTOMIZER_PROFILES.map(({ slug }) => slug).sort(),
@@ -48,4 +66,102 @@ test("the pilot and Babolat/Dunlop remainder have generated profiles and masks",
       access(path.join(projectRoot, "public", "images", "racket-customizer", `${slug}-grip.svg`)),
     ]),
   );
+});
+
+function median(values: readonly number[]): number {
+  const sorted = [...values].sort((a, b) => a - b);
+  const middle = Math.floor(sorted.length / 2);
+  return sorted.length % 2 === 0
+    ? (sorted[middle - 1] + sorted[middle]) / 2
+    : sorted[middle];
+}
+
+test("explicit Task 5 positions avoid degenerate edge lines and gross spacing outliers", () => {
+  const taskGeometries = RACKET_CUSTOMIZER_MASK_GEOMETRIES.filter(({ slug }) =>
+    BABOLAT_DUNLOP_REMAINDER.includes(slug as (typeof BABOLAT_DUNLOP_REMAINDER)[number]),
+  );
+  const violations: string[] = [];
+
+  for (const { slug, stringBed } of taskGeometries) {
+    const axes = [
+      {
+        label: "main",
+        positions: stringBed.mainPositions,
+        center: stringBed.cx,
+        primaryRadius: stringBed.rx - stringBed.inset,
+        secondaryRadius: stringBed.ry - stringBed.inset,
+      },
+      {
+        label: "cross",
+        positions: stringBed.crossPositions,
+        center: stringBed.cy,
+        primaryRadius: stringBed.ry - stringBed.inset,
+        secondaryRadius: stringBed.rx - stringBed.inset,
+      },
+    ] as const;
+
+    for (const axis of axes) {
+      assert.ok(axis.positions, `${slug} must use explicit ${axis.label} positions`);
+      const gaps = axis.positions.slice(1).map((position, index) => position - axis.positions[index]);
+      const medianGap = median(gaps);
+      const largestGap = Math.max(...gaps);
+      if (largestGap > medianGap * 1.75) {
+        violations.push(`${slug} ${axis.label} gap ${largestGap} exceeds 1.75x median ${medianGap}`);
+      }
+
+      for (const position of axis.positions) {
+        const offsetRatio = (position - axis.center) / axis.primaryRadius;
+        const lineExtent = 2 * axis.secondaryRadius
+          * Math.sqrt(Math.max(0, 1 - offsetRatio * offsetRatio));
+        if (Math.abs(offsetRatio) >= 1 || lineExtent < 24) {
+          violations.push(`${slug} ${axis.label} at ${position} has ${lineExtent.toFixed(1)}px extent`);
+        }
+      }
+    }
+  }
+
+  assert.deepEqual(violations, []);
+});
+
+test("Task 5 profiles and SVGs preserve exact metadata and inert nonempty mask structure", async () => {
+  const profilesBySlug = new Map<string, (typeof RACKET_CUSTOMIZER_PROFILES)[number]>(
+    RACKET_CUSTOMIZER_PROFILES.map((profile) => [profile.slug, profile]),
+  );
+  const geometriesBySlug = new Map<string, (typeof RACKET_CUSTOMIZER_MASK_GEOMETRIES)[number]>(
+    RACKET_CUSTOMIZER_MASK_GEOMETRIES.map((geometry) => [geometry.slug, geometry]),
+  );
+  const unsafeSvg = /<(?:script|foreignObject|image|use)\b|(?:https?:|data:|javascript:)/i;
+
+  for (const [slug, expected] of Object.entries(TASK_5_METADATA)) {
+    const profile = profilesBySlug.get(slug);
+    const geometry = geometriesBySlug.get(slug);
+    assert.ok(profile, `${slug} profile missing`);
+    assert.ok(geometry, `${slug} geometry missing`);
+    assert.deepEqual(
+      {
+        productCode: profile.productCode,
+        width: profile.intrinsicWidth,
+        height: profile.intrinsicHeight,
+        mains: geometry.stringBed.mains,
+        crosses: geometry.stringBed.crosses,
+      },
+      expected,
+    );
+    assert.equal(profile.stringMaskUrl, `/images/racket-customizer/${slug}-strings.svg`);
+    assert.equal(profile.gripMaskUrl, `/images/racket-customizer/${slug}-grip.svg`);
+
+    const stringSvg = await readFile(path.join(projectRoot, "public", profile.stringMaskUrl), "utf8");
+    const gripSvg = await readFile(path.join(projectRoot, "public", profile.gripMaskUrl), "utf8");
+    assert.doesNotMatch(stringSvg, unsafeSvg);
+    assert.doesNotMatch(gripSvg, unsafeSvg);
+    assert.match(stringSvg, new RegExp(`viewBox="0 0 ${expected.width} ${expected.height}"`));
+    assert.match(gripSvg, new RegExp(`viewBox="0 0 ${expected.width} ${expected.height}"`));
+
+    const lines = [...stringSvg.matchAll(/<line x1="([\d.]+)" y1="([\d.]+)" x2="([\d.]+)" y2="([\d.]+)"\/>/g)];
+    assert.equal(lines.length, expected.mains + expected.crosses);
+    for (const [, x1, y1, x2, y2] of lines) {
+      assert.ok(Math.hypot(Number(x2) - Number(x1), Number(y2) - Number(y1)) >= 24, `${slug} contains a degenerate line`);
+    }
+    assert.equal((gripSvg.match(/<path d=/g) ?? []).length, 2);
+  }
 });
