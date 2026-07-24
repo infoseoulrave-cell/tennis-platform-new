@@ -9,6 +9,12 @@ import {
 } from "../scripts/lib/racket-customizer-mask-builder";
 import type { MaskGeometry } from "../scripts/lib/racket-customizer-mask-builder";
 
+const SVG_NAMESPACE_ATTRIBUTE = 'xmlns="http://www.w3.org/2000/svg"';
+
+function withoutTrustedSvgNamespace(svg: string): string {
+  return svg.replace(SVG_NAMESPACE_ATTRIBUTE, "");
+}
+
 const geometry = {
   slug: "fixture-racket",
   productCode: "FIXTURE",
@@ -31,18 +37,23 @@ const geometry = {
 
 test("string mask is a transparent SVG with the requested calibrated grid", () => {
   const svg = buildStringMaskSvg(geometry);
+  assert.match(svg, /^<svg xmlns="http:\/\/www\.w3\.org\/2000\/svg"/);
   assert.match(svg, /viewBox="0 0 500 857"/);
   assert.equal((svg.match(/<line /g) ?? []).length, 35);
   assert.match(svg, /clipPath/);
-  assert.doesNotMatch(svg, /<image|https?:\/\//);
+  assert.doesNotMatch(withoutTrustedSvgNamespace(svg), /<image|https?:\/\//);
 });
 
 test("grip mask contains both calibrated grip paths and no photo pixels", () => {
   const svg = buildGripMaskSvg(geometry);
+  assert.match(svg, /^<svg xmlns="http:\/\/www\.w3\.org\/2000\/svg"/);
   assert.match(svg, /M292 616/);
   assert.match(svg, /M173 616/);
   assert.equal((svg.match(/<path /g) ?? []).length, 2);
-  assert.doesNotMatch(svg, /<image|data:image|https?:\/\//);
+  assert.doesNotMatch(
+    withoutTrustedSvgNamespace(svg),
+    /<image|data:image|https?:\/\//,
+  );
 });
 
 test("string mask supports a deterministic custom closed inner-rim clip", () => {

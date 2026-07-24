@@ -1,4 +1,4 @@
-<svg viewBox="0 0 500 857">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 857">
 <defs><clipPath id="yonex-ezone-100-2025-string-bed"><path d="M279 60 C251 66 224 86 212 113 C202 138 201 174 202 229 C203 290 214 340 242 380 C264 408 295 413 336.5 413 C378 413 409 408 431 380 C459 340 470 290 471 229 C472 174 471 138 461 113 C449 86 422 66 394 60 C364 55 309 55 279 60 Z"/></clipPath></defs>
 <g clip-path="url(#yonex-ezone-100-2025-string-bed)" transform="rotate(0 336.5 229)" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round">
 <line x1="235" y1="40" x2="235" y2="418"/>

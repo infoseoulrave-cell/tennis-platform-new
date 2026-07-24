@@ -1,4 +1,4 @@
-<svg viewBox="0 0 500 857">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 857">
 <defs><clipPath id="yonex-percept-97-2025-string-bed"><path d="M240 55 L260 42 L280 36 L300 31 L320 31 L340 29 L360 32 L380 34 L400 41 L420 54 L440 77 L456 110 L464 130 L473 150 L476 170 L476 190 L479 210 L478 230 L473 250 L472 270 L467 290 L457 310 L452 330 L438 350 L429 370 L420 377 L400 402 L380 411 L360 413 L340 417 L320 417 L300 414 L280 410 L260 401 L250 393 L232 370 L222 350 L208 330 L203 310 L193 290 L188 270 L187 250 L183 230 L182 210 L185 190 L184 170 L188 150 L196 130 L204 110 Z"/></clipPath></defs>
 <g clip-path="url(#yonex-percept-97-2025-string-bed)" transform="rotate(0 330.5 223)" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round">
 <line x1="241" y1="29" x2="241" y2="417"/>

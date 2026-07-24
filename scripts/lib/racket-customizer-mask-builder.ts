@@ -304,7 +304,7 @@ export function buildStringMaskSvg(geometry: MaskGeometry): string {
     : `<ellipse cx="${roundCoordinate(cx)}" cy="${roundCoordinate(cy)}" rx="${roundCoordinate(rx - inset)}" ry="${roundCoordinate(ry - inset)}" transform="${rotation}"/>`;
 
   return [
-    `<svg viewBox="0 0 ${width} ${height}">`,
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}">`,
     `<defs><clipPath id="${clipId}">${clipShape}</clipPath></defs>`,
     `<g clip-path="url(#${clipId})" transform="${rotation}" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round">`,
     ...mainLines,
@@ -319,7 +319,7 @@ export function buildGripMaskSvg(geometry: MaskGeometry): string {
   validateMaskGeometry(geometry);
   const { width, height } = geometry.canvas;
   return [
-    `<svg viewBox="0 0 ${width} ${height}">`,
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}">`,
     '<g fill="#fff">',
     ...geometry.gripPaths.map((path) => `<path d="${escapeAttribute(path)}"/>`),
     "</g>",

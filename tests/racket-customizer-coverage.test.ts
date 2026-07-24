@@ -167,9 +167,15 @@ const CALIBRATED_METADATA = {
 
 const UNSAFE_SVG =
   /<(?:script|foreignObject|image|use|iframe|object|embed)\b|\bon[a-z][\w:-]*\s*=|(?:https?:|data:|javascript:)|(?:href|src|xlink:href)\s*=\s*["']\s*\/\//i;
+const SVG_NAMESPACE_ATTRIBUTE = 'xmlns="http://www.w3.org/2000/svg"';
 
 function assertCanonicalSvg(actual: string, canonical: string, label: string): void {
   assert.equal(actual, canonical, `${label} must byte-match canonical builder output`);
+}
+
+function assertInertSvg(svg: string): void {
+  assert.match(svg, /^<svg xmlns="http:\/\/www\.w3\.org\/2000\/svg"/);
+  assert.doesNotMatch(svg.replace(SVG_NAMESPACE_ATTRIBUTE, ""), UNSAFE_SVG);
 }
 
 test("the pilot and calibrated Task 5/6/7 remainder have generated profiles and masks", async () => {
@@ -195,7 +201,7 @@ test("the final manifest has 54 unique profiles and 108 inert local assets", asy
     RACKET_CUSTOMIZER_PROFILES.flatMap((profile) =>
       [profile.stringMaskUrl, profile.gripMaskUrl].map(async (maskUrl) => {
         const svg = await readFile(path.join(projectRoot, "public", maskUrl), "utf8");
-        assert.doesNotMatch(svg, /<image\b|data:image|https?:\/\//i);
+        assertInertSvg(svg);
       }),
     ),
   );
@@ -300,8 +306,8 @@ test("Task 5/6/7 profiles and SVGs byte-match canonical inert builder output", a
     const gripSvg = await readFile(path.join(projectRoot, "public", profile.gripMaskUrl), "utf8");
     assertCanonicalSvg(stringSvg, buildStringMaskSvg(geometry), `${slug} string mask`);
     assertCanonicalSvg(gripSvg, buildGripMaskSvg(geometry), `${slug} grip mask`);
-    assert.doesNotMatch(stringSvg, UNSAFE_SVG);
-    assert.doesNotMatch(gripSvg, UNSAFE_SVG);
+    assertInertSvg(stringSvg);
+    assertInertSvg(gripSvg);
     assert.match(stringSvg, new RegExp(`viewBox="0 0 ${expected.width} ${expected.height}"`));
     assert.match(gripSvg, new RegExp(`viewBox="0 0 ${expected.width} ${expected.height}"`));
 
