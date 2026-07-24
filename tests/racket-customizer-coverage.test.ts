@@ -59,10 +59,38 @@ const HEAD_PRINCE_TECNIFIBRE_REMAINDER = [
   "tecnifibre-tf-40-305-2024",
 ] as const;
 
+const WILSON_YONEX_REMAINDER = [
+  "wilson-blade-100-v10-2026",
+  "wilson-blade-100l-v9-2024",
+  "wilson-blade-98-16x19-v10-2026",
+  "wilson-blade-98-16x19-v9-2024",
+  "wilson-blade-98-18x20-v9-2024",
+  "wilson-clash-100-v3-2025",
+  "wilson-pro-staff-97-v14-2024",
+  "wilson-shift-99-pro-v1-2024",
+  "wilson-shift-99-v1-2024",
+  "wilson-ultra-100-v5-2025",
+  "wilson-ultra-99-pro-v5-2025",
+  "yonex-ezone-100l-2025",
+  "yonex-ezone-98-2025",
+  "yonex-ezone-98-tour-2025",
+  "yonex-percept-100d-2025",
+  "yonex-percept-97-2025",
+  "yonex-vcore-100-2026",
+  "yonex-vcore-100l-2026",
+  "yonex-vcore-95-8th-gen-2026",
+  "yonex-vcore-98-2026",
+] as const;
+
+const TASK_7_YONEX_SLUGS = WILSON_YONEX_REMAINDER.filter((slug) =>
+  slug.startsWith("yonex-"),
+);
+
 const EXPECTED_SLUGS = [
   ...PILOT_SLUGS,
   ...BABOLAT_DUNLOP_REMAINDER,
   ...HEAD_PRINCE_TECNIFIBRE_REMAINDER,
+  ...WILSON_YONEX_REMAINDER,
 ];
 
 const TASK_5_METADATA = {
@@ -102,14 +130,39 @@ const TASK_6_METADATA = {
   "tecnifibre-tf-40-305-2024": { productCode: "TF40R1", width: 500, height: 857, mains: 16, crosses: 19 },
 } as const;
 
+const TASK_7_METADATA = {
+  "wilson-blade-100-v10-2026": { productCode: "WB1001", width: 500, height: 857, mains: 16, crosses: 19 },
+  "wilson-blade-100l-v9-2024": { productCode: "WB100L", width: 500, height: 857, mains: 16, crosses: 19 },
+  "wilson-blade-98-16x19-v10-2026": { productCode: "WB9810", width: 500, height: 858, mains: 16, crosses: 19 },
+  "wilson-blade-98-16x19-v9-2024": { productCode: "WB9816", width: 500, height: 857, mains: 16, crosses: 19 },
+  "wilson-blade-98-18x20-v9-2024": { productCode: "WB18V", width: 500, height: 857, mains: 18, crosses: 20 },
+  "wilson-clash-100-v3-2025": { productCode: "CL103V", width: 500, height: 857, mains: 16, crosses: 19 },
+  "wilson-pro-staff-97-v14-2024": { productCode: "W97V14", width: 500, height: 857, mains: 16, crosses: 19 },
+  "wilson-shift-99-pro-v1-2024": { productCode: "WSP315", width: 500, height: 857, mains: 18, crosses: 20 },
+  "wilson-shift-99-v1-2024": { productCode: "WSP300D", width: 500, height: 857, mains: 16, crosses: 20 },
+  "wilson-ultra-100-v5-2025": { productCode: "WU1005", width: 500, height: 857, mains: 16, crosses: 19 },
+  "wilson-ultra-99-pro-v5-2025": { productCode: "WU99P5", width: 500, height: 857, mains: 16, crosses: 18 },
+  "yonex-ezone-100l-2025": { productCode: "EZ1LBB", width: 500, height: 857, mains: 16, crosses: 19 },
+  "yonex-ezone-98-2025": { productCode: "EZ98BB", width: 500, height: 857, mains: 16, crosses: 19 },
+  "yonex-ezone-98-tour-2025": { productCode: "TEZ98B", width: 500, height: 857, mains: 16, crosses: 19 },
+  "yonex-percept-100d-2025": { productCode: "PERM1D", width: 500, height: 857, mains: 18, crosses: 19 },
+  "yonex-percept-97-2025": { productCode: "PERM97", width: 500, height: 857, mains: 16, crosses: 19 },
+  "yonex-vcore-100-2026": { productCode: "VC108G", width: 500, height: 857, mains: 16, crosses: 19 },
+  "yonex-vcore-100l-2026": { productCode: "VC1L8G", width: 500, height: 858, mains: 16, crosses: 19 },
+  "yonex-vcore-95-8th-gen-2026": { productCode: "VC958G", width: 500, height: 857, mains: 16, crosses: 20 },
+  "yonex-vcore-98-2026": { productCode: "VC988G", width: 500, height: 858, mains: 16, crosses: 19 },
+} as const;
+
 const CALIBRATED_REMAINDER = [
   ...BABOLAT_DUNLOP_REMAINDER,
   ...HEAD_PRINCE_TECNIFIBRE_REMAINDER,
+  ...WILSON_YONEX_REMAINDER,
 ] as const;
 
 const CALIBRATED_METADATA = {
   ...TASK_5_METADATA,
   ...TASK_6_METADATA,
+  ...TASK_7_METADATA,
 } as const;
 
 const UNSAFE_SVG =
@@ -119,7 +172,7 @@ function assertCanonicalSvg(actual: string, canonical: string, label: string): v
   assert.equal(actual, canonical, `${label} must byte-match canonical builder output`);
 }
 
-test("the pilot and calibrated Task 5/6 remainder have generated profiles and masks", async () => {
+test("the pilot and calibrated Task 5/6/7 remainder have generated profiles and masks", async () => {
   assert.deepEqual(
     RACKET_CUSTOMIZER_PROFILES.map(({ slug }) => slug).sort(),
     [...EXPECTED_SLUGS].sort(),
@@ -133,6 +186,36 @@ test("the pilot and calibrated Task 5/6 remainder have generated profiles and ma
   );
 });
 
+test("the final manifest has 54 unique profiles and 108 inert local assets", async () => {
+  assert.equal(RACKET_CUSTOMIZER_PROFILES.length, 54);
+  assert.equal(new Set(RACKET_CUSTOMIZER_PROFILES.map(({ slug }) => slug)).size, 54);
+  assert.equal(new Set(RACKET_CUSTOMIZER_PROFILES.map(({ productCode }) => productCode)).size, 54);
+
+  await Promise.all(
+    RACKET_CUSTOMIZER_PROFILES.flatMap((profile) =>
+      [profile.stringMaskUrl, profile.gripMaskUrl].map(async (maskUrl) => {
+        const svg = await readFile(path.join(projectRoot, "public", maskUrl), "utf8");
+        assert.doesNotMatch(svg, /<image\b|data:image|https?:\/\//i);
+      }),
+    ),
+  );
+});
+
+test("every Task 7 Yonex uses a distinct traced inner-rim path", () => {
+  const yonexGeometries = RACKET_CUSTOMIZER_MASK_GEOMETRIES.filter(({ slug }) =>
+    TASK_7_YONEX_SLUGS.includes(slug as (typeof TASK_7_YONEX_SLUGS)[number]),
+  );
+  assert.equal(yonexGeometries.length, TASK_7_YONEX_SLUGS.length);
+  const paths = yonexGeometries.map(({ slug, stringBed }) => {
+    const innerRimPath = "innerRimPath" in stringBed
+      ? stringBed.innerRimPath
+      : undefined;
+    assert.ok(innerRimPath, `${slug} must use a traced innerRimPath`);
+    return innerRimPath;
+  });
+  assert.equal(new Set(paths).size, TASK_7_YONEX_SLUGS.length);
+});
+
 function median(values: readonly number[]): number {
   const sorted = [...values].sort((a, b) => a - b);
   const middle = Math.floor(sorted.length / 2);
@@ -141,7 +224,7 @@ function median(values: readonly number[]): number {
     : sorted[middle];
 }
 
-test("explicit Task 5/6 positions avoid degenerate edge lines and gross spacing outliers", () => {
+test("explicit Task 5/6/7 positions avoid degenerate edge lines and gross spacing outliers", () => {
   const taskGeometries = RACKET_CUSTOMIZER_MASK_GEOMETRIES.filter(({ slug }) =>
     CALIBRATED_REMAINDER.includes(slug as (typeof CALIBRATED_REMAINDER)[number]),
   );
@@ -188,7 +271,7 @@ test("explicit Task 5/6 positions avoid degenerate edge lines and gross spacing 
   assert.deepEqual(violations, []);
 });
 
-test("Task 5/6 profiles and SVGs byte-match canonical inert builder output", async () => {
+test("Task 5/6/7 profiles and SVGs byte-match canonical inert builder output", async () => {
   const profilesBySlug = new Map<string, (typeof RACKET_CUSTOMIZER_PROFILES)[number]>(
     RACKET_CUSTOMIZER_PROFILES.map((profile) => [profile.slug, profile]),
   );

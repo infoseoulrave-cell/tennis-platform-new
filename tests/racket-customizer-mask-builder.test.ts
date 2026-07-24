@@ -7,6 +7,7 @@ import {
   buildStringMaskSvg,
   validateMaskGeometry,
 } from "../scripts/lib/racket-customizer-mask-builder";
+import type { MaskGeometry } from "../scripts/lib/racket-customizer-mask-builder";
 
 const geometry = {
   slug: "fixture-racket",
@@ -212,7 +213,7 @@ test("explicit calibrated positions are validated and rendered without uniform r
       mainPositions: [241, 253, 264, 276, 288, 300, 312, 324, 335, 346, 358, 370, 382, 393, 403, 411],
       crossPositions: [143, 156, 171, 186, 201, 216, 231, 246, 261, 276, 291, 306, 321, 336, 351, 366, 381, 396, 409],
     },
-  } as any;
+  } satisfies MaskGeometry;
   const svg = buildStringMaskSvg(calibrated);
   assert.match(svg, /x1="241"/);
   assert.match(svg, /y1="143"/);
