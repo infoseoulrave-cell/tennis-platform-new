@@ -7,3 +7,19 @@
 # Local-only agent workflow artifacts
 .superpowers/
 .gstack/
+/outputs/
+/work/
+
+# Generated local build metadata
+*.tsbuildinfo
+next-env.d.ts
+
+# Local database and one-off utility files
+/*.sql
+!src/db/migrations/
+!src/db/migrations/*.sql
+/*.py
+/seed_via_api.py
+/generate_seed_sql.py
+src/db/seed-via-api.ts
+src/db/test-conn.ts
