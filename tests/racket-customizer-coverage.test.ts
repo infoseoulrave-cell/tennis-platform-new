@@ -6,6 +6,10 @@ import { fileURLToPath } from "node:url";
 
 import { RACKET_CUSTOMIZER_PROFILES } from "../src/data/racket-customizer-profiles.generated";
 import { RACKET_CUSTOMIZER_MASK_GEOMETRIES } from "../scripts/racket-customizer-mask-geometry";
+import {
+  buildGripMaskSvg,
+  buildStringMaskSvg,
+} from "../scripts/lib/racket-customizer-mask-builder";
 
 const projectRoot = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -53,6 +57,13 @@ const TASK_5_METADATA = {
   "dunlop-sx-300-2025": { productCode: "DSX3R", width: 500, height: 857, mains: 16, crosses: 19 },
   "dunlop-sx-300-tour-2025": { productCode: "DSXTR", width: 500, height: 857, mains: 16, crosses: 19 },
 } as const;
+
+const UNSAFE_SVG =
+  /<(?:script|foreignObject|image|use|iframe|object|embed)\b|\bon[a-z][\w:-]*\s*=|(?:https?:|data:|javascript:)|(?:href|src|xlink:href)\s*=\s*["']\s*\/\//i;
+
+function assertCanonicalSvg(actual: string, canonical: string, label: string): void {
+  assert.equal(actual, canonical, `${label} must byte-match canonical builder output`);
+}
 
 test("the pilot and Babolat/Dunlop remainder have generated profiles and masks", async () => {
   assert.deepEqual(
@@ -123,15 +134,13 @@ test("explicit Task 5 positions avoid degenerate edge lines and gross spacing ou
   assert.deepEqual(violations, []);
 });
 
-test("Task 5 profiles and SVGs preserve exact metadata and inert nonempty mask structure", async () => {
+test("Task 5 profiles and SVGs byte-match canonical inert builder output", async () => {
   const profilesBySlug = new Map<string, (typeof RACKET_CUSTOMIZER_PROFILES)[number]>(
     RACKET_CUSTOMIZER_PROFILES.map((profile) => [profile.slug, profile]),
   );
   const geometriesBySlug = new Map<string, (typeof RACKET_CUSTOMIZER_MASK_GEOMETRIES)[number]>(
     RACKET_CUSTOMIZER_MASK_GEOMETRIES.map((geometry) => [geometry.slug, geometry]),
   );
-  const unsafeSvg = /<(?:script|foreignObject|image|use)\b|(?:https?:|data:|javascript:)/i;
-
   for (const [slug, expected] of Object.entries(TASK_5_METADATA)) {
     const profile = profilesBySlug.get(slug);
     const geometry = geometriesBySlug.get(slug);
@@ -152,8 +161,10 @@ test("Task 5 profiles and SVGs preserve exact metadata and inert nonempty mask s
 
     const stringSvg = await readFile(path.join(projectRoot, "public", profile.stringMaskUrl), "utf8");
     const gripSvg = await readFile(path.join(projectRoot, "public", profile.gripMaskUrl), "utf8");
-    assert.doesNotMatch(stringSvg, unsafeSvg);
-    assert.doesNotMatch(gripSvg, unsafeSvg);
+    assertCanonicalSvg(stringSvg, buildStringMaskSvg(geometry), `${slug} string mask`);
+    assertCanonicalSvg(gripSvg, buildGripMaskSvg(geometry), `${slug} grip mask`);
+    assert.doesNotMatch(stringSvg, UNSAFE_SVG);
+    assert.doesNotMatch(gripSvg, UNSAFE_SVG);
     assert.match(stringSvg, new RegExp(`viewBox="0 0 ${expected.width} ${expected.height}"`));
     assert.match(gripSvg, new RegExp(`viewBox="0 0 ${expected.width} ${expected.height}"`));
 
@@ -163,5 +174,54 @@ test("Task 5 profiles and SVGs preserve exact metadata and inert nonempty mask s
       assert.ok(Math.hypot(Number(x2) - Number(x1), Number(y2) - Number(y1)) >= 24, `${slug} contains a degenerate line`);
     }
     assert.equal((gripSvg.match(/<path d=/g) ?? []).length, 2);
+  }
+});
+
+test("canonical comparison rejects copied same-pattern strings and empty grip paths", () => {
+  const [sourceGeometry, targetGeometry] = RACKET_CUSTOMIZER_MASK_GEOMETRIES.filter(
+    ({ slug }) =>
+      slug === "babolat-pure-aero-lite-2026"
+      || slug === "babolat-pure-aero-team-2026",
+  );
+  assert.ok(sourceGeometry);
+  assert.ok(targetGeometry);
+
+  const copiedSamePatternString = buildStringMaskSvg(sourceGeometry);
+  assert.throws(
+    () =>
+      assertCanonicalSvg(
+        copiedSamePatternString,
+        buildStringMaskSvg(targetGeometry),
+        "copied string mask",
+      ),
+    /byte-match canonical/i,
+  );
+
+  const emptyGripPaths = buildGripMaskSvg(targetGeometry).replace(
+    /<path d="[^"]+"\/>/g,
+    '<path d=""/>',
+  );
+  assert.throws(
+    () =>
+      assertCanonicalSvg(
+        emptyGripPaths,
+        buildGripMaskSvg(targetGeometry),
+        "empty grip mask",
+      ),
+    /byte-match canonical/i,
+  );
+});
+
+test("defense-in-depth SVG scan rejects active and external-reference forms", () => {
+  for (const unsafeSvg of [
+    '<iframe src="about:blank"></iframe>',
+    '<object data="/local"></object>',
+    '<embed src="/local">',
+    '<svg onload="alert(1)"></svg>',
+    '<path onpointerenter = "alert(1)"/>',
+    '<use href="//bad.example/mask.svg#shape"/>',
+    '<a xlink:href = "//bad.example/">bad</a>',
+  ]) {
+    assert.match(unsafeSvg, UNSAFE_SVG);
   }
 });

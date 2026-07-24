@@ -142,24 +142,86 @@ test("geometry validation rejects unsafe paths, empty grips, and custom clips ou
   );
 });
 
+test("ellipse geometry rejects tangent and sub-24px explicit main lines", () => {
+  const safeRemainingMains = Array.from(
+    { length: geometry.stringBed.mains - 1 },
+    (_, index) => 250 + index * 10,
+  );
+
+  for (const firstMain of [240, 240.1]) {
+    assert.throws(
+      () =>
+        validateMaskGeometry({
+          ...geometry,
+          stringBed: {
+            ...geometry.stringBed,
+            mainPositions: [firstMain, ...safeRemainingMains],
+          },
+        }),
+      /24|line extent/i,
+    );
+  }
+});
+
+test("ellipse geometry rejects tangent and sub-24px explicit cross lines", () => {
+  const safeRemainingCrosses = Array.from(
+    { length: geometry.stringBed.crosses - 1 },
+    (_, index) => 151 + index * 10,
+  );
+
+  for (const firstCross of [141, 141.1]) {
+    assert.throws(
+      () =>
+        validateMaskGeometry({
+          ...geometry,
+          stringBed: {
+            ...geometry.stringBed,
+            crossPositions: [firstCross, ...safeRemainingCrosses],
+          },
+        }),
+      /24|line extent/i,
+    );
+  }
+});
+
+test("custom inner-rim geometry retains safe explicit ellipse extrema", () => {
+  assert.doesNotThrow(() =>
+    validateMaskGeometry({
+      ...geometry,
+      stringBed: {
+        ...geometry.stringBed,
+        innerRimPath: "M233 156 L419 156 L419 396 L233 396 Z",
+        mainPositions: [
+          240, 250, 260, 270, 280, 290, 300, 310,
+          320, 330, 340, 350, 360, 370, 380, 412,
+        ],
+        crossPositions: [
+          141, 151, 161, 171, 181, 191, 201, 211, 221, 231,
+          241, 251, 261, 271, 281, 291, 301, 311, 411,
+        ],
+      },
+    }),
+  );
+});
+
 test("explicit calibrated positions are validated and rendered without uniform redistribution", () => {
   const calibrated = {
     ...geometry,
     stringBed: {
       ...geometry.stringBed,
       mainPositions: [241, 253, 264, 276, 288, 300, 312, 324, 335, 346, 358, 370, 382, 393, 403, 411],
-      crossPositions: [141, 156, 171, 186, 201, 216, 231, 246, 261, 276, 291, 306, 321, 336, 351, 366, 381, 396, 411],
+      crossPositions: [143, 156, 171, 186, 201, 216, 231, 246, 261, 276, 291, 306, 321, 336, 351, 366, 381, 396, 409],
     },
   } as any;
   const svg = buildStringMaskSvg(calibrated);
   assert.match(svg, /x1="241"/);
-  assert.match(svg, /y1="141"/);
+  assert.match(svg, /y1="143"/);
   assert.throws(
     () => validateMaskGeometry({ ...calibrated, stringBed: { ...calibrated.stringBed, mainPositions: calibrated.stringBed.mainPositions.slice(1) } }),
     /main positions/i,
   );
   assert.throws(
-    () => validateMaskGeometry({ ...calibrated, stringBed: { ...calibrated.stringBed, crossPositions: [141, 156, 155, ...calibrated.stringBed.crossPositions.slice(3)] } }),
+    () => validateMaskGeometry({ ...calibrated, stringBed: { ...calibrated.stringBed, crossPositions: [143, 156, 155, ...calibrated.stringBed.crossPositions.slice(3)] } }),
     /cross positions/i,
   );
   assert.throws(

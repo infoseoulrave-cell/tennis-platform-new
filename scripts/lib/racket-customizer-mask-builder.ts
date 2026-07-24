@@ -46,6 +46,8 @@ function ellipseExtent(
   return secondaryRadius * Math.sqrt(Math.max(0, 1 - normalized * normalized));
 }
 
+const MINIMUM_RENDERED_LINE_EXTENT = 24;
+
 function safeSvgId(value: string): string {
   return value.replace(/[^A-Za-z0-9_.:-]/g, "_");
 }
@@ -137,6 +139,27 @@ function validatePositions(
   }
 }
 
+function validateEllipseLineExtents(
+  positions: readonly number[] | undefined,
+  center: number,
+  primaryRadius: number,
+  secondaryRadius: number,
+  label: string,
+): void {
+  if (positions === undefined) return;
+  if (
+    positions.some(
+      (position) =>
+        2 * ellipseExtent(position - center, primaryRadius, secondaryRadius)
+        < MINIMUM_RENDERED_LINE_EXTENT,
+    )
+  ) {
+    throw new Error(
+      `${label} positions must render lines with at least ${MINIMUM_RENDERED_LINE_EXTENT}px extent.`,
+    );
+  }
+}
+
 export function validateMaskGeometry(geometry: MaskGeometry): void {
   const { width, height } = geometry.canvas;
   if (
@@ -197,6 +220,22 @@ export function validateMaskGeometry(geometry: MaskGeometry): void {
   }
   validatePositions(mainPositions, mains, cx - rx + inset, cx + rx - inset, "Main");
   validatePositions(crossPositions, crosses, cy - ry + inset, cy + ry - inset, "Cross");
+  if (innerRimPath === undefined) {
+    validateEllipseLineExtents(
+      mainPositions,
+      cx,
+      rx - inset,
+      ry - inset,
+      "Main",
+    );
+    validateEllipseLineExtents(
+      crossPositions,
+      cy,
+      ry - inset,
+      rx - inset,
+      "Cross",
+    );
+  }
   if (innerRimPath !== undefined) {
     const bounds = parsePathBounds(innerRimPath);
     const tolerance = inset;
