@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
+import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import test from "node:test";
 
 import {
@@ -17,6 +19,7 @@ import {
 } from "../scripts/expand-racket-catalog";
 import {
   type ActiveCatalogRow,
+  loadEnvironment,
   validateExpansionState,
 } from "../scripts/backfill-racket-evidence";
 
@@ -208,6 +211,38 @@ test("the CLI requires the exact apply argument and explicit operating approval"
     () => assertCatalogExpansionApproval(true, "yes"),
     /RACKETLAB_CATALOG_EXPANSION_APPROVAL/,
   );
+});
+
+test("environment loading overlays all defined process values on file values", async () => {
+  const directory = await mkdtemp(join(tmpdir(), "racketlab-env-"));
+  const envFilePath = join(directory, ".env.local");
+  await writeFile(
+    envFilePath,
+    "FILE_ONLY=file-value\nSHARED_VALUE=file-value\n",
+    "utf8",
+  );
+
+  try {
+    const loaded = loadEnvironment(
+      {
+        RACKETLAB_CATALOG_EXPANSION_APPROVAL:
+          "canonical-operating-apply-approved",
+        SHARED_VALUE: "process-value",
+        UNDEFINED_VALUE: undefined,
+      },
+      envFilePath,
+    );
+
+    assert.equal(loaded.FILE_ONLY, "file-value");
+    assert.equal(loaded.SHARED_VALUE, "process-value");
+    assert.equal(
+      loaded.RACKETLAB_CATALOG_EXPANSION_APPROVAL,
+      "canonical-operating-apply-approved",
+    );
+    assert.equal(Object.hasOwn(loaded, "UNDEFINED_VALUE"), false);
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
 });
 
 test("read-only preflight reports inserts and rejects unknown active identities", () => {

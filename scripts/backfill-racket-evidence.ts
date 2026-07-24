@@ -224,14 +224,20 @@ export function validateExpansionState(
   return CATALOG_EXPANSION_COUNT;
 }
 
-export function loadEnvironment(): Record<string, string> {
+export function loadEnvironment(
+  environment: Readonly<Record<string, string | undefined>> = process.env,
+  envFilePath = resolve(".env.local"),
+): Record<string, string> {
   const loaded: Record<string, string> = {};
-  for (const line of readFileSync(resolve(".env.local"), "utf8").split(/\r?\n/)) {
+  for (const line of readFileSync(envFilePath, "utf8").split(/\r?\n/)) {
     const match = line.match(/^([^#=]+)=(.*)$/);
     if (!match) continue;
     const name = match[1].trim();
     const value = match[2].trim().replace(/^(['"])(.*)\1$/, "$2");
-    loaded[name] = process.env[name] ?? value;
+    loaded[name] = value;
+  }
+  for (const [name, value] of Object.entries(environment)) {
+    if (value !== undefined) loaded[name] = value;
   }
   return loaded;
 }
