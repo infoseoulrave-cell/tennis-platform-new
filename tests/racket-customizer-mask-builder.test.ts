@@ -115,3 +115,68 @@ test("generated profiles are sorted and contain stable public mask URLs", () => 
     /gripMaskUrl: "\/images\/racket-customizer\/a-racket-grip\.svg"/,
   );
 });
+
+test("geometry validation rejects unsafe paths, empty grips, and custom clips outside the head", () => {
+  assert.throws(
+    () =>
+      validateMaskGeometry({
+        ...geometry,
+        gripPaths: ['M292 616 L313 616 Z"/><image href="https://bad.example"/>'],
+      }),
+    /path/i,
+  );
+  assert.throws(
+    () => validateMaskGeometry({ ...geometry, gripPaths: [] }),
+    /grip/i,
+  );
+  assert.throws(
+    () =>
+      validateMaskGeometry({
+        ...geometry,
+        stringBed: {
+          ...geometry.stringBed,
+          innerRimPath: "M10 10 L490 10 L490 800 L10 800 Z",
+        },
+      }),
+    /inner-rim|head/i,
+  );
+});
+
+test("explicit calibrated positions are validated and rendered without uniform redistribution", () => {
+  const calibrated = {
+    ...geometry,
+    stringBed: {
+      ...geometry.stringBed,
+      mainPositions: [241, 253, 264, 276, 288, 300, 312, 324, 335, 346, 358, 370, 382, 393, 403, 411],
+      crossPositions: [141, 156, 171, 186, 201, 216, 231, 246, 261, 276, 291, 306, 321, 336, 351, 366, 381, 396, 411],
+    },
+  } as any;
+  const svg = buildStringMaskSvg(calibrated);
+  assert.match(svg, /x1="241"/);
+  assert.match(svg, /y1="141"/);
+  assert.throws(
+    () => validateMaskGeometry({ ...calibrated, stringBed: { ...calibrated.stringBed, mainPositions: calibrated.stringBed.mainPositions.slice(1) } }),
+    /main positions/i,
+  );
+  assert.throws(
+    () => validateMaskGeometry({ ...calibrated, stringBed: { ...calibrated.stringBed, crossPositions: [141, 156, 155, ...calibrated.stringBed.crossPositions.slice(3)] } }),
+    /cross positions/i,
+  );
+  assert.throws(
+    () => validateMaskGeometry({ ...calibrated, stringBed: { ...calibrated.stringBed, mainPositions: [Infinity, ...calibrated.stringBed.mainPositions.slice(1)] } }),
+    /main positions/i,
+  );
+  assert.throws(
+    () => validateMaskGeometry({ ...calibrated, stringBed: { ...calibrated.stringBed, crossPositions: [140, ...calibrated.stringBed.crossPositions.slice(1)] } }),
+    /cross positions/i,
+  );
+});
+
+test("generated profiles use code-point ordering independent of host locale", () => {
+  const generated = buildGeneratedProfilesModule([
+    { ...geometry, slug: "ä-racket", productCode: "UMLAUT" },
+    { ...geometry, slug: "z-racket", productCode: "ZED" },
+  ]);
+
+  assert.ok(generated.indexOf('slug: "z-racket"') < generated.indexOf('slug: "ä-racket"'));
+});

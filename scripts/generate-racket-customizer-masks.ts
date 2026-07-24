@@ -20,7 +20,7 @@ const profilesModulePath = path.join(
 
 async function main(): Promise<void> {
   const geometries = [...RACKET_CUSTOMIZER_MASK_GEOMETRIES].sort((a, b) =>
-    a.slug.localeCompare(b.slug),
+    a.slug < b.slug ? -1 : a.slug > b.slug ? 1 : 0,
   );
   const slugs = new Set<string>();
   const productCodes = new Set<string>();
@@ -37,20 +37,30 @@ async function main(): Promise<void> {
     productCodes.add(geometry.productCode);
   }
 
+  const outputs = geometries.map((geometry) => ({
+    geometry,
+    stringMask: buildStringMaskSvg(geometry),
+    gripMask: buildGripMaskSvg(geometry),
+  }));
+  const profilesModule = buildGeneratedProfilesModule(geometries);
+
   await mkdir(maskDirectory, { recursive: true });
-  for (const geometry of geometries) {
+  for (const { geometry, stringMask, gripMask } of outputs) {
     await writeFile(
       path.join(maskDirectory, `${geometry.slug}-strings.svg`),
-      buildStringMaskSvg(geometry),
+      stringMask,
     );
     await writeFile(
       path.join(maskDirectory, `${geometry.slug}-grip.svg`),
-      buildGripMaskSvg(geometry),
+      gripMask,
     );
   }
 
-  await writeFile(profilesModulePath, buildGeneratedProfilesModule(geometries));
+  await writeFile(profilesModulePath, profilesModule);
   console.log(`Generated ${geometries.length} profiles and ${geometries.length * 2} masks.`);
 }
 
-void main();
+main().catch((error: unknown) => {
+  console.error(error);
+  process.exitCode = 1;
+});
