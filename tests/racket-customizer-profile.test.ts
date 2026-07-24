@@ -33,6 +33,8 @@ test("profile resolution fails closed for malformed or non-canonical image URLs"
     "https://img.tennis-warehouse.com/watermark/rs.php?path=HGMPG-1.png",
     "https://img.tennis-warehouse.com/watermark/rs.php?path=NOT-HGMPG-1.jpg",
     "https://img.tennis-warehouse.com/watermark/rs.php?nw=500",
+    "https://img.tennis-warehouse.com/watermark/rs.php?PATH=HGMPG-1.jpg",
+    "https://img.tennis-warehouse.com/watermark/rs.php?path=HGMPG-1.jpg&path=EZ10BB-1.jpg",
     "not a URL",
   ];
 
@@ -63,6 +65,9 @@ test("intrinsic dimensions must be finite positive exact calibration matches", (
     [-1, profile.intrinsicHeight],
     [profile.intrinsicWidth, 0],
     [profile.intrinsicWidth, -1],
+    [profile.intrinsicWidth + 0.5, profile.intrinsicHeight],
+    [profile.intrinsicWidth, profile.intrinsicHeight + 0.5],
+    [profile.intrinsicHeight, profile.intrinsicWidth],
   ]) {
     assert.equal(
       matchesCustomizerDimensions(profile, naturalWidth, naturalHeight),

@@ -14,8 +14,13 @@ export function imageProductCode(imageUrl: string): string | null {
       return null;
     }
 
+    const pathValues = url.searchParams.getAll("path");
+    if (pathValues.length !== 1) {
+      return null;
+    }
+
     return (
-      url.searchParams.get("path")?.match(/^([A-Z0-9]+)-1\.jpg$/i)?.[1]?.toUpperCase()
+      pathValues[0]?.match(/^([A-Z0-9]+)-1\.jpg$/i)?.[1]?.toUpperCase()
       ?? null
     );
   } catch {
