@@ -53,3 +53,11 @@ test("database reads avoid common request waterfalls", () => {
   assert.match(results, /\.leftJoin\(racketSpecs/);
   assert.doesNotMatch(results, /for \(const racketId of racketIds\)/);
 });
+
+test("racket color simulation stays a detail-only client island", () => {
+  const detail = read("src/app/rackets/[slug]/page.tsx");
+  const catalog = read("src/app/rackets/page.tsx");
+
+  assert.match(detail, /RacketVisualCustomizer/);
+  assert.doesNotMatch(catalog, /RacketVisualCustomizer/);
+});

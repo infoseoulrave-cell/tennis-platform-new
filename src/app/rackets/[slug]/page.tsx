@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 import { notFound, permanentRedirect } from "next/navigation";
 import { Suspense } from "react";
 import {
@@ -12,6 +11,7 @@ import { RacketCard } from "@/components/racket-card";
 import { RacketDetailActions } from "@/components/racket-detail-actions";
 import { PriceComparison } from "@/components/price-comparison";
 import { ScoringMethodologyNote } from "@/components/scoring-methodology-note";
+import { RacketVisualCustomizer } from "@/components/racket-visual-customizer";
 import type { Metadata } from "next";
 import {
   formatPublicTotal,
@@ -119,20 +119,17 @@ export default async function RacketDetailPage({
 
       <div className="grid lg:grid-cols-[1fr_1.2fr] gap-12">
         <div className="lg:sticky lg:top-20 lg:self-start">
-          <div className="relative aspect-square bg-white rounded-2xl flex items-center justify-center overflow-hidden">
-            {racket.imageUrl ? (
-              <Image
-                src={racket.imageUrl}
-                alt={`${racket.brand} ${racket.model}`}
-                fill
-                sizes="(max-width: 1024px) 100vw, 45vw"
-                unoptimized
-                className="object-contain p-8"
-              />
-            ) : (
+          {racket.imageUrl ? (
+            <RacketVisualCustomizer
+              slug={racket.slug}
+              imageUrl={racket.imageUrl}
+              alt={`${racket.brand} ${formatRacketName(racket.model, racket.year)}`}
+            />
+          ) : (
+            <div className="relative aspect-square bg-white rounded-2xl flex items-center justify-center overflow-hidden">
               <span className="px-8 text-center text-sm text-[var(--color-text-muted)]">검증된 제품 이미지 준비 중</span>
-            )}
-          </div>
+            </div>
+          )}
         </div>
 
         <div className="space-y-8">
