@@ -1,7 +1,14 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useId, useReducer, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useId,
+  useReducer,
+  useRef,
+  useState,
+} from "react";
 
 import {
   GRIP_COLOR_OPTIONS,
@@ -9,6 +16,7 @@ import {
   reduceCustomizerState,
   STRING_COLOR_OPTIONS,
 } from "@/data/racket-customizer";
+import type { RacketCustomizerProfile } from "@/data/racket-customizer-profiles.generated";
 import {
   matchesCustomizerDimensions,
   resolveCustomizerProfile,
@@ -20,26 +28,59 @@ type RacketVisualCustomizerProps = {
   alt: string;
 };
 
+type CssMaskSupportApi = {
+  supports?: (property: string, value: string) => boolean;
+};
+
+type ImageValidation = {
+  key: string;
+  element: HTMLImageElement;
+};
+
+export function hasCssMaskSupport(
+  cssApi: CssMaskSupportApi | null | undefined,
+): boolean {
+  if (typeof cssApi?.supports !== "function") return false;
+
+  try {
+    return cssApi.supports("mask-image", "url(/mask.svg)")
+      || cssApi.supports("-webkit-mask-image", "url(/mask.svg)");
+  } catch {
+    return false;
+  }
+}
+
+export function customizerValidationKey(
+  profile: RacketCustomizerProfile,
+  imageUrl: string,
+): string {
+  return JSON.stringify([
+    profile.slug,
+    profile.productCode,
+    profile.sourceLayout,
+    profile.intrinsicWidth,
+    profile.intrinsicHeight,
+    profile.stringMaskUrl,
+    profile.gripMaskUrl,
+    imageUrl,
+  ]);
+}
+
+export function isCurrentImageValidation(
+  validation: ImageValidation | null,
+  expectedKey: string,
+  currentElement: HTMLImageElement | null,
+): boolean {
+  return validation?.key === expectedKey
+    && validation.element === currentElement;
+}
+
 export function RacketVisualCustomizer({
   slug,
   imageUrl,
   alt,
 }: RacketVisualCustomizerProps) {
   const profile = resolveCustomizerProfile(slug, imageUrl);
-  const [state, dispatch] = useReducer(
-    reduceCustomizerState,
-    initialCustomizerState,
-  );
-  const [loadedImageUrl, setLoadedImageUrl] = useState<string | null>(null);
-  const [maskSupported, setMaskSupported] = useState(false);
-  const groupId = useId();
-
-  useEffect(() => {
-    setMaskSupported(
-      CSS.supports("mask-image", "url(/mask.svg)")
-        || CSS.supports("-webkit-mask-image", "url(/mask.svg)"),
-    );
-  }, []);
 
   if (!profile) {
     return (
@@ -57,7 +98,60 @@ export function RacketVisualCustomizer({
     );
   }
 
-  const dimensionsMatch = loadedImageUrl === imageUrl;
+  const validationKey = customizerValidationKey(profile, imageUrl);
+
+  return (
+    <ValidatedRacketCustomizer
+      key={validationKey}
+      profile={profile}
+      validationKey={validationKey}
+      imageUrl={imageUrl}
+      alt={alt}
+    />
+  );
+}
+
+function ValidatedRacketCustomizer({
+  profile,
+  validationKey,
+  imageUrl,
+  alt,
+}: {
+  profile: RacketCustomizerProfile;
+  validationKey: string;
+  imageUrl: string;
+  alt: string;
+}) {
+  const [state, dispatch] = useReducer(
+    reduceCustomizerState,
+    initialCustomizerState,
+  );
+  const [imageValidation, setImageValidation] =
+    useState<ImageValidation | null>(null);
+  const [maskSupported, setMaskSupported] = useState(false);
+  const [mountedImage, setMountedImage] = useState<HTMLImageElement | null>(
+    null,
+  );
+  const mountedImageRef = useRef<HTMLImageElement | null>(null);
+  const groupId = useId();
+  const setMountedImageRef = useCallback((element: HTMLImageElement | null) => {
+    if (mountedImageRef.current === element) return;
+    mountedImageRef.current = element;
+    setMountedImage(element);
+    setImageValidation(null);
+  }, []);
+
+  useEffect(() => {
+    setMaskSupported(hasCssMaskSupport(
+      typeof CSS === "undefined" ? undefined : CSS,
+    ));
+  }, []);
+
+  const dimensionsMatch = isCurrentImageValidation(
+    imageValidation,
+    validationKey,
+    mountedImage,
+  );
   const controlsReady = dimensionsMatch && maskSupported;
   const stringColor = STRING_COLOR_OPTIONS.find(
     ({ id }) => id === state.stringColorId,
@@ -73,6 +167,22 @@ export function RacketVisualCustomizer({
     mixBlendMode: "normal",
   } as const;
 
+  const validateLoadedImage = useCallback(
+    (element: HTMLImageElement) => {
+      setImageValidation(
+        element === mountedImageRef.current
+          && matchesCustomizerDimensions(
+            profile,
+            element.naturalWidth,
+            element.naturalHeight,
+          )
+          ? { key: validationKey, element }
+          : null,
+      );
+    },
+    [profile, validationKey],
+  );
+
   return (
     <div>
       <div className="relative flex aspect-square items-center justify-center overflow-hidden rounded-2xl bg-white">
@@ -85,7 +195,7 @@ export function RacketVisualCustomizer({
           }}
         >
           <Image
-            key={imageUrl}
+            ref={setMountedImageRef}
             src={imageUrl}
             alt={alt}
             fill
@@ -93,20 +203,10 @@ export function RacketVisualCustomizer({
             unoptimized
             priority
             className="object-contain"
-            onLoad={(event) => {
-              setLoadedImageUrl(
-                matchesCustomizerDimensions(
-                  profile,
-                  event.currentTarget.naturalWidth,
-                  event.currentTarget.naturalHeight,
-                )
-                  ? imageUrl
-                  : null,
-              );
-            }}
+            onLoad={(event) => validateLoadedImage(event.currentTarget)}
           />
 
-          {dimensionsMatch && stringColor && (
+          {controlsReady && stringColor && (
             <span
               aria-hidden="true"
               className="pointer-events-none absolute inset-0"
@@ -123,7 +223,7 @@ export function RacketVisualCustomizer({
             />
           )}
 
-          {dimensionsMatch && gripColor && (
+          {controlsReady && gripColor && (
             <span
               aria-hidden="true"
               className="pointer-events-none absolute inset-0"

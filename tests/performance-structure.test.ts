@@ -57,7 +57,21 @@ test("database reads avoid common request waterfalls", () => {
 test("racket color simulation stays a detail-only client island", () => {
   const detail = read("src/app/rackets/[slug]/page.tsx");
   const catalog = read("src/app/rackets/page.tsx");
+  const customizerCall =
+    detail.match(/<RacketVisualCustomizer[\s\S]*?\/>/)?.[0] ?? "";
 
-  assert.match(detail, /RacketVisualCustomizer/);
-  assert.doesNotMatch(catalog, /RacketVisualCustomizer/);
+  assert.match(
+    detail,
+    /import \{ RacketVisualCustomizer \} from "@\/components\/racket-visual-customizer";/,
+  );
+  assert.match(customizerCall, /slug=\{racket\.slug\}/);
+  assert.match(customizerCall, /imageUrl=\{racket\.imageUrl\}/);
+  assert.match(
+    customizerCall,
+    /alt=\{`\$\{racket\.brand\} \$\{formatRacketName\(racket\.model, racket\.year\)\}`\}/,
+  );
+  assert.doesNotMatch(
+    catalog,
+    /racket-visual-customizer|<RacketVisualCustomizer/,
+  );
 });
