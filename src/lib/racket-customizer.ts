@@ -3,6 +3,10 @@ import {
   type RacketCustomizerProfile,
 } from "../data/racket-customizer-profiles.generated";
 
+export function racketCustomizerPath(slug: string): string {
+  return `/customizer/${encodeURIComponent(slug)}`;
+}
+
 export function imageProductCode(imageUrl: string): string | null {
   try {
     const url = new URL(imageUrl);

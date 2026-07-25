@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import test from "node:test";
 
 const read = (path: string) =>
@@ -54,22 +54,59 @@ test("database reads avoid common request waterfalls", () => {
   assert.doesNotMatch(results, /for \(const racketId of racketIds\)/);
 });
 
-test("racket color simulation stays a detail-only client island", () => {
+test("racket color simulation stays a dedicated-route client island", () => {
   const detail = read("src/app/rackets/[slug]/page.tsx");
+  const customizerPageUrl = new URL(
+    "../src/app/customizer/[slug]/page.tsx",
+    import.meta.url,
+  );
+  const nestedCustomizerPageUrl = new URL(
+    "../src/app/rackets/[slug]/customizer/page.tsx",
+    import.meta.url,
+  );
+  const customizerLoadingUrl = new URL(
+    "../src/app/customizer/loading.tsx",
+    import.meta.url,
+  );
+  const customizerSlugLoadingUrl = new URL(
+    "../src/app/customizer/[slug]/loading.tsx",
+    import.meta.url,
+  );
   const catalog = read("src/app/rackets/page.tsx");
-  const customizerCall =
-    detail.match(/<RacketVisualCustomizer[\s\S]*?\/>/)?.[0] ?? "";
+  assert.ok(
+    existsSync(customizerPageUrl),
+    "the customizer route should live outside the racket detail loading boundary",
+  );
+  assert.equal(existsSync(nestedCustomizerPageUrl), false);
+  assert.equal(existsSync(customizerLoadingUrl), false);
+  assert.equal(existsSync(customizerSlugLoadingUrl), false);
 
-  assert.match(
+  const customizer = read("src/app/customizer/[slug]/page.tsx");
+  const customizerCall =
+    customizer.match(/<RacketVisualCustomizer[\s\S]*?\/>/)?.[0] ?? "";
+
+  assert.doesNotMatch(
     detail,
+    /racket-visual-customizer|<RacketVisualCustomizer/,
+  );
+  assert.match(
+    customizer,
     /import \{ RacketVisualCustomizer \} from "@\/components\/racket-visual-customizer";/,
   );
+  assert.doesNotMatch(customizer, /^["']use client["'];/m);
   assert.match(customizerCall, /slug=\{racket\.slug\}/);
-  assert.match(customizerCall, /imageUrl=\{racket\.imageUrl\}/);
+  assert.match(customizerCall, /imageUrl=\{resolution\.imageUrl\}/);
   assert.match(
-    customizerCall,
-    /alt=\{`\$\{racket\.brand\} \$\{formatRacketName\(racket\.model, racket\.year\)\}`\}/,
+    customizer,
+    /const racketName = `\$\{racket\.brand\} \$\{formatRacketName\(racket\.model, racket\.year\)\}`/,
   );
+  assert.match(customizerCall, /alt=\{racketName\}/);
+  assert.match(
+    detail,
+    /href=\{racketCustomizerPath\(racket\.slug\)\}/,
+  );
+  assert.match(detail, /min-h-11/);
+  assert.match(detail, /focus-visible:ring-\[var\(--color-text\)\]/);
   assert.doesNotMatch(
     catalog,
     /racket-visual-customizer|<RacketVisualCustomizer/,

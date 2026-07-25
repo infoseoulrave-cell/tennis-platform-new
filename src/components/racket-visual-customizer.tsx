@@ -37,6 +37,89 @@ type ImageValidation = {
   element: HTMLImageElement;
 };
 
+type CustomizerImageFailure =
+  | "image-error"
+  | "dimension-mismatch"
+  | null;
+
+type CustomizerReadiness = {
+  kind: "preparing" | "ready" | "fallback";
+  message: string | null;
+};
+
+type MountedImageClassification =
+  | "pending"
+  | "ready"
+  | "image-error"
+  | "dimension-mismatch";
+
+export function classifyMountedImage(
+  image: Pick<
+    HTMLImageElement,
+    "complete" | "naturalWidth" | "naturalHeight"
+  > | null,
+  profile: RacketCustomizerProfile,
+): MountedImageClassification {
+  if (!image?.complete) return "pending";
+  if (image.naturalWidth === 0 || image.naturalHeight === 0) {
+    return "image-error";
+  }
+
+  return matchesCustomizerDimensions(
+    profile,
+    image.naturalWidth,
+    image.naturalHeight,
+  )
+    ? "ready"
+    : "dimension-mismatch";
+}
+
+export function decideCustomizerReadiness({
+  maskSupported,
+  dimensionsMatch,
+  imageFailure,
+}: {
+  maskSupported: boolean | null;
+  dimensionsMatch: boolean;
+  imageFailure: CustomizerImageFailure;
+}): CustomizerReadiness {
+  if (imageFailure === "image-error") {
+    return {
+      kind: "fallback",
+      message:
+        "제품 이미지를 불러오지 못해 색상 시뮬레이션을 사용할 수 없습니다.",
+    };
+  }
+
+  if (imageFailure === "dimension-mismatch") {
+    return {
+      kind: "fallback",
+      message:
+        "이미지 규격이 맞지 않아 색상 효과 없이 원본 이미지만 표시합니다.",
+    };
+  }
+
+  if (maskSupported === false) {
+    return {
+      kind: "fallback",
+      message:
+        "이 브라우저에서는 색상 시뮬레이션을 지원하지 않아 원본 이미지만 표시합니다.",
+    };
+  }
+
+  if (maskSupported && dimensionsMatch) {
+    return {
+      kind: "ready",
+      message: null,
+    };
+  }
+
+  return {
+    kind: "preparing",
+    message: "색상 시뮬레이션을 준비하고 있습니다.",
+  };
+}
+
 export function hasCssMaskSupport(
   cssApi: CssMaskSupportApi | null | undefined,
 ): boolean {
@@ -69,10 +152,8 @@ export function customizerValidationKey(
 export function isCurrentImageValidation(
   validation: ImageValidation | null,
   expectedKey: string,
-  currentElement: HTMLImageElement | null,
 ): boolean {
-  return validation?.key === expectedKey
-    && validation.element === currentElement;
+  return validation?.key === expectedKey;
 }
 
 export function RacketVisualCustomizer({
@@ -128,18 +209,28 @@ function ValidatedRacketCustomizer({
   );
   const [imageValidation, setImageValidation] =
     useState<ImageValidation | null>(null);
-  const [maskSupported, setMaskSupported] = useState(false);
-  const [mountedImage, setMountedImage] = useState<HTMLImageElement | null>(
-    null,
-  );
+  const [maskSupported, setMaskSupported] = useState<boolean | null>(null);
+  const [imageFailure, setImageFailure] =
+    useState<CustomizerImageFailure>(null);
   const mountedImageRef = useRef<HTMLImageElement | null>(null);
   const groupId = useId();
-  const setMountedImageRef = useCallback((element: HTMLImageElement | null) => {
-    if (mountedImageRef.current === element) return;
-    mountedImageRef.current = element;
-    setMountedImage(element);
-    setImageValidation(null);
-  }, []);
+  const applyImageClassification = useCallback(
+    (element: HTMLImageElement | null) => {
+      const classification = classifyMountedImage(element, profile);
+      setImageValidation(
+        classification === "ready" && element
+          ? { key: validationKey, element }
+          : null,
+      );
+      setImageFailure(
+        classification === "image-error"
+          || classification === "dimension-mismatch"
+          ? classification
+          : null,
+      );
+    },
+    [profile, validationKey],
+  );
 
   useEffect(() => {
     setMaskSupported(hasCssMaskSupport(
@@ -147,12 +238,56 @@ function ValidatedRacketCustomizer({
     ));
   }, []);
 
+  useEffect(() => {
+    const mountedImage = mountedImageRef.current;
+    if (!mountedImage) return;
+
+    let classificationTimer: number | null = null;
+    const stopWatchingImage = () => {
+      if (classificationTimer === null) return;
+      window.clearInterval(classificationTimer);
+      classificationTimer = null;
+    };
+    const classifyCurrentImage = () => {
+      if (mountedImage !== mountedImageRef.current) {
+        stopWatchingImage();
+        return;
+      }
+      if (!mountedImage.complete) return;
+      stopWatchingImage();
+      applyImageClassification(mountedImage);
+    };
+    const markCurrentImageFailed = () => {
+      if (mountedImage !== mountedImageRef.current) return;
+      stopWatchingImage();
+      setImageValidation(null);
+      setImageFailure("image-error");
+    };
+
+    mountedImage.addEventListener("load", classifyCurrentImage);
+    mountedImage.addEventListener("error", markCurrentImageFailed);
+    classifyCurrentImage();
+    if (!mountedImage.complete) {
+      classificationTimer = window.setInterval(classifyCurrentImage, 100);
+    }
+
+    return () => {
+      stopWatchingImage();
+      mountedImage.removeEventListener("load", classifyCurrentImage);
+      mountedImage.removeEventListener("error", markCurrentImageFailed);
+    };
+  }, [applyImageClassification]);
+
   const dimensionsMatch = isCurrentImageValidation(
     imageValidation,
     validationKey,
-    mountedImage,
   );
-  const controlsReady = dimensionsMatch && maskSupported;
+  const readiness = decideCustomizerReadiness({
+    maskSupported,
+    dimensionsMatch,
+    imageFailure,
+  });
+  const controlsReady = readiness.kind === "ready";
   const stringColor = STRING_COLOR_OPTIONS.find(
     ({ id }) => id === state.stringColorId,
   );
@@ -169,19 +304,18 @@ function ValidatedRacketCustomizer({
 
   const validateLoadedImage = useCallback(
     (element: HTMLImageElement) => {
-      setImageValidation(
-        element === mountedImageRef.current
-          && matchesCustomizerDimensions(
-            profile,
-            element.naturalWidth,
-            element.naturalHeight,
-          )
-          ? { key: validationKey, element }
-          : null,
-      );
+      if (element !== mountedImageRef.current) return;
+
+      applyImageClassification(element);
     },
-    [profile, validationKey],
+    [applyImageClassification],
   );
+  const handleImageError = useCallback((element: HTMLImageElement) => {
+    if (element !== mountedImageRef.current) return;
+
+    setImageValidation(null);
+    setImageFailure("image-error");
+  }, []);
 
   return (
     <div>
@@ -195,7 +329,7 @@ function ValidatedRacketCustomizer({
           }}
         >
           <Image
-            ref={setMountedImageRef}
+            ref={mountedImageRef}
             src={imageUrl}
             alt={alt}
             fill
@@ -204,6 +338,7 @@ function ValidatedRacketCustomizer({
             priority
             className="object-contain"
             onLoad={(event) => validateLoadedImage(event.currentTarget)}
+            onError={(event) => handleImageError(event.currentTarget)}
           />
 
           {controlsReady && stringColor && (
@@ -239,6 +374,15 @@ function ValidatedRacketCustomizer({
           )}
         </div>
       </div>
+
+      {readiness.message && (
+        <p
+          role="status"
+          className="mt-4 rounded-xl bg-[var(--color-bg-subtle)] px-4 py-3 text-xs leading-relaxed text-[var(--color-text-secondary)]"
+        >
+          {readiness.message}
+        </p>
+      )}
 
       <section
         hidden={!controlsReady}

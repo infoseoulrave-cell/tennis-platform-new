@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { notFound, permanentRedirect } from "next/navigation";
 import { Suspense } from "react";
@@ -11,7 +12,6 @@ import { RacketCard } from "@/components/racket-card";
 import { RacketDetailActions } from "@/components/racket-detail-actions";
 import { PriceComparison } from "@/components/price-comparison";
 import { ScoringMethodologyNote } from "@/components/scoring-methodology-note";
-import { RacketVisualCustomizer } from "@/components/racket-visual-customizer";
 import type { Metadata } from "next";
 import {
   formatPublicTotal,
@@ -20,6 +20,10 @@ import {
 import { formatRacketName } from "@/lib/racket-name";
 import { recommendStringPairings } from "@/lib/string-pairing";
 import { stringOfferId } from "@/data/strings";
+import {
+  racketCustomizerPath,
+  resolveCustomizerProfile,
+} from "@/lib/racket-customizer";
 
 export const dynamic = "force-dynamic";
 
@@ -97,6 +101,9 @@ export default async function RacketDetailPage({
   if (!racket) notFound();
   if (slug !== racket.slug) permanentRedirect(`/rackets/${racket.slug}`);
 
+  const customizerProfile = racket.imageUrl
+    ? resolveCustomizerProfile(racket.slug, racket.imageUrl)
+    : null;
   const recommendation = getRecommendation(racket.rawScores);
   const stringPairings = recommendStringPairings({
     stiffnessRa: racket.stiffness,
@@ -120,11 +127,33 @@ export default async function RacketDetailPage({
       <div className="grid lg:grid-cols-[1fr_1.2fr] gap-12">
         <div className="lg:sticky lg:top-20 lg:self-start">
           {racket.imageUrl ? (
-            <RacketVisualCustomizer
-              slug={racket.slug}
-              imageUrl={racket.imageUrl}
-              alt={`${racket.brand} ${formatRacketName(racket.model, racket.year)}`}
-            />
+            <>
+              <div className="relative aspect-square overflow-hidden rounded-2xl bg-white">
+                <Image
+                  src={racket.imageUrl}
+                  alt={`${racket.brand} ${formatRacketName(racket.model, racket.year)}`}
+                  fill
+                  sizes="(max-width: 1024px) 100vw, 45vw"
+                  unoptimized
+                  priority
+                  className="object-contain p-8"
+                />
+              </div>
+              {customizerProfile && (
+                <Link
+                  href={racketCustomizerPath(racket.slug)}
+                  className="mt-4 flex min-h-11 w-full items-center justify-between gap-4 rounded-xl bg-[var(--color-accent)] px-4 py-3 text-left text-sm font-semibold text-black transition-[filter] hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-text)] focus-visible:ring-offset-2"
+                >
+                  <span>
+                    <span className="block">색상 커스터마이저</span>
+                    <span className="mt-0.5 block text-[11px] font-normal text-black/70">
+                      스트링과 그립 조합 미리보기
+                    </span>
+                  </span>
+                  <span aria-hidden="true">→</span>
+                </Link>
+              )}
+            </>
           ) : (
             <div className="relative aspect-square bg-white rounded-2xl flex items-center justify-center overflow-hidden">
               <span className="px-8 text-center text-sm text-[var(--color-text-muted)]">검증된 제품 이미지 준비 중</span>

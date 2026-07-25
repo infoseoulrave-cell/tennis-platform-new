@@ -4,6 +4,7 @@ import test from "node:test";
 import {
   imageProductCode,
   matchesCustomizerDimensions,
+  racketCustomizerPath,
   resolveCustomizerProfile,
 } from "../src/lib/racket-customizer";
 
@@ -74,4 +75,19 @@ test("intrinsic dimensions must be finite positive exact calibration matches", (
       false,
     );
   }
+});
+
+test("customizer paths encode the slug as one segment and retain the route suffix", () => {
+  assert.equal(
+    racketCustomizerPath("head-gravity-mp-2025"),
+    "/customizer/head-gravity-mp-2025",
+  );
+  assert.equal(
+    racketCustomizerPath("head gravity/mp 2025"),
+    "/customizer/head%20gravity%2Fmp%202025",
+  );
+  assert.equal(
+    racketCustomizerPath("라켓"),
+    "/customizer/%EB%9D%BC%EC%BC%93",
+  );
 });
