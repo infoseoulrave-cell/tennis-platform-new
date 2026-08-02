@@ -134,6 +134,16 @@ export function describePublicAxisScore(score: number): string {
   return PUBLIC_AXIS_SCORE_WORDS[index];
 }
 
+/**
+ * 숫자와 말을 한 덩어리로 쓸 때의 표기. 예: `3/5 · 보통`
+ *
+ * 숫자와 말에 서로 다른 스타일을 줘야 하는 화면(축 막대, 비교표)은 이걸 쓰지 않고
+ * 각각 렌더하되 가운뎃점 구분자는 동일하게 맞춘다.
+ */
+export function formatPublicAxisScoreWithWord(score: number): string {
+  return `${formatPublicAxisScore(score)} · ${describePublicAxisScore(score)}`;
+}
+
 export function formatPublicTotal(scores: PublicAxisScores5): string {
   const total = Math.round(clamp(
     sumPublicAxisScores(scores),

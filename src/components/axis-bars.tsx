@@ -46,7 +46,7 @@ export function AxisBars({
                   className="ml-1.5 font-normal"
                   style={{ color: labelColor }}
                 >
-                  {describePublicAxisScore(score)}
+                  · {describePublicAxisScore(score)}
                 </span>
               </span>
             </div>

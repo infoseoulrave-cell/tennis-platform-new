@@ -5,6 +5,7 @@ import { ScoringMethodologyNote } from "@/components/scoring-methodology-note";
 import { formatRacketName } from "@/lib/racket-name";
 import { colorForRacket } from "@/lib/compare-colors";
 import {
+  describePublicAxisScore,
   formatPublicAxisScore,
   formatPublicTotal,
   PUBLIC_AXIS_KEYS,
@@ -168,6 +169,11 @@ export default async function ComparePage({
                         className="px-3 py-2.5 text-center font-semibold tabular-nums text-[var(--color-text)]"
                       >
                         {formatPublicAxisScore(r.scores[axis])}
+                        {/* 라켓을 나란히 놓고 볼 때 숫자 차이가 어느 쪽으로 좋은
+                            것인지 초심자가 판단하기 어려워 말을 함께 둔다. */}
+                        <span className="mt-0.5 block text-[11px] font-normal text-[var(--color-text-muted)]">
+                          {describePublicAxisScore(r.scores[axis])}
+                        </span>
                       </td>
                     ))}
                   </tr>

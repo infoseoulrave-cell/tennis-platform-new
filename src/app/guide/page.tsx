@@ -19,6 +19,12 @@ const guides = [
     title: "그립 사이즈 가이드",
     description: "G1~G5 기준과 재는 방법",
   },
+  {
+    href: "/guide/terms",
+    emoji: "📖",
+    title: "용어사전",
+    description: "스윙웨이트·RA 강성·밸런스 등 스펙 용어 풀이",
+  },
 ];
 
 export default function GuideHubPage() {

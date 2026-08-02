@@ -1,6 +1,6 @@
 import Link from "next/link";
 import {
-  formatPublicAxisScore,
+  formatPublicAxisScoreWithWord,
   publicAxisScoreToPercent,
 } from "@/lib/score-display";
 
@@ -59,7 +59,7 @@ function AxisScaleDemo({
         />
       </div>
       <p className="text-right text-xs font-medium text-[var(--color-text)]">
-        예: {formatPublicAxisScore(value)}
+        예: {formatPublicAxisScoreWithWord(value)}
       </p>
     </div>
   );
