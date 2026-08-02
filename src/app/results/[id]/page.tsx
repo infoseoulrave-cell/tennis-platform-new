@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { db } from "@/db";
 import {
@@ -22,6 +23,12 @@ import {
 } from "@/lib/string-pairing";
 import { stringOfferId } from "@/data/strings";
 import type { RawAxisScores100 } from "@/lib/score-display";
+import {
+  canViewPersonalNarrative,
+  isUuid,
+  parseOwnedRunIds,
+  RUN_OWNER_COOKIE,
+} from "@/lib/recommendation-access";
 
 type ExplanationFragment = {
   type: "positive" | "tradeoff";
@@ -46,10 +53,18 @@ function numericSpec(value: string | null): number | null {
 
 export default async function ResultsPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { id } = await params;
+
+  // uuid가 아니면 조회하지 않는다. 그대로 넘기면 Postgres 캐스트 오류가
+  // 404가 아니라 500으로 나간다.
+  if (!isUuid(id)) {
+    notFound();
+  }
 
   // Fetch the recommendation run
   const [run] = await db
@@ -133,6 +148,18 @@ export default async function ResultsPage({
     });
   }
 
+  // 진단 서술은 그 사람에 대한 글이다. 링크만 아는 사람에게는 보이지 않고,
+  // 진단을 한 브라우저이거나 공유 토큰을 들고 온 경우에만 연다.
+  const sharedToken = (await searchParams).t;
+  const mayViewNarrative = canViewPersonalNarrative({
+    runId: run.id,
+    shareToken: run.shareToken,
+    providedToken: Array.isArray(sharedToken) ? sharedToken[0] : sharedToken,
+    ownedRunIds: parseOwnedRunIds(
+      (await cookies()).get(RUN_OWNER_COOKIE)?.value,
+    ),
+  });
+
   const profileAnswers = (profile?.answers ?? {}) as ProfileAnswers;
   const painPoints = new Set(profileAnswers.pain_points ?? []);
   const beginner = profileAnswers.play_profile?.experience === "less_1_year"
@@ -169,8 +196,8 @@ export default async function ResultsPage({
 
       <div className="px-6 pt-6">
         <div className="max-w-lg mx-auto">
-          {/* Player summary */}
-          {profile && (
+          {/* Player summary — 본인 또는 공유 토큰 소지자에게만 */}
+          {profile && mayViewNarrative && (
             <div className="bg-gray-50 rounded-xl p-4 mb-6">
               <h2 className="text-sm font-semibold text-gray-700 mb-1">
                 나의 진단 프로필

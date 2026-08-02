@@ -10,12 +10,17 @@ import {
 } from "@/db/schema";
 import { eq, inArray, and } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
+import {
+  canViewPersonalNarrative,
+  isUuid,
+  parseOwnedRunIds,
+  RUN_OWNER_COOKIE,
+} from "@/lib/recommendation-access";
 
 type AxisScores = Record<string, number>;
 
 export async function GET(request: NextRequest) {
-  const { searchParams } = request.nextUrl;
-  const idsParam = searchParams.get("ids");
+  const idsParam = request.nextUrl.searchParams.get("ids");
 
   if (!idsParam) {
     return NextResponse.json(
@@ -36,6 +41,27 @@ export async function GET(request: NextRequest) {
     );
   }
 
+  // uuid 컬럼에 넣기 전에 형식을 본다. 형식이 어긋난 값을 Postgres까지 보내면
+  // 캐스트 예외가 그대로 500으로 나간다.
+  if (!ids.every(isUuid)) {
+    return NextResponse.json(
+      { error: "ids must be recommendation result UUIDs" },
+      { status: 400 }
+    );
+  }
+
+  try {
+    return await buildComparison(request, ids);
+  } catch (err) {
+    console.error("[api/recommendations/compare] failed:", err);
+    return NextResponse.json(
+      { error: "Failed to load comparison" },
+      { status: 500 }
+    );
+  }
+}
+
+async function buildComparison(request: NextRequest, ids: string[]) {
   // 1. Fetch all recommendation results
   const results = await db
     .select()
@@ -164,7 +190,20 @@ export async function GET(request: NextRequest) {
   });
 
   // 7. Extract player priorities from profile answers
-  const answers = profile?.answers as Record<string, unknown> | undefined;
+  //
+  // 우선순위는 이 사람이 무엇을 중요하게 여기는지에 대한 답변이다. 결과 UUID를
+  // 아는 것만으로 읽히면 안 되므로, 진단을 한 브라우저이거나 공유 토큰을
+  // 제시한 경우에만 내보낸다. 라켓 비교 자체는 공유 가치가 있어 그대로 둔다.
+  const mayViewNarrative = canViewPersonalNarrative({
+    runId: run?.id,
+    shareToken: run?.shareToken,
+    providedToken: request.nextUrl.searchParams.get("t"),
+    ownedRunIds: parseOwnedRunIds(request.cookies.get(RUN_OWNER_COOKIE)?.value),
+  });
+
+  const answers = mayViewNarrative
+    ? (profile?.answers as Record<string, unknown> | undefined)
+    : undefined;
   const priorityTradeoffs = answers?.priority_tradeoffs as
     | { first?: string; second?: string }
     | undefined;
