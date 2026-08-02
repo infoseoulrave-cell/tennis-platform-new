@@ -16,6 +16,18 @@ import {
 } from "@/modules/recommendation/scoring-core";
 import { RACKET_SCORE_EVIDENCE } from "@/data/racket-score-evidence";
 
+/**
+ * 공개 화면에 실을 수 있는 스펙 상태.
+ *
+ * 카탈로그는 raw → normalized → review → published 로 올라간다. 추천 엔진은
+ * 이미 `published` 만 후보로 삼는데(`modules/recommendation/engine.ts`), 공개
+ * 목록·상세는 이 조건이 빠져 있어 검수 전 스펙이 그대로 보일 수 있었다.
+ *
+ * 적용 시점 기준 공개 대상 54종은 전부 `published` 라 보이는 목록은 그대로이며,
+ * 앞으로 들어올 미검수 데이터가 새지 않도록 막는 안전장치다.
+ */
+const PUBLISHED_SPEC_STATE = "published";
+
 export function generateSlug(brand: string, model: string, year?: number | null): string {
   const modelHasYear = year != null && new RegExp(`(?:^|\\D)${year}(?:\\D|$)`).test(model);
   const parts = [brand, model, modelHasYear ? "" : year ?? ""].filter(Boolean).join(" ");
@@ -461,13 +473,14 @@ export async function getRacketsByCatalogIdentities(
     .select(`
       id, name, release_year, image_url,
       brands!inner(name),
-      racket_specs(
+      racket_specs!inner(
         weight_g, head_size_sq_in, string_pattern, balance_mm,
         swing_weight_kg_cm2, stiffness_ra, beam_width_mm
       ),
       racket_variants(retail_price_krw, available_in_korea, region_code)
     `)
     .eq("discontinued", false)
+    .eq("racket_specs.ingestion_state", PUBLISHED_SPEC_STATE)
     .in("brands.name", brands)
     .in("name", models)
     .in("release_year", years)
@@ -495,13 +508,14 @@ export async function getTopRackets(limit: number = 5): Promise<RacketListItem[]
     .select(`
       id, name, release_year, image_url,
       brands!inner(name),
-      racket_specs(
+      racket_specs!inner(
         weight_g, head_size_sq_in, string_pattern, balance_mm,
         swing_weight_kg_cm2, stiffness_ra, beam_width_mm
       ),
       racket_variants(retail_price_krw, available_in_korea, region_code)
     `)
     .eq("discontinued", false)
+    .eq("racket_specs.ingestion_state", PUBLISHED_SPEC_STATE)
     .order("id")
     .limit(limit);
 
@@ -545,14 +559,15 @@ const getRacketBySlugCached = cache(async (
       id, name, name_ko, release_year, generation, segment, image_url,
       brands!inner(name, name_ko),
       racket_aliases(alias),
-      racket_specs(
+      racket_specs!inner(
         weight_g, head_size_sq_in, string_pattern, composition,
         balance_mm, swing_weight_kg_cm2, stiffness_ra, length_mm, beam_width_mm,
         spec_sources(source_url, raw_values, captured_at, verified_by_admin)
       ),
       racket_variants(retail_price_krw, available_in_korea, region_code)
     `)
-    .eq("discontinued", false);
+    .eq("discontinued", false)
+    .eq("racket_specs.ingestion_state", PUBLISHED_SPEC_STATE);
 
   const rows = unwrapSupabaseData(data, error, []);
 
@@ -714,13 +729,14 @@ export async function getRackets(filters: RacketFilters = {}): Promise<{
     .select(`
       id, name, release_year, image_url,
       brands!inner(name),
-      racket_specs(
+      racket_specs!inner(
         weight_g, head_size_sq_in, string_pattern, balance_mm,
         swing_weight_kg_cm2, stiffness_ra, beam_width_mm
       ),
       racket_variants(retail_price_krw, available_in_korea, region_code)
     `)
-    .eq("discontinued", false);
+    .eq("discontinued", false)
+    .eq("racket_specs.ingestion_state", PUBLISHED_SPEC_STATE);
 
   if (filters.brand?.length) {
     query = query.in("brands.name", filters.brand);
@@ -755,7 +771,7 @@ export async function getSimilarRackets(racketId: string, brand: string, limit: 
     .select(`
       id, name, release_year, image_url,
       brands!inner(name),
-      racket_specs(
+      racket_specs!inner(
         weight_g, head_size_sq_in, string_pattern, balance_mm,
         swing_weight_kg_cm2, stiffness_ra, beam_width_mm
       ),
@@ -763,6 +779,7 @@ export async function getSimilarRackets(racketId: string, brand: string, limit: 
     `)
     .eq("brands.name", brand)
     .eq("discontinued", false)
+    .eq("racket_specs.ingestion_state", PUBLISHED_SPEC_STATE)
     .neq("id", racketId)
     .limit(limit);
 
