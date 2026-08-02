@@ -7,6 +7,7 @@ import { resolveRacketCustomizerRoute } from "@/lib/racket-customizer-route";
 import { formatRacketName } from "@/lib/racket-name";
 import { getRacketBySlug } from "@/lib/queries";
 import { colorwayForSlug } from "@/data/racket-colorways.generated";
+import { customizerPhotoForSlug } from "@/data/racket-customizer-photos.generated";
 
 export const dynamic = "force-dynamic";
 
@@ -55,6 +56,7 @@ export default async function RacketCustomizerPage({
 
   const { racket, geometry } = resolution;
   const racketName = `${racket.brand} ${formatRacketName(racket.model, racket.year)}`;
+  const photo = customizerPhotoForSlug(racket.slug);
 
   return (
     <div className="mx-auto max-w-5xl px-6 py-8 md:py-12">
@@ -96,32 +98,47 @@ export default async function RacketCustomizerPage({
           {racketName} 색상 커스터마이저
         </h1>
         <p className="mt-4 max-w-2xl text-sm leading-relaxed text-[var(--color-text-secondary)]">
-          이 라켓의 스펙으로 그린 도식 위에서 스트링과 그립 색상 조합을 비교해
-          보세요.
+          {photo
+            ? "실제 제품 사진 위에서 스트링과 그립 색상 조합을 비교해 보세요."
+            : "이 라켓의 스펙으로 그린 도식 위에서 스트링과 그립 색상 조합을 비교해 보세요."}
         </p>
       </header>
 
       <aside
-        aria-label="도식 안내"
+        aria-label="프리뷰 안내"
         className="my-6 border-y border-[var(--color-border)] py-4 text-xs leading-relaxed text-[var(--color-text-secondary)]"
       >
         <strong className="font-semibold text-[var(--color-text)]">
-          도식 안내.
+          프리뷰 안내.
         </strong>{" "}
-        아래 그림은 제품 사진이 아니라 이 라켓의 헤드 면적과 스트링 패턴으로
-        그려낸 도식입니다. 프레임 색은 제품 사진에서 자동으로 뽑은 대표색이라
-        실제와 가깝지만 도색과 문양까지 재현하지는 않습니다. 스트링과 그립 색은
-        조합을 비교하기 위한 것이며 판매 재고나 주문 옵션을 의미하지 않습니다.
+        {photo ? (
+          <>
+            아래는 실제 제품 사진입니다. 판매 사진의 라켓은 스트링이 없는
+            상태라, 이 라켓의 스트링 패턴대로 스트링을 그려 넣고 사진에서 자동
+            검출한 영역에만 색을 입힙니다. 스트링과 그립 색은 조합을 비교하기
+            위한 것이며 판매 재고나 주문 옵션을 의미하지 않습니다.
+          </>
+        ) : (
+          <>
+            아래 그림은 제품 사진이 아니라 이 라켓의 헤드 면적과 스트링 패턴으로
+            그려낸 도식입니다. 프레임 색은 제품 사진에서 자동으로 뽑은 대표색이라
+            실제와 가깝지만 도색과 문양까지 재현하지는 않습니다. 스트링과 그립 색은
+            조합을 비교하기 위한 것이며 판매 재고나 주문 옵션을 의미하지 않습니다.
+          </>
+        )}
       </aside>
 
-      {/* 프레임 색은 제품 사진에서 자동 추출한 값이다. 추출에 실패한 라켓은
-          여기서 null 이 되고 도식은 중립색으로 그려진다 — 색을 지어내지 않는다. */}
+      {/* 사진 모드는 마스크 검출에 성공한 라켓만이다. 실패한 라켓은 스펙
+          도식으로 fail-closed 되고, 프레임 색도 추출 실패 시 중립색이다 —
+          색을 지어내지 않는다. */}
       <RacketVisualCustomizer
         geometry={geometry}
         pattern={racket.pattern ?? ""}
         headSize={racket.headSize ?? ""}
         racketName={racketName}
         paint={colorwayForSlug(racket.slug) ?? undefined}
+        slug={racket.slug}
+        photo={photo ?? undefined}
       />
     </div>
   );

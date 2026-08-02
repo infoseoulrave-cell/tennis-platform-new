@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useId, useReducer } from "react";
 
+import { RacketPhotoCustomizer } from "@/components/racket-photo-customizer";
 import {
   NEUTRAL_PAINT,
   RacketSchematic,
@@ -14,6 +15,7 @@ import {
   reduceCustomizerState,
   STRING_COLOR_OPTIONS,
 } from "@/data/racket-customizer";
+import type { CustomizerPhoto } from "@/data/racket-customizer-photos.generated";
 import type { SchematicGeometry } from "@/lib/racket-schematic";
 
 /** 색을 고르기 전 도식에 쓰는 기본값. */
@@ -28,6 +30,9 @@ type RacketVisualCustomizerProps = {
   racketName: string;
   /** 제품 사진에서 추출한 도색. 없으면 중립색으로 그린다. */
   paint?: RacketPaint;
+  /** 사진 모드용. 마스크 검출에 성공한 라켓만 값이 있다 — 없으면 도식으로 그린다. */
+  slug?: string;
+  photo?: CustomizerPhoto;
 };
 
 export function RacketVisualCustomizer({
@@ -36,6 +41,8 @@ export function RacketVisualCustomizer({
   headSize,
   racketName,
   paint = NEUTRAL_PAINT,
+  slug,
+  photo,
 }: RacketVisualCustomizerProps) {
   const [state, dispatch] = useReducer(
     reduceCustomizerState,
@@ -54,23 +61,44 @@ export function RacketVisualCustomizer({
     <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
       <div>
         <div className="relative flex aspect-[3/4] items-center justify-center rounded-2xl border border-[var(--color-border)] bg-white p-6">
-          <RacketSchematic
-            geometry={geometry}
-            stringHex={stringColor?.hex ?? DEFAULT_STRING_HEX}
-            gripHex={gripColor?.hex ?? DEFAULT_GRIP_HEX}
-            paint={paint}
-            pattern={pattern}
-            title={racketName}
-            idPrefix={groupId.replace(/[^a-zA-Z0-9-]/g, "")}
-          />
+          {photo && slug ? (
+            <RacketPhotoCustomizer
+              slug={slug}
+              photo={photo}
+              geometry={geometry}
+              stringHex={stringColor?.hex ?? DEFAULT_STRING_HEX}
+              gripHex={gripColor?.hex ?? null}
+              racketName={racketName}
+            />
+          ) : (
+            <RacketSchematic
+              geometry={geometry}
+              stringHex={stringColor?.hex ?? DEFAULT_STRING_HEX}
+              gripHex={gripColor?.hex ?? DEFAULT_GRIP_HEX}
+              paint={paint}
+              pattern={pattern}
+              title={racketName}
+              idPrefix={groupId.replace(/[^a-zA-Z0-9-]/g, "")}
+            />
+          )}
         </div>
 
-        <p className="mt-3 text-xs leading-relaxed text-[var(--color-text-muted)]">
-          이 그림은 사진이 아니라 <strong className="font-semibold text-[var(--color-text)]">스펙에서 그린 렌더</strong>입니다.
-          헤드 {headSize}, 스트링 패턴 {pattern}을 그대로 반영해
-          메인 {geometry.mains.length}가닥 · 크로스 {geometry.crosses.length}가닥으로 엮었습니다.
-          로고와 문양은 재현하지 않습니다.
-        </p>
+        {photo && slug ? (
+          <p className="mt-3 text-xs leading-relaxed text-[var(--color-text-muted)]">
+            <strong className="font-semibold text-[var(--color-text)]">실제 제품 사진</strong> 위에
+            스트링 패턴 {pattern}대로 메인 {geometry.mains.length}가닥 ·
+            크로스 {geometry.crosses.length}가닥을 그려 넣었습니다. 사진 속
+            라켓은 스트링이 없는 판매 상태이며, 스트링과 그립 색은 사진에서
+            자동 검출한 영역에만 입힙니다.
+          </p>
+        ) : (
+          <p className="mt-3 text-xs leading-relaxed text-[var(--color-text-muted)]">
+            이 그림은 사진이 아니라 <strong className="font-semibold text-[var(--color-text)]">스펙에서 그린 렌더</strong>입니다.
+            헤드 {headSize}, 스트링 패턴 {pattern}을 그대로 반영해
+            메인 {geometry.mains.length}가닥 · 크로스 {geometry.crosses.length}가닥으로 엮었습니다.
+            로고와 문양은 재현하지 않습니다.
+          </p>
+        )}
       </div>
 
       <section

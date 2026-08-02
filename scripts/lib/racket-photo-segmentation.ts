@@ -48,6 +48,8 @@ export type SegmentationResult = {
   readonly gripMask: Uint8Array;
   /** 스트링 베드 전체(가닥 + 빈틈). 디버그와 품질 판정에 쓴다. */
   readonly bedMask: Uint8Array;
+  /** 모폴로지 닫기 전의 원시 빈틈. 후프 안쪽과 스로트 창을 구분할 때 쓴다. */
+  readonly enclosedGaps: Uint8Array;
   readonly width: number;
   readonly height: number;
   readonly stringPixels: number;
@@ -366,6 +368,7 @@ export function segmentRacketPhoto(
     stringMask,
     gripMask,
     bedMask,
+    enclosedGaps,
     width,
     height,
     stringPixels,
