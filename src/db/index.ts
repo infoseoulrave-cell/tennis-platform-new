@@ -1,12 +1,13 @@
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import * as schema from "./schema";
+import { DATABASE_ENV, requireServerEnv } from "@/env";
 
 function createDatabase() {
-  const connectionString = process.env.DATABASE_URL;
-  if (!connectionString) {
-    throw new Error("DATABASE_URL is required for database access.");
-  }
+  const { DATABASE_URL: connectionString } = requireServerEnv(
+    DATABASE_ENV,
+    "database access",
+  );
 
   const client = postgres(connectionString, {
     max: 1,

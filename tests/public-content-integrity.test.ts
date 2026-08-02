@@ -155,6 +155,7 @@ test("opaque retailer racket photos sit on pure-white media frames", () => {
 test("methodology names the evidence basis and its limits", () => {
   const methodology = read("src/components/scoring-methodology-note.tsx");
   const guide = read("src/app/guide/dna/page.tsx");
+  const detail = read("src/app/rackets/[slug]/page.tsx");
 
   for (const phrase of [
     "스펙 기반 비교 추정치",
@@ -169,7 +170,13 @@ test("methodology names the evidence basis and its limits", () => {
   ]) {
     assert.match(methodology, new RegExp(phrase.replace(/[()]/g, "\\$&")));
   }
-  assert.match(methodology, /racquetanalyzerTWU\.php\?brand=Wilson/);
+  // 예전에는 `?brand=Wilson` 이 박혀 있어 Babolat 상세에서도 Wilson 목록으로
+  // 갔다. 이제 해당 라켓의 브랜드로 열고, 브랜드가 하나로 정해지지 않는
+  // 화면에서는 파라미터 없이 연다.
+  assert.match(methodology, /racquetanalyzerTWU\.php/);
+  assert.doesNotMatch(methodology, /racquetanalyzerTWU\.php\?brand=Wilson/);
+  assert.match(methodology, /href=\{twuAnalyzerUrl\(brand\)\}/);
+  assert.match(detail, /<ScoringMethodologyNote brand=\{racket\.brand\} \/>/);
   assert.match(methodology, /equipment-rackets\.pdf/);
   assert.match(methodology, /제조사와 별개의 리테일러/);
   assert.match(guide, /제조사와 별개의 리테일러/);

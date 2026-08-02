@@ -200,7 +200,7 @@ export default async function RacketDetailPage({
               </div>
               <RadarBarCombo scores={racket.scores} />
               <div className="mt-5">
-                <ScoringMethodologyNote />
+                <ScoringMethodologyNote brand={racket.brand} />
               </div>
             </section>
           )}

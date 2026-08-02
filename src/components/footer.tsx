@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { DATA_VERIFIED_AT } from "@/data/data-freshness";
 
 const productLinks = [
   { href: "/rackets", label: "전체 라켓" },
@@ -86,7 +87,13 @@ export function Footer() {
 
         <div className="border-t border-white/10 mt-12 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-sm">&copy; 2026 racket LAB. All rights reserved.</p>
-          <p className="text-xs text-blue-200/50">데이터 확인 기준일 2026-07-21</p>
+          {/* 날짜를 손으로 적어 두면 데이터를 갱신해도 그대로 남아 실제보다
+              최신인 것처럼 보인다. 데이터에서 직접 계산한다. */}
+          {DATA_VERIFIED_AT && (
+            <p className="text-xs text-blue-200/50">
+              데이터 확인 기준일 {DATA_VERIFIED_AT}
+            </p>
+          )}
         </div>
       </div>
     </footer>

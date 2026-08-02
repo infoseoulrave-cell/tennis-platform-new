@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import { requireServerEnv, SUPABASE_ENV } from "@/env";
 
 function createAdminClient(url: string, key: string) {
   return createClient(url, key, {
@@ -14,14 +15,11 @@ let supabaseAdmin: SupabaseAdminClient | undefined;
 export function getSupabaseAdmin(): SupabaseAdminClient {
   if (supabaseAdmin) return supabaseAdmin;
 
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!supabaseUrl || !supabaseServiceKey) {
-    throw new Error(
-      "NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required for server data access.",
-    );
-  }
+  const env = requireServerEnv(SUPABASE_ENV, "server data access");
 
-  supabaseAdmin = createAdminClient(supabaseUrl, supabaseServiceKey);
+  supabaseAdmin = createAdminClient(
+    env.NEXT_PUBLIC_SUPABASE_URL,
+    env.SUPABASE_SERVICE_ROLE_KEY,
+  );
   return supabaseAdmin;
 }

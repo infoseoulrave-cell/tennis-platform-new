@@ -1,4 +1,27 @@
-export function ScoringMethodologyNote({ compact = false }: { compact?: boolean }) {
+const TWU_ANALYZER = "https://twu.tennis-warehouse.com/learning_center/racquetanalyzerTWU.php";
+
+/**
+ * TWU 분석기 주소. 브랜드를 알면 그 브랜드로 열고, 모르면 파라미터 없이 연다.
+ *
+ * 예전에는 `?brand=Wilson` 이 박혀 있어 Babolat 상세에서도 Wilson 목록으로
+ * 갔다. 비교 화면처럼 여러 브랜드가 섞인 곳에서는 한쪽을 고르는 것이 오히려
+ * 틀리므로 파라미터를 붙이지 않는다.
+ */
+export function twuAnalyzerUrl(brand?: string | null): string {
+  const trimmed = brand?.trim();
+  return trimmed
+    ? `${TWU_ANALYZER}?brand=${encodeURIComponent(trimmed)}`
+    : TWU_ANALYZER;
+}
+
+export function ScoringMethodologyNote({
+  compact = false,
+  brand,
+}: {
+  compact?: boolean;
+  /** 라켓 상세처럼 브랜드가 하나로 정해지는 화면에서만 넘긴다. */
+  brand?: string | null;
+}) {
   return (
     <aside className="rounded-xl border border-sky-100 bg-sky-50/70 p-4 text-xs leading-relaxed text-sky-950">
       <p className="font-semibold">스펙 기반 비교 추정치</p>
@@ -14,7 +37,7 @@ export function ScoringMethodologyNote({ compact = false }: { compact?: boolean 
           따라 실제 느낌은 달라질 수 있습니다. 절대적인 품질 등급이나
           의료·부상 안전 지표가 아닙니다.{" "}
           <a
-            href="https://twu.tennis-warehouse.com/learning_center/racquetanalyzerTWU.php?brand=Wilson"
+            href={twuAnalyzerUrl(brand)}
             target="_blank"
             rel="noreferrer"
             className="underline underline-offset-2"
