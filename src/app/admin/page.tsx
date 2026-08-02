@@ -42,6 +42,12 @@ export default function AdminDashboard() {
               <p style={{ fontSize: "14px", color: "#6b7280", margin: "4px 0 0" }}>Review shop, coach, and brand partnership inquiries</p>
             </Link>
           </li>
+          <li>
+            <Link href="/admin/shops" style={{ display: "block", padding: "16px", background: "#f3f4f6", borderRadius: "8px", textDecoration: "none", color: "#111827" }}>
+              <strong>Shops · 매장 소개</strong>
+              <p style={{ fontSize: "14px", color: "#6b7280", margin: "4px 0 0" }}>매장 등록·활성 관리 — 활성 매장만 /shops 와 라켓 상세에 노출</p>
+            </Link>
+          </li>
         </ul>
       </nav>
     </main>

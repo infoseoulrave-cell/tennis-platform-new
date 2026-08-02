@@ -18,6 +18,8 @@ const guideLinks = [
 
 const moreLinks = [
   { href: "/updates", label: "뉴스" },
+  { href: "/shops", label: "매장 찾기" },
+  { href: "/partners", label: "매장 입점 문의" },
   { href: "/about", label: "About" },
 ];
 

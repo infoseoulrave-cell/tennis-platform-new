@@ -11,6 +11,7 @@ import { RadarBarCombo } from "@/components/radar-bar-combo";
 import { RacketCard } from "@/components/racket-card";
 import { RacketDetailActions } from "@/components/racket-detail-actions";
 import { PriceComparison } from "@/components/price-comparison";
+import { ShopList } from "@/components/shop-list";
 import { ScoringMethodologyNote } from "@/components/scoring-methodology-note";
 import { Term } from "@/components/term";
 import type { GlossaryId } from "@/data/glossary";
@@ -224,6 +225,10 @@ export default async function RacketDetailPage({
 
           <Suspense fallback={<PriceComparisonFallback />}>
             <PriceComparison slug={racket.slug} />
+          </Suspense>
+
+          <Suspense fallback={null}>
+            <ShopList racketModelId={racket.id} />
           </Suspense>
         </div>
       </div>

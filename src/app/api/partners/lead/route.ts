@@ -12,6 +12,7 @@ const leadSchema = z.object({
     "fitting_appointment",
     "restring_booking",
     "lesson_intro",
+    "shop_contact_click",
   ]),
   metadata: z.record(z.unknown()).optional(),
 });
