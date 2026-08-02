@@ -24,21 +24,31 @@ export function canonicalizeRacketSearchRow(row: RacketSearchRow) {
   };
 }
 
+/**
+ * 상한만 두면 음수가 그대로 통과해 `LIMIT -5` 가 되고 Postgres가 거절한다.
+ * 이 경로는 상단 검색창이 매 타이핑마다 호출하므로 하한도 함께 고정한다.
+ */
+export function parseSearchLimit(raw: string | null): number {
+  const parsed = parseInt(raw ?? String(DEFAULT_LIMIT), 10);
+  if (!Number.isFinite(parsed) || parsed < 1) return DEFAULT_LIMIT;
+  return Math.min(parsed, MAX_LIMIT);
+}
+
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const q = searchParams.get("q")?.trim();
-  const limit = Math.min(
-    parseInt(searchParams.get("limit") ?? String(DEFAULT_LIMIT), 10) || DEFAULT_LIMIT,
-    MAX_LIMIT,
-  );
+  const limit = parseSearchLimit(searchParams.get("limit"));
 
   if (!q || q.length < 1) {
     return NextResponse.json({ results: [] });
   }
 
-  const pattern = `%${q}%`;
+  // ILIKE 와일드카드를 이스케이프한다. `%` 만 넣으면 카탈로그 전체가 매칭되고,
+  // `_` 는 한 글자 와일드카드라 검색 의도와 다른 결과가 나온다.
+  const pattern = `%${q.replace(/[\\%_]/g, "\\$&")}%`;
 
-  const results = await db.execute(sql`
+  try {
+    const results = await db.execute(sql`
     SELECT DISTINCT ON (rm.id)
       rm.id              AS "racketModelId",
       rm.name            AS "displayName",
@@ -64,8 +74,13 @@ export async function GET(request: NextRequest) {
     LIMIT ${limit}
   `);
 
-  return NextResponse.json({
-    results: Array.from(results as unknown as Iterable<RacketSearchRow>)
-      .map(canonicalizeRacketSearchRow),
-  });
+    return NextResponse.json({
+      results: Array.from(results as unknown as Iterable<RacketSearchRow>)
+        .map(canonicalizeRacketSearchRow),
+    });
+  } catch (err) {
+    console.error("[api/diagnosis/racket-search] failed:", err);
+    // 검색창은 결과가 비어도 계속 쓸 수 있어야 하므로 500 대신 빈 목록을 준다.
+    return NextResponse.json({ results: [] }, { status: 200 });
+  }
 }

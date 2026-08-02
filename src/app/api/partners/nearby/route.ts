@@ -1,6 +1,7 @@
 import { db } from "@/db";
 import { sql } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
+import { isUuid } from "@/lib/recommendation-access";
 
 const DISCLAIMER_KO =
   "매장 목록은 거리순으로 정렬되며, 유료 배치는 포함되지 않습니다";
@@ -34,6 +35,15 @@ export async function GET(request: NextRequest) {
   if (lat < -90 || lat > 90 || lng < -180 || lng > 180) {
     return NextResponse.json(
       { error: "lat must be in [-90, 90] and lng must be in [-180, 180]" },
+      { status: 400 }
+    );
+  }
+
+  // 아래 쿼리는 이 값을 `::uuid` 로 캐스트한다. 형식을 안 보고 넘기면
+  // 잘못된 문자열 하나로 500이 난다.
+  if (racketModelId !== null && !isUuid(racketModelId)) {
+    return NextResponse.json(
+      { error: "racketModelId must be a UUID" },
       { status: 400 }
     );
   }
