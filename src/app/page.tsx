@@ -1,4 +1,5 @@
 import { BeginnerBanner } from "@/components/beginner-banner";
+import { PartnerBanner } from "@/components/partner-banner";
 import { HeroCarousel } from "@/components/hero-carousel";
 import { QuickLinks } from "@/components/quick-links";
 import { TopRacketsList } from "@/components/top-rackets-list";
@@ -34,6 +35,7 @@ export default async function Home() {
         <KnowledgeCards />
         <StringGuide />
       </div>
+      <PartnerBanner />
     </>
   );
 }
