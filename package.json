@@ -15,7 +15,9 @@
     "db:seed": "tsx src/db/seed.ts",
     "db:seed-rackets": "tsx src/db/seed-rackets.ts",
     "db:seed-aliases": "tsx src/db/seed-aliases.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "colorways:generate": "node --env-file=.env.local --import tsx scripts/generate-racket-colorways.ts",
+    "colorways:check": "node --env-file=.env.local --import tsx scripts/generate-racket-colorways.ts --check"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.110.7",
