@@ -12,6 +12,8 @@ import { RacketCard } from "@/components/racket-card";
 import { RacketDetailActions } from "@/components/racket-detail-actions";
 import { PriceComparison } from "@/components/price-comparison";
 import { ScoringMethodologyNote } from "@/components/scoring-methodology-note";
+import { Term } from "@/components/term";
+import type { GlossaryId } from "@/data/glossary";
 import type { Metadata } from "next";
 import {
   formatPublicTotal,
@@ -124,37 +126,37 @@ export default async function RacketDetailPage({
       <div className="grid lg:grid-cols-[1fr_1.2fr] gap-12">
         <div className="lg:sticky lg:top-20 lg:self-start">
           {racket.imageUrl ? (
-            <>
-              <div className="relative aspect-square overflow-hidden rounded-2xl bg-white">
-                <Image
-                  src={racket.imageUrl}
-                  alt={`${racket.brand} ${formatRacketName(racket.model, racket.year)}`}
-                  fill
-                  sizes="(max-width: 1024px) 100vw, 45vw"
-                  unoptimized
-                  priority
-                  className="object-contain p-8"
-                />
-              </div>
-              {customizerProfile && (
-                <Link
-                  href={racketCustomizerPath(racket.slug)}
-                  className="mt-4 flex min-h-11 w-full items-center justify-between gap-4 rounded-xl bg-[var(--color-accent)] px-4 py-3 text-left text-sm font-semibold text-black transition-[filter] hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-text)] focus-visible:ring-offset-2"
-                >
-                  <span>
-                    <span className="block">색상 커스터마이저</span>
-                    <span className="mt-0.5 block text-[11px] font-normal text-black/70">
-                      스트링과 그립 조합 미리보기
-                    </span>
-                  </span>
-                  <span aria-hidden="true">→</span>
-                </Link>
-              )}
-            </>
+            <div className="relative aspect-square overflow-hidden rounded-2xl bg-white">
+              <Image
+                src={racket.imageUrl}
+                alt={`${racket.brand} ${formatRacketName(racket.model, racket.year)}`}
+                fill
+                sizes="(max-width: 1024px) 100vw, 45vw"
+                unoptimized
+                priority
+                className="object-contain p-8"
+              />
+            </div>
           ) : (
             <div className="relative aspect-square bg-white rounded-2xl flex items-center justify-center overflow-hidden">
               <span className="px-8 text-center text-sm text-[var(--color-text-muted)]">검증된 제품 이미지 준비 중</span>
             </div>
+          )}
+          {/* 도식은 사진이 아니라 스펙에서 그린다. 그래서 제품 사진이 없는 라켓도
+              커스터마이저에 들어갈 수 있어야 하며, 이 CTA는 이미지 분기 밖에 둔다. */}
+          {customizerProfile && (
+            <Link
+              href={racketCustomizerPath(racket.slug)}
+              className="mt-4 flex min-h-11 w-full items-center justify-between gap-4 rounded-xl bg-[var(--color-accent)] px-4 py-3 text-left text-sm font-semibold text-black transition-[filter] hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-text)] focus-visible:ring-offset-2"
+            >
+              <span>
+                <span className="block">색상 커스터마이저</span>
+                <span className="mt-0.5 block text-[11px] font-normal text-black/70">
+                  스트링과 그립 조합 미리보기
+                </span>
+              </span>
+              <span aria-hidden="true">→</span>
+            </Link>
           )}
         </div>
 
@@ -186,7 +188,9 @@ export default async function RacketDetailPage({
           {racket.scores && (
             <section className="border border-[var(--color-border)] rounded-2xl p-6">
               <div className="mb-4 flex items-baseline justify-between gap-4">
-                <h2 className="text-sm font-semibold">5축 스펙 성향</h2>
+                <h2 className="text-sm font-semibold">
+                  <Term id="five-axes">5축</Term> 스펙 성향
+                </h2>
                 <p className="text-xs text-[var(--color-text-muted)]">
                   총점{" "}
                   <strong className="font-semibold text-[var(--color-text)] tabular-nums">
@@ -306,12 +310,12 @@ export default async function RacketDetailPage({
         <dl className="grid sm:grid-cols-2 gap-x-12">
           <SpecRow label="헤드사이즈" value={racket.headSize} />
           <SpecRow label="무게" value={racket.weight} />
-          <SpecRow label="스트링 패턴" value={racket.pattern} />
-          <SpecRow label="강성 (RA)" value={racket.stiffness?.toString()} />
+          <SpecRow label="스트링 패턴" value={racket.pattern} termId="string-pattern" />
+          <SpecRow label="강성 (RA)" value={racket.stiffness?.toString()} termId="stiffness-ra" />
           <SpecRow label="길이" value={racket.lengthMm ? `${racket.lengthMm}mm` : null} />
           <SpecRow label="프레임 두께" value={racket.beamWidth ? `${racket.beamWidth}mm` : null} />
-          <SpecRow label="밸런스" value={racket.balanceMm ? `${racket.balanceMm}mm` : null} />
-          <SpecRow label="스윙웨이트" value={racket.swingWeight?.toString()} />
+          <SpecRow label="밸런스" value={racket.balanceMm ? `${racket.balanceMm}mm` : null} termId="balance" />
+          <SpecRow label="스윙웨이트" value={racket.swingWeight?.toString()} termId="swingweight" />
         </dl>
         <SpecSourceLinks sources={racket.specSources} />
       </section>
@@ -379,10 +383,21 @@ function SimilarRacketsFallback() {
   );
 }
 
-function SpecRow({ label, value }: { label: string; value: string | null | undefined }) {
+function SpecRow({
+  label,
+  value,
+  termId,
+}: {
+  label: string;
+  value: string | null | undefined;
+  /* 스펙표에서 처음 마주치는 말은 그 자리에서 뜻을 볼 수 있게 한다. */
+  termId?: GlossaryId;
+}) {
   return (
     <div className="flex justify-between py-3 border-b border-[var(--color-border)] last:border-0">
-      <dt className="text-sm text-[var(--color-text-secondary)]">{label}</dt>
+      <dt className="text-sm text-[var(--color-text-secondary)]">
+        {termId ? <Term id={termId}>{label}</Term> : label}
+      </dt>
       <dd className="text-sm font-medium">{value ?? "—"}</dd>
     </div>
   );

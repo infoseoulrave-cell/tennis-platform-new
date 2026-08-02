@@ -1,4 +1,6 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import test from "node:test";
 
 import {
@@ -75,6 +77,28 @@ test("a product photo is no longer required to open the customizer", async () =>
     async () => gravity,
   );
   assert.equal(result.kind, "ready");
+});
+
+test("the detail-page CTA sits outside the product-photo branch", () => {
+  // 라우트는 사진 의존을 없앴는데 CTA가 `racket.imageUrl ? (...)` 안에 남아 있어,
+  // 스펙이 멀쩡한데 사진만 없는 라켓은 상세에서 커스터마이저로 갈 수 없었다.
+  const detail = readFileSync(
+    join(import.meta.dirname, "..", "src/app/rackets/[slug]/page.tsx"),
+    "utf8",
+  );
+
+  const fallbackAt = detail.indexOf("검증된 제품 이미지 준비 중");
+  const ctaAt = detail.indexOf("racketCustomizerPath(racket.slug)");
+
+  assert.ok(fallbackAt > 0, "photo fallback branch is missing");
+  assert.ok(ctaAt > 0, "customizer CTA is missing");
+  assert.ok(
+    ctaAt > fallbackAt,
+    "CTA must render after the photo ternary closes, not inside it",
+  );
+
+  // 진입 조건은 사진이 아니라 스펙에서 나온 도식이어야 한다.
+  assert.match(detail, /const customizerProfile = schematicFromSpec\(racket\)/);
 });
 
 test("loader failures propagate to the route error boundary", async () => {
