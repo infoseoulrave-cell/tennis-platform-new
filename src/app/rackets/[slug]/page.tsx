@@ -20,10 +20,8 @@ import {
 import { formatRacketName } from "@/lib/racket-name";
 import { recommendStringPairings } from "@/lib/string-pairing";
 import { stringOfferId } from "@/data/strings";
-import {
-  racketCustomizerPath,
-  resolveCustomizerProfile,
-} from "@/lib/racket-customizer";
+import { racketCustomizerPath } from "@/lib/racket-customizer";
+import { schematicFromSpec } from "@/lib/racket-schematic";
 
 export const dynamic = "force-dynamic";
 
@@ -101,9 +99,8 @@ export default async function RacketDetailPage({
   if (!racket) notFound();
   if (slug !== racket.slug) permanentRedirect(`/rackets/${racket.slug}`);
 
-  const customizerProfile = racket.imageUrl
-    ? resolveCustomizerProfile(racket.slug, racket.imageUrl)
-    : null;
+  // 도식은 헤드 면적과 스트링 패턴만 있으면 그릴 수 있다. 제품 사진은 필요 없다.
+  const customizerProfile = schematicFromSpec(racket);
   const recommendation = getRecommendation(racket.rawScores);
   const stringPairings = recommendStringPairings({
     stiffnessRa: racket.stiffness,

@@ -94,13 +94,15 @@ test("racket color simulation stays a dedicated-route client island", () => {
     /import \{ RacketVisualCustomizer \} from "@\/components\/racket-visual-customizer";/,
   );
   assert.doesNotMatch(customizer, /^["']use client["'];/m);
-  assert.match(customizerCall, /slug=\{racket\.slug\}/);
-  assert.match(customizerCall, /imageUrl=\{resolution\.imageUrl\}/);
+  // 도식은 서버에서 스펙으로 계산해 넘긴다. 클라이언트는 색만 바꾼다.
+  assert.match(customizerCall, /geometry=\{geometry\}/);
+  assert.match(customizerCall, /pattern=\{racket\.pattern/);
+  assert.match(customizerCall, /headSize=\{racket\.headSize/);
   assert.match(
     customizer,
     /const racketName = `\$\{racket\.brand\} \$\{formatRacketName\(racket\.model, racket\.year\)\}`/,
   );
-  assert.match(customizerCall, /alt=\{racketName\}/);
+  assert.match(customizerCall, /racketName=\{racketName\}/);
   assert.match(
     detail,
     /href=\{racketCustomizerPath\(racket\.slug\)\}/,

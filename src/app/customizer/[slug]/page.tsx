@@ -52,11 +52,11 @@ export default async function RacketCustomizerPage({
     permanentRedirect(resolution.location);
   }
 
-  const { racket } = resolution;
+  const { racket, geometry } = resolution;
   const racketName = `${racket.brand} ${formatRacketName(racket.model, racket.year)}`;
 
   return (
-    <div className="mx-auto max-w-4xl px-6 py-8 md:py-12">
+    <div className="mx-auto max-w-5xl px-6 py-8 md:py-12">
       <nav aria-label="현재 위치" className="mb-8">
         <ol className="flex flex-wrap items-center gap-2 text-xs text-[var(--color-text-secondary)]">
           <li>
@@ -100,20 +100,22 @@ export default async function RacketCustomizerPage({
       </header>
 
       <aside
-        aria-label="시뮬레이션 안내"
+        aria-label="도식 안내"
         className="my-6 border-y border-[var(--color-border)] py-4 text-xs leading-relaxed text-[var(--color-text-secondary)]"
       >
         <strong className="font-semibold text-[var(--color-text)]">
-          시뮬레이션 안내.
+          도식 안내.
         </strong>{" "}
-        화면의 색상은 비교를 위한 표현이며 실제 상품 색상, 판매 재고 또는
-        주문 옵션을 의미하지 않습니다.
+        아래 그림은 제품 사진이 아니라 이 라켓의 헤드 면적과 스트링 패턴으로
+        그려낸 도식입니다. 색은 조합을 비교하기 위한 것이며 실제 상품 색상,
+        판매 재고, 주문 옵션을 의미하지 않습니다.
       </aside>
 
       <RacketVisualCustomizer
-        slug={racket.slug}
-        imageUrl={resolution.imageUrl}
-        alt={racketName}
+        geometry={geometry}
+        pattern={racket.pattern ?? ""}
+        headSize={racket.headSize ?? ""}
+        racketName={racketName}
       />
     </div>
   );
