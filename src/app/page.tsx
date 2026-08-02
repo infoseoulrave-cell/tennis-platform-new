@@ -1,3 +1,4 @@
+import { BeginnerBanner } from "@/components/beginner-banner";
 import { HeroCarousel } from "@/components/hero-carousel";
 import { QuickLinks } from "@/components/quick-links";
 import { TopRacketsList } from "@/components/top-rackets-list";
@@ -21,6 +22,7 @@ export default async function Home() {
 
   return (
     <>
+      <BeginnerBanner />
       <HeroCarousel rackets={heroRackets} />
       <div className="max-w-6xl mx-auto px-6">
         <QuickLinks />

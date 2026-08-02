@@ -4,14 +4,14 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 
+// 뉴스·About은 푸터로 옮겨 상단 메뉴를 5개로 줄였다.
+// 초심자가 먼저 눌러야 할 "추천"을 맨 앞에 둔다.
 const links = [
+  { href: "/recommendation", label: "추천" },
   { href: "/rackets", label: "라켓" },
   { href: "/strings", label: "스트링" },
-  { href: "/recommendation", label: "추천" },
   { href: "/compare", label: "비교" },
   { href: "/guide", label: "가이드" },
-  { href: "/updates", label: "뉴스" },
-  { href: "/about", label: "About" },
 ];
 
 type SearchResult = {

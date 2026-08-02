@@ -109,6 +109,31 @@ export function formatPublicAxisScore(score: number): string {
   return `${Math.round(clamp(safeScore, PUBLIC_AXIS_MIN, PUBLIC_AXIS_MAX))}/5`;
 }
 
+/**
+ * 0~5 점수를 말로 옮긴다.
+ *
+ * "파워 3/5" 만 보면 3이 좋은 건지 나쁜 건지 초심자는 알 수 없다는 피드백이 있어,
+ * 숫자 옆에 같은 뜻의 단어를 함께 보여주기 위한 것이다.
+ */
+const PUBLIC_AXIS_SCORE_WORDS = [
+  "매우 낮음",
+  "낮음",
+  "조금 낮음",
+  "보통",
+  "높음",
+  "매우 높음",
+] as const;
+
+export function describePublicAxisScore(score: number): string {
+  const safeScore = Number.isFinite(score)
+    ? score
+    : score === Number.POSITIVE_INFINITY
+      ? PUBLIC_AXIS_MAX
+      : PUBLIC_AXIS_MIN;
+  const index = Math.round(clamp(safeScore, PUBLIC_AXIS_MIN, PUBLIC_AXIS_MAX));
+  return PUBLIC_AXIS_SCORE_WORDS[index];
+}
+
 export function formatPublicTotal(scores: PublicAxisScores5): string {
   const total = Math.round(clamp(
     sumPublicAxisScores(scores),

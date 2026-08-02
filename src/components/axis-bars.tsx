@@ -1,5 +1,6 @@
 import { AXIS_LABELS } from "./radar-chart";
 import {
+  describePublicAxisScore,
   formatPublicAxisScore,
   PUBLIC_AXIS_KEYS,
   publicAxisScoreToPercent,
@@ -36,10 +37,17 @@ export function AxisBars({
                 {AXIS_LABELS[axis]}
               </span>
               <span
-                className={`${dark ? "text-sm" : "w-14 text-xs text-right"} font-bold tabular-nums`}
+                className={`${dark ? "text-sm" : "text-xs text-right"} font-bold tabular-nums`}
                 style={{ color: scoreColor }}
               >
                 {formatPublicAxisScore(score)}
+                {/* 숫자만으로는 좋고 나쁨을 알기 어려워 같은 뜻을 말로 덧붙인다. */}
+                <span
+                  className="ml-1.5 font-normal"
+                  style={{ color: labelColor }}
+                >
+                  {describePublicAxisScore(score)}
+                </span>
               </span>
             </div>
             <div
