@@ -26,7 +26,7 @@ import sharp from "sharp";
 import { createClient } from "@supabase/supabase-js";
 
 import {
-  DEFAULT_SEGMENTATION,
+  OVERLAY_SEGMENTATION,
   fillOuterBackground,
   findGripRows,
   rowWidths,
@@ -186,7 +186,7 @@ async function processRacket(
     height: info.height,
     channels: info.channels,
   };
-  const segmentation = segmentRacketPhoto(image);
+  const segmentation = segmentRacketPhoto(image, OVERLAY_SEGMENTATION);
 
   const bed = refineBed(segmentation.enclosedGaps, info.width, info.height);
   if (!bed || bed.bbox.width < info.width * MIN_BED_WIDTH_RATIO) {
@@ -205,7 +205,7 @@ async function processRacket(
   }
 
   // 그립은 흰색 그립이 배경에 먹히는 경우가 있어 실루엣 run 을 메워 다시 만든다.
-  const outside = fillOuterBackground(image, DEFAULT_SEGMENTATION);
+  const outside = fillOuterBackground(image, OVERLAY_SEGMENTATION);
   const silhouette = new Uint8Array(outside.length);
   for (let i = 0; i < outside.length; i += 1) {
     silhouette[i] = outside[i] ? 0 : 1;

@@ -31,6 +31,8 @@ export type SegmentationOptions = {
   readonly closingRadius: number;
   /** 가장 큰 베드 대비 이 비율 미만인 덩어리는 버린다(스로트 구멍 등). */
   readonly minComponentRatio: number;
+  /** 이 픽셀 수 미만인 실루엣 덩어리는 배경 압축 잡티로 보고 버린다. */
+  readonly minSilhouettePixels: number;
 };
 
 export const DEFAULT_SEGMENTATION: SegmentationOptions = {
@@ -39,6 +41,29 @@ export const DEFAULT_SEGMENTATION: SegmentationOptions = {
   strandMaxLuma: 225,
   closingRadius: 5,
   minComponentRatio: 0.18,
+  minSilhouettePixels: 0,
+};
+
+/**
+ * 오버레이 마스크를 만들 때 쓰는 설정.
+ *
+ * 카탈로그 사진의 배경은 정확히 255 다. 그런데 흰 그립은 231~246, 흰
+ * 프레임 도색도 그 근처라 `DEFAULT_SEGMENTATION` 의 임계 232 로는 라켓의
+ * 흰 부분이 통째로 배경으로 빨려 들어갔다. head speed 3종·pure aero
+ * lite/team·vcore 100 이 그래서 그립 검출에 실패했고, speed MP L 은 후프
+ * 안쪽까지 바깥으로 새어 베드를 못 잡았다. 배경만 배경으로 보도록 임계를
+ * 배경값 가까이 올린다. 246~250 구간에서 54종이 모두 통과한다.
+ *
+ * 프레임 대표색 추출(`racket-colorway-extraction`)은 이 설정을 쓰지 않는다.
+ * 거기서는 흰 그립이 실루엣에 들어오든 아니든 하이라이트 화소로 어차피
+ * 버려지고, 임계를 옮기면 이미 눈으로 확인해 둔 색이 흔들리기 때문이다.
+ */
+export const OVERLAY_SEGMENTATION: SegmentationOptions = {
+  ...DEFAULT_SEGMENTATION,
+  backgroundLuma: 248,
+  // 임계를 배경에 붙이면 JPEG 잡음이 배경에 실루엣 티끌을 남긴다. 카탈로그
+  // 54종 실측으로 진짜 성분은 57,000px 이상, 잡티는 8px 이하라 경계가 뚜렷하다.
+  minSilhouettePixels: 64,
 };
 
 export type SegmentationResult = {
@@ -114,7 +139,66 @@ export function fillOuterBackground(
     push(x, y + 1);
   }
 
-  return outside;
+  return dropSilhouetteSpecks(
+    outside,
+    width,
+    height,
+    options.minSilhouettePixels,
+  );
+}
+
+/**
+ * 배경에 흩어진 실루엣 티끌을 배경으로 되돌린다.
+ *
+ * 배경 임계를 배경 자체(255)에 바싹 붙이면 JPEG 압축 잡음이 몇 픽셀짜리
+ * 성분으로 남는다. 그대로 두면 실루엣의 맨 아랫줄이 티끌 위치로 밀려나
+ * 그립 구간 검출이 통째로 어긋난다. 진짜 성분(라켓 두 컷)과 잡티는 크기가
+ * 수만 배 차이 나므로 작은 성분만 지우면 된다.
+ */
+function dropSilhouetteSpecks(
+  outside: Uint8Array,
+  width: number,
+  height: number,
+  minPixels: number,
+): Uint8Array {
+  if (minPixels <= 0) return outside;
+
+  const result = new Uint8Array(outside);
+  const seen = new Uint8Array(outside.length);
+  const stack: number[] = [];
+  const component: number[] = [];
+
+  for (let start = 0; start < outside.length; start += 1) {
+    if (outside[start] || seen[start]) continue;
+    component.length = 0;
+    seen[start] = 1;
+    stack.push(start);
+
+    while (stack.length > 0) {
+      const index = stack.pop() as number;
+      component.push(index);
+      const x = index % width;
+      const y = (index - x) / width;
+      const neighbours = [
+        x > 0 ? index - 1 : -1,
+        x < width - 1 ? index + 1 : -1,
+        y > 0 ? index - width : -1,
+        y < height - 1 ? index + width : -1,
+      ];
+      for (const neighbour of neighbours) {
+        if (neighbour < 0) continue;
+        if (outside[neighbour] || seen[neighbour]) continue;
+        seen[neighbour] = 1;
+        stack.push(neighbour);
+      }
+    }
+
+    if (component.length < minPixels) {
+      for (const index of component) result[index] = 1;
+    }
+  }
+
+  return result;
 }
 
 /** 체비셰프 거리 기준 사각 커널 팽창. */
