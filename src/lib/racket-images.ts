@@ -70,6 +70,22 @@ const TENNIS_WAREHOUSE_CODE_TO_SLUGS: Record<string, readonly string[]> = {
   HREP24: ["head-extreme-pro-2024"],
   HRTMPG: ["head-gravity-team-2025"],
   PTR61P: ["prince-tour-100p-305g-2026"],
+  DCX2T6: ["dunlop-cx-200-tour-16x19-2024"],
+  DCX2T8: ["dunlop-cx-200-tour-18x20-2024"],
+  DCX2LS: ["dunlop-cx-200-ls-2024"],
+  DCX4T: ["dunlop-cx-400-tour-2024"],
+  DF50LS: ["dunlop-fx-500-ls-2025"],
+  PHNX5: ["prince-phantom-100x-305g-2024"],
+  PHNP1: ["prince-phantom-100p-310g-2024"],
+  "2RIP98": ["prince-ripstick-98-2025"],
+  "25RIPH": ["prince-ripstick-100-2025"],
+  ATR310: ["prince-tour-100-310g-2022"],
+  TF315S: ["tecnifibre-tfight-315s-2025"],
+  TF300S: ["tecnifibre-tfight-300s-2025"],
+  TF3158: ["tecnifibre-tf40-315-18x20-2024"],
+  TF40R9: ["tecnifibre-tf40-290-16x19-2024"],
+  TFFI35: ["tecnifibre-fire-305s-2026"],
+  TFX135: ["tecnifibre-tf-x1-305-v2-2024"],
 };
 
 function productCode(url: URL): string | null {

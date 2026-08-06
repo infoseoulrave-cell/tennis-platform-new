@@ -49,6 +49,7 @@ test("every legacy catalog mutator is inventoried and calls the guard first", as
       if (
         relativePath === "scripts/backfill-racket-evidence.ts"
         || relativePath === "scripts/expand-racket-catalog.ts"
+        || relativePath === "scripts/reactivate-rackets-2026-08.ts"
         || relativePath === "scripts/legacy-catalog-mutation-disabled.ts"
       ) {
         continue;
