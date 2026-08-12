@@ -127,16 +127,19 @@ async function RacketGrid({ searchParams }: { searchParams: SearchParams }) {
       </aside>
 
       <div>
-        <div className="flex items-center justify-between mb-6 gap-4">
+        {/* 정렬 알약 6개는 모바일 폭에 안 들어간다. 줄바꿈 없이 짓누르면
+            한글이 세로로 꺾이므로, 좁은 화면은 개수를 윗줄로 올리고 알약을
+            한 줄 가로 스크롤로 둔다. */}
+        <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
           <p className="text-sm text-[var(--color-text-secondary)]">
             전체 <strong className="text-[var(--color-text)]">{result.total}</strong>개의 라켓
           </p>
-          <div className="flex items-center gap-2">
+          <div className="-mx-6 flex items-center gap-2 overflow-x-auto px-6 pb-1 sm:m-0 sm:flex-wrap sm:justify-end sm:overflow-visible sm:p-0">
             {sortOptions.map((opt) => (
               <Link
                 key={opt.value}
                 href={racketsHref(searchParams, { sort: opt.value, page: undefined })}
-                className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
+                className={`shrink-0 whitespace-nowrap text-xs px-3 py-1.5 rounded-full border transition-colors ${
                   (searchParams.sort ?? "popular") === opt.value
                     ? "border-[var(--color-text)] text-[var(--color-text)] font-medium"
                     : "border-[var(--color-border)] text-[var(--color-text-muted)] hover:border-[var(--color-text-muted)]"
