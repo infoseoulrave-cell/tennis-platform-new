@@ -97,8 +97,7 @@ export async function TopRacketsList() {
         </div>
         {/* 막대만 있고 범례가 없으면 초록 막대 다섯 개가 무슨 뜻인지 알 수 없다. */}
         <p className="mt-2 text-xs leading-relaxed text-[var(--color-text-muted)]">
-          <span className="hidden sm:inline">막대 다섯은 파워·컨트롤·스핀·편안함·안정성이고, </span>
-          옆 숫자는 다섯을 더한 총점입니다.
+          막대 다섯은 파워·컨트롤·스핀·편안함·안정성이고, 옆 숫자는 다섯을 더한 총점입니다.
         </p>
       </div>
 
@@ -126,20 +125,22 @@ export async function TopRacketsList() {
             </div>
 
             {/* 5축 요약과 총점은 한 덩어리다. 점수가 없는 라켓은 그리지
-                않는다 — 숫자를 만들지 않는다. 좁은 화면에서는 막대를 접고
-                총점만 남긴다. */}
-            <div className="flex shrink-0 items-center gap-2">
-              <MiniAxisBars scores={racket.scores} className="hidden sm:flex" />
-              {racket.scores && (
-                <span className="text-xs font-semibold tabular-nums text-[var(--color-text)]">
-                  {formatPublicTotal(racket.scores)}
-                </span>
-              )}
+                않는다 — 숫자를 만들지 않는다. 5축은 이 사이트의 정체성이라
+                좁은 화면에서도 접지 않는다. 대신 가격을 막대 아래로 내려
+                이름 칸을 확보한다. */}
+            <div className="flex shrink-0 flex-col items-end gap-1 sm:flex-row sm:items-center sm:gap-4">
+              <div className="flex items-center gap-2">
+                <MiniAxisBars scores={racket.scores} />
+                {racket.scores && (
+                  <span className="text-xs font-semibold tabular-nums text-[var(--color-text)]">
+                    {formatPublicTotal(racket.scores)}
+                  </span>
+                )}
+              </div>
+              <span className="text-right text-sm font-semibold tabular-nums sm:w-16">
+                {formatPrice(racket.priceKrw)}
+              </span>
             </div>
-
-            <span className="w-16 shrink-0 text-right text-sm font-semibold tabular-nums">
-              {formatPrice(racket.priceKrw)}
-            </span>
           </li>
         ))}
       </ol>
