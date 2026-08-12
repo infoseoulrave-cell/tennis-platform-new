@@ -59,9 +59,6 @@ export function PlayerCard({ player }: { player: Player }) {
             {player.equipment.relationship === "official-endorsement" ? "공식 후원 라인" : "공식 선수 등록"}
           </span>
         </div>
-        <p className="mt-3 text-[11px] leading-relaxed text-[var(--color-text-muted)]">
-          {player.equipment.disclosure}
-        </p>
       </div>
 
       <div className="bg-amber-50/50 border border-amber-100 rounded-xl p-4 mb-4">
@@ -131,9 +128,6 @@ function OmegaShowcaseCard({ player }: { player: OmegaPlayerShowcase }) {
             {player.equipment.relationship === "official-endorsement" ? "공식 후원 라인" : "공식 선수 등록"}
           </span>
         </div>
-        <p className="mt-3 text-[11px] leading-relaxed text-[var(--color-text-muted)]">
-          {player.equipment.disclosure}
-        </p>
       </div>
 
       <div className="bg-amber-50/50 border border-amber-100 rounded-xl p-4 mb-4">
@@ -179,7 +173,13 @@ export function PlayerSynergySection() {
           ))}
         </div>
 
-        <div className="text-center mt-8">
+        {/* 면책 문구는 카드마다 반복하지 않고 섹션에 한 번만 둔다.
+            문구 자체는 카드와 같은 데이터(equipment.disclosure)를 쓴다. */}
+        <p className="mt-8 text-[11px] leading-relaxed text-[var(--color-text-muted)]">
+          {omegaPlayerShowcase[0]?.equipment.disclosure}
+        </p>
+
+        <div className="text-center mt-6">
           <Link
             href="/players"
             className="text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-text)]"
