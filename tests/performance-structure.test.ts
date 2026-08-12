@@ -26,12 +26,15 @@ test("navigation avoids the external font request and exposes route feedback", (
   const layout = read("src/app/layout.tsx");
   assert.doesNotMatch(layout, /cdn\.jsdelivr\.net|pretendardvariable-dynamic-subset/);
 
+  // 404 를 낼 수 있는 라우트는 route-level loading.tsx 를 가질 수 없다 —
+  // 스트리밍이 시작되면 notFound() 가 200 으로 나간다.
+  // 목록 페이지의 경계는 route group 안에 갇혀 있고, 결과 페이지의 스켈레톤은
+  // 존재 확인 뒤의 Suspense fallback 으로 page.tsx 안에 있다.
   for (const path of [
-    "src/app/rackets/loading.tsx",
-    "src/app/rackets/[slug]/loading.tsx",
+    "src/app/rackets/(list)/loading.tsx",
     "src/app/compare/loading.tsx",
-    "src/app/results/[id]/loading.tsx",
     "src/app/strings/loading.tsx",
+    "src/app/results/[id]/page.tsx",
   ]) {
     const loading = read(path);
     assert.match(loading, /role="status"/, path);
@@ -72,7 +75,7 @@ test("racket color simulation stays a dedicated-route client island", () => {
     "../src/app/customizer/[slug]/loading.tsx",
     import.meta.url,
   );
-  const catalog = read("src/app/rackets/page.tsx");
+  const catalog = read("src/app/rackets/(list)/page.tsx");
   assert.ok(
     existsSync(customizerPageUrl),
     "the customizer route should live outside the racket detail loading boundary",
