@@ -14,12 +14,11 @@ export function KnowledgeCards() {
         </Link>
       </div>
 
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      {/* 선수 카드·인기 리스트와 질감을 가르기 위해 카드 상자 없이
+          에디토리얼 인덱스로 짠다 — 항목마다 진한 상단 룰 하나. */}
+      <div className="grid gap-x-8 gap-y-8 sm:grid-cols-2 lg:grid-cols-3">
         {knowledgeFacts.map((fact, i) => (
-          <article
-            key={i}
-            className="bg-[var(--color-bg-white)] rounded-xl p-5 shadow-sm hover:shadow-md transition-all duration-200"
-          >
+          <article key={i} className="border-t border-[var(--color-text)] pt-4">
             <h3 className="font-semibold text-sm mb-2">{fact.title}</h3>
             <p className="text-xs text-[var(--color-text-secondary)] leading-relaxed">{fact.description}</p>
           </article>

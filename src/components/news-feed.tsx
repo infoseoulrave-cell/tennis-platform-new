@@ -27,9 +27,10 @@ export function NewsFeed() {
               {item.date}
             </time>
             <div className="flex-1">
-              <span className="inline-block text-xs px-2 py-0.5 rounded mb-2 bg-[var(--color-bg-subtle)] text-[var(--color-text-secondary)] border border-[var(--color-border)]">
+              {/* 칩 상자는 카드 질감을 불러온다 — 로그답게 인라인 라벨로. */}
+              <p className="mb-1 text-[10px] font-semibold tracking-[0.15em] text-[var(--color-text-muted)]">
                 {item.category}
-              </span>
+              </p>
               <h3 className="font-semibold text-sm text-[var(--color-text)]">
                 {item.title}
               </h3>

@@ -87,7 +87,7 @@ export function PlayerCard({ player }: { player: Player }) {
 
 function OmegaShowcaseCard({ player }: { player: OmegaPlayerShowcase }) {
   return (
-    <article className="bg-[var(--color-bg-white)] rounded-2xl p-6 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
+    <article className="h-full bg-[var(--color-bg-white)] rounded-2xl p-6 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
       <div className="flex items-center gap-4 mb-5">
         <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-full bg-[var(--color-bg-subtle)]">
           <Image
@@ -168,11 +168,19 @@ export function PlayerSynergySection() {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+        {/* 세로 그리드(9장 = 홈 스크롤 절반)를 가로 스냅 레일로 바꾼다.
+            잘린 다음 카드가 보이는 것 자체가 스크롤 어포던스다. */}
+        <ul
+          tabIndex={0}
+          aria-label="프로 선수 카드 — 가로로 스크롤"
+          className="-mx-6 flex snap-x snap-mandatory gap-5 overflow-x-auto px-6 pb-4 focus-visible:outline-2 focus-visible:outline-[var(--color-text)]"
+        >
           {omegaPlayerShowcase.map((player) => (
-            <OmegaShowcaseCard key={player.id} player={player} />
+            <li key={player.id} className="w-[300px] shrink-0 snap-start">
+              <OmegaShowcaseCard player={player} />
+            </li>
           ))}
-        </div>
+        </ul>
 
         {/* 면책 문구는 카드마다 반복하지 않고 섹션에 한 번만 둔다.
             문구 자체는 카드와 같은 데이터(equipment.disclosure)를 쓴다. */}

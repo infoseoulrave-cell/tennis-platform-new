@@ -57,8 +57,16 @@ export function StringGuide() {
             <div key={type.name} className="space-y-2">
               <div className="text-2xl text-[var(--color-text-secondary)]">{type.icon}</div>
               <h3 className="font-semibold text-sm">{type.name}</h3>
-              <p className="text-xs text-[var(--color-text-secondary)]">👍 {type.pros}</p>
-              <p className="text-xs text-[var(--color-text-muted)]">👎 {type.cons}</p>
+              <p className="text-xs text-[var(--color-text-secondary)]">
+                <span aria-hidden="true" className="mr-1 font-semibold">+</span>
+                <span className="sr-only">장점: </span>
+                {type.pros}
+              </p>
+              <p className="text-xs text-[var(--color-text-muted)]">
+                <span aria-hidden="true" className="mr-1 font-semibold">−</span>
+                <span className="sr-only">주의: </span>
+                {type.cons}
+              </p>
             </div>
           ))}
         </div>
