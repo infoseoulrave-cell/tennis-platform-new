@@ -7,8 +7,12 @@ import { TabIcon } from "./tab-icons";
 
 // 뉴스·About은 푸터로 옮겨 상단 메뉴를 5개로 줄였다.
 // 초심자가 먼저 눌러야 할 "추천"을 맨 앞에 둔다.
+//
+// "추천"은 홈 히어로와 같은 `/start`(3문항)로 보낸다. 예전에는 여기만
+// `/recommendation`(12문항)이라, 홈의 큰 버튼과 상단 메뉴가 서로 다른
+// 진단으로 갈렸다. 더 자세한 진단으로 가는 길은 `/start` 안에 있다.
 const links = [
-  { href: "/recommendation", label: "추천" },
+  { href: "/start", label: "추천" },
   { href: "/rackets", label: "라켓" },
   { href: "/strings", label: "스트링" },
   { href: "/compare", label: "비교" },

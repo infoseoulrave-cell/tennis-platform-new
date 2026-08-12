@@ -6,7 +6,9 @@ const productLinks = [
   { href: "/strings", label: "스트링" },
   { href: "/rackets?sort=newest", label: "신상품" },
   { href: "/rackets?sort=price_asc", label: "가격순" },
-  { href: "/recommendation", label: "추천" },
+  // 상단 메뉴·히어로와 같은 곳으로 보낸다. 같은 라벨이 서로 다른 진단으로
+  // 갈리면 안 된다.
+  { href: "/start", label: "추천" },
   { href: "/compare", label: "비교" },
 ];
 
