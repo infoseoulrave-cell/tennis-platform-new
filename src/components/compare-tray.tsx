@@ -13,7 +13,7 @@ export function CompareTray() {
   const slugs = items.map((i) => i.slug).join(",");
 
   return (
-    <div className="fixed bottom-16 md:bottom-6 left-1/2 -translate-x-1/2 z-[60] w-[calc(100%-2rem)] max-w-lg">
+    <div className="fixed bottom-[calc(var(--tab-bar-height)+0.5rem)] md:bottom-6 left-1/2 -translate-x-1/2 z-[60] w-[calc(100%-2rem)] max-w-lg">
       <div className="bg-[var(--color-court-blue)] text-white rounded-2xl px-4 py-3 flex items-center gap-3 shadow-2xl">
         <div className="flex items-center gap-2 flex-1 min-w-0">
           <span className="text-sm font-semibold shrink-0">{items.length}/3</span>

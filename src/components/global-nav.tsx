@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { TabIcon } from "./tab-icons";
 
 // 뉴스·About은 푸터로 옮겨 상단 메뉴를 5개로 줄였다.
 // 초심자가 먼저 눌러야 할 "추천"을 맨 앞에 둔다.
@@ -271,7 +272,11 @@ export function GlobalNav() {
                       onClick={() => closeSearch()}
                       className="flex items-center gap-3 px-4 py-3 hover:bg-[var(--color-bg-subtle)] transition-colors"
                     >
-                      <span className="text-lg">🎾</span>
+                      <TabIcon
+                        name="racket"
+                        size={20}
+                        className="shrink-0 text-[var(--color-text-muted)]"
+                      />
                       <div>
                         <p className="text-xs text-[var(--color-text-muted)]">{r.brand}</p>
                         <p className="text-sm font-medium">

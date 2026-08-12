@@ -25,8 +25,22 @@
   --font-sans: "Pretendard Variable", "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, "Segoe UI", Roboto, sans-serif;
 }
 
+:root {
+  /* iOS 홈 인디케이터. layout.tsx 의 viewport-fit=cover 가 있어야 0 이 아닌 값이 온다 */
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  /* 모바일 탭바의 총 높이(콘텐츠 3.5rem + 인디케이터).
+     탭바 위에 뜨는 요소는 이 값을 기준으로 비킨다 */
+  --tab-bar-height: calc(3.5rem + var(--safe-bottom));
+}
+
 body {
   background-color: var(--color-bg);
+}
+
+/* 두 곳에서 쓰이는데 정의가 없어 아무 일도 하지 않던 클래스였다.
+   그래서 아이폰에서 탭바와 진단 하단 바가 홈 인디케이터에 깔렸다. */
+.safe-bottom {
+  padding-bottom: var(--safe-bottom);
 }
 
 ::selection {

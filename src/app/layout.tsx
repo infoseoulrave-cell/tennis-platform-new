@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { GlobalNav } from "@/components/global-nav";
 import { MobileTabBar } from "@/components/mobile-tab-bar";
@@ -20,6 +20,12 @@ export const metadata: Metadata = {
     description: "데이터 기반 5축 분석으로 당신에게 맞는 테니스 라켓을 찾아드립니다.",
   },
   robots: { index: true, follow: true },
+};
+
+// 이게 없으면 env(safe-area-inset-bottom) 이 항상 0 이라 하단 탭바가
+// 아이폰 홈 인디케이터에 깔린다.
+export const viewport: Viewport = {
+  viewportFit: "cover",
 };
 
 export default function RootLayout({
