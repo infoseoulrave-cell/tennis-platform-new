@@ -1,3 +1,4 @@
+import { countryCodeOf } from "@/lib/country-code";
 import {
   players,
   type PlayerEquipment,
@@ -8,7 +9,7 @@ export type OmegaPlayerShowcase = {
   id: string;
   name: string;
   nameKo: string;
-  countryFlag: string;
+  countryCode: string;
   initial: string;
   tags: string[];
   equipment: PlayerEquipment;
@@ -35,7 +36,7 @@ export const omegaPlayerShowcase: OmegaPlayerShowcase[] = players
     id: player.id,
     name: player.name,
     nameKo: shortNames[player.id] ?? player.nameKo,
-    countryFlag: player.countryFlag,
+    countryCode: countryCodeOf(player.country),
     initial: player.initial,
     tags: player.tags,
     equipment: player.equipment,

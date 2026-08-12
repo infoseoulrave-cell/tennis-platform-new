@@ -71,11 +71,11 @@ const featuredRacketTemplates: FeaturedRacketTemplate[] = [
     tagline: "공기를 가르는 새로운 에어로 프레임",
     scoreAxes: [
       { icon: "◎", axis: "spin" },
-      { icon: "⚡", axis: "power" },
+      { icon: "▲", axis: "power" },
     ],
     fallbackTags: [
       { icon: "◎", label: "성향", value: "스핀 지향" },
-      { icon: "⚡", label: "플레이", value: "공격형" },
+      { icon: "▲", label: "플레이", value: "공격형" },
       { icon: "◇", label: "정보", value: "공식 자료" },
     ],
     imageUrl: "/images/rackets/babolat-pure-aero-2026.png",

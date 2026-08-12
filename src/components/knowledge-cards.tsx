@@ -20,7 +20,6 @@ export function KnowledgeCards() {
             key={i}
             className="bg-[var(--color-bg-white)] rounded-xl p-5 shadow-sm hover:shadow-md transition-all duration-200"
           >
-            <div className="text-3xl mb-3">{fact.emoji}</div>
             <h3 className="font-semibold text-sm mb-2">{fact.title}</h3>
             <p className="text-xs text-[var(--color-text-secondary)] leading-relaxed">{fact.description}</p>
           </article>

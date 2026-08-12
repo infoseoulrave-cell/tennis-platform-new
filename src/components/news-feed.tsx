@@ -28,7 +28,7 @@ export function NewsFeed() {
             </time>
             <div className="flex-1">
               <span className="inline-block text-xs px-2 py-0.5 rounded mb-2 bg-[var(--color-bg-subtle)] text-[var(--color-text-secondary)] border border-[var(--color-border)]">
-                {item.categoryEmoji} {item.category}
+                {item.category}
               </span>
               <h3 className="font-semibold text-sm text-[var(--color-text)]">
                 {item.title}

@@ -16,11 +16,9 @@ export default function UpdatesPage() {
         {newsItems.map((item, index) => (
           <li key={item.id} className="mb-10 ms-8 last:mb-0">
             <span
-              className="absolute flex items-center justify-center w-6 h-6 rounded-full -start-3 bg-[var(--color-bg-subtle)] border border-[var(--color-border)] text-xs"
+              className="absolute w-6 h-6 rounded-full -start-3 bg-[var(--color-bg-subtle)] border border-[var(--color-border)]"
               aria-hidden
-            >
-              {item.categoryEmoji}
-            </span>
+            />
             <time className="block text-xs text-[var(--color-text-muted)] mb-1">
               {item.date}
               {index === 0 ? (

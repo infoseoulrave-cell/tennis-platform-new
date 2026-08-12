@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { type Player } from "@/data/players";
+import { countryCodeOf } from "@/lib/country-code";
 import {
   omegaPlayerShowcase,
   type OmegaPlayerShowcase,
@@ -32,7 +33,7 @@ export function PlayerCard({ player }: { player: Player }) {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <h3 className="font-bold text-base truncate">{player.nameKo}</h3>
-            <span className="text-base">{player.countryFlag}</span>
+            <span className="text-[10px] font-semibold tracking-wider text-[var(--color-text-muted)]">{countryCodeOf(player.country)}</span>
           </div>
           <p className="text-xs text-[var(--color-text-muted)] truncate">{player.name}</p>
         </div>
@@ -101,7 +102,7 @@ function OmegaShowcaseCard({ player }: { player: OmegaPlayerShowcase }) {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <h3 className="font-bold text-base truncate">{player.nameKo}</h3>
-            <span className="text-base">{player.countryFlag}</span>
+            <span className="text-[10px] font-semibold tracking-wider text-[var(--color-text-muted)]">{player.countryCode}</span>
           </div>
           <p className="text-xs text-[var(--color-text-muted)] truncate">{player.name}</p>
         </div>
