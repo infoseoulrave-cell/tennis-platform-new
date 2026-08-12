@@ -1,4 +1,3 @@
-import { BeginnerBanner } from "@/components/beginner-banner";
 import { PartnerBanner } from "@/components/partner-banner";
 import { HeroCarousel } from "@/components/hero-carousel";
 import { QuickLinks } from "@/components/quick-links";
@@ -23,7 +22,8 @@ export default async function Home() {
 
   return (
     <>
-      <BeginnerBanner />
+      {/* 초심자 진입점은 별도 배너가 아니라 히어로의 주 CTA 다.
+          배너·히어로·퀵링크에 추천 버튼이 각각 있어서 목적지가 갈렸다. */}
       <HeroCarousel rackets={heroRackets} />
       <div className="max-w-6xl mx-auto px-6">
         <QuickLinks />

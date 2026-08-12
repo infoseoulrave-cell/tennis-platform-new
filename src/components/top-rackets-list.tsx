@@ -1,11 +1,14 @@
 import Link from "next/link";
 import { getTopRackets, type RacketListItem } from "@/lib/queries";
 import { formatRacketName } from "@/lib/racket-name";
+import { formatKrwPrice } from "@/lib/format-price";
+import { MiniAxisBars } from "@/components/mini-axis-bars";
+import { formatPublicTotal, type PublicAxisScores5 } from "@/lib/score-display";
 
 type TopRacket = Pick<
   RacketListItem,
   "id" | "brand" | "model" | "year" | "weight" | "headSize" | "priceKrw"
-> & { slug?: string };
+> & { slug?: string; scores?: PublicAxisScores5 | null };
 
 export const topRacketsFallback: TopRacket[] = [
   {
@@ -55,10 +58,7 @@ export const topRacketsFallback: TopRacket[] = [
   },
 ];
 
-function formatPrice(price: number | null): string {
-  if (!price) return "";
-  return `₩${Math.round(price / 1000)}K`;
-}
+const formatPrice = formatKrwPrice;
 
 export function formatTopRacketName(racket: TopRacket): string {
   return formatRacketName(racket.model, racket.year);
@@ -85,14 +85,21 @@ export async function TopRacketsList() {
 
   return (
     <section className="py-12">
-      <div className="flex items-end justify-between mb-6">
-        <div>
-          <p className="text-[10px] font-semibold tracking-[0.15em] text-[var(--color-brand)] uppercase mb-1">Popular</p>
-          <h2 className="text-xl font-bold tracking-tight">인기 라켓 TOP 5</h2>
+      <div className="mb-6">
+        <div className="flex items-end justify-between">
+          <div>
+            <p className="text-[10px] font-semibold tracking-[0.15em] text-[var(--color-brand)] uppercase mb-1">Popular</p>
+            <h2 className="text-xl font-bold tracking-tight">인기 라켓 TOP 5</h2>
+          </div>
+          <Link href="/rackets" className="text-xs text-[var(--color-text-muted)] hover:text-[var(--color-text)]">
+            전체 보기 →
+          </Link>
         </div>
-        <Link href="/rackets" className="text-xs text-[var(--color-text-muted)] hover:text-[var(--color-text)]">
-          전체 보기 →
-        </Link>
+        {/* 막대만 있고 범례가 없으면 초록 막대 다섯 개가 무슨 뜻인지 알 수 없다. */}
+        <p className="mt-2 text-xs leading-relaxed text-[var(--color-text-muted)]">
+          <span className="hidden sm:inline">막대 다섯은 파워·컨트롤·스핀·편안함·안정성이고, </span>
+          옆 숫자는 다섯을 더한 총점입니다.
+        </p>
       </div>
 
       <ol className="border border-[var(--color-border)] rounded-xl overflow-hidden">
@@ -117,7 +124,22 @@ export async function TopRacketsList() {
                 {racket.headSize && ` · ${racket.headSize}`}
               </p>
             </div>
-            <span className="text-sm font-semibold shrink-0">{formatPrice(racket.priceKrw)}</span>
+
+            {/* 5축 요약과 총점은 한 덩어리다. 점수가 없는 라켓은 그리지
+                않는다 — 숫자를 만들지 않는다. 좁은 화면에서는 막대를 접고
+                총점만 남긴다. */}
+            <div className="flex shrink-0 items-center gap-2">
+              <MiniAxisBars scores={racket.scores} className="hidden sm:flex" />
+              {racket.scores && (
+                <span className="text-xs font-semibold tabular-nums text-[var(--color-text)]">
+                  {formatPublicTotal(racket.scores)}
+                </span>
+              )}
+            </div>
+
+            <span className="w-16 shrink-0 text-right text-sm font-semibold tabular-nums">
+              {formatPrice(racket.priceKrw)}
+            </span>
           </li>
         ))}
       </ol>

@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { AXIS_LABELS } from "./radar-chart";
 import { formatRacketName } from "@/lib/racket-name";
+import { formatKrwPrice } from "@/lib/format-price";
 import {
   formatPublicAxisScore,
   formatPublicTotal,
@@ -24,10 +25,7 @@ export type RacketCardData = {
   rawScores?: RawAxisScores100 | null;
 };
 
-function formatPrice(price: number): string {
-  if (price >= 1000) return `₩${Math.round(price / 1000)}K`;
-  return `₩${price.toLocaleString()}`;
-}
+const formatPrice = formatKrwPrice;
 
 export function RacketCard({ racket }: { racket: RacketCardData }) {
   const scores = racket.scores;

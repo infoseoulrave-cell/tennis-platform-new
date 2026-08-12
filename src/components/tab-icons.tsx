@@ -17,7 +17,14 @@
  * 손잡이의 유무로 둘을 가른다.
  */
 
-export type TabIconName = "home" | "racket" | "strings" | "compare" | "wishlist";
+export type TabIconName =
+  | "home"
+  | "racket"
+  | "strings"
+  | "compare"
+  | "wishlist"
+  /** 탭바에는 없고 홈 퀵링크에서 쓴다. 같은 규율로 그려 한 세트로 읽히게 한다. */
+  | "axes";
 
 const STROKE = 1.75;
 /** 스트링 가닥은 프레임보다 얇다. 24px 에서 텍스처로 읽혀야 하고 선으로 읽히면 안 된다. */
@@ -90,6 +97,22 @@ export function TabIcon({ name, active = false, size = 23, className }: Props) {
           {/* 나란히 선 두 개. 셋 이상이면 차트로 읽히므로 정확히 둘이다 */}
           <rect x={5.2} y={11.2} width={5.4} height={7.6} rx={1.5} fill={body} />
           <rect x={13.4} y={6.4} width={5.4} height={12.4} rx={1.5} fill={body} />
+          <path d="M4.6 20.6h14.8" />
+        </>
+      )}
+
+      {name === "axes" && (
+        <>
+          {/* 5축 프로파일. 비교(막대 2개)와는 개수로 갈린다 */}
+          {([
+            [4.6, 11.2],
+            [7.8, 7.4],
+            [11.0, 5.0],
+            [14.2, 8.6],
+            [17.4, 12.4],
+          ] as const).map(([x, y]) => (
+            <rect key={x} x={x} y={y} width={2} height={18.8 - y} rx={1} fill={body} />
+          ))}
           <path d="M4.6 20.6h14.8" />
         </>
       )}
