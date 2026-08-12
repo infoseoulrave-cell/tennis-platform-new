@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { type Player } from "@/data/players";
+import { countryCodeOf } from "@/lib/country-code";
 import {
   omegaPlayerShowcase,
   type OmegaPlayerShowcase,
@@ -32,7 +33,7 @@ export function PlayerCard({ player }: { player: Player }) {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <h3 className="font-bold text-base truncate">{player.nameKo}</h3>
-            <span className="text-base">{player.countryFlag}</span>
+            <span className="text-[10px] font-semibold tracking-wider text-[var(--color-text-muted)]">{countryCodeOf(player.country)}</span>
           </div>
           <p className="text-xs text-[var(--color-text-muted)] truncate">{player.name}</p>
         </div>
@@ -59,9 +60,6 @@ export function PlayerCard({ player }: { player: Player }) {
             {player.equipment.relationship === "official-endorsement" ? "공식 후원 라인" : "공식 선수 등록"}
           </span>
         </div>
-        <p className="mt-3 text-[11px] leading-relaxed text-[var(--color-text-muted)]">
-          {player.equipment.disclosure}
-        </p>
       </div>
 
       <div className="bg-amber-50/50 border border-amber-100 rounded-xl p-4 mb-4">
@@ -89,7 +87,7 @@ export function PlayerCard({ player }: { player: Player }) {
 
 function OmegaShowcaseCard({ player }: { player: OmegaPlayerShowcase }) {
   return (
-    <article className="bg-[var(--color-bg-white)] rounded-2xl p-6 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
+    <article className="h-full bg-[var(--color-bg-white)] rounded-2xl p-6 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
       <div className="flex items-center gap-4 mb-5">
         <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-full bg-[var(--color-bg-subtle)]">
           <Image
@@ -104,7 +102,7 @@ function OmegaShowcaseCard({ player }: { player: OmegaPlayerShowcase }) {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <h3 className="font-bold text-base truncate">{player.nameKo}</h3>
-            <span className="text-base">{player.countryFlag}</span>
+            <span className="text-[10px] font-semibold tracking-wider text-[var(--color-text-muted)]">{player.countryCode}</span>
           </div>
           <p className="text-xs text-[var(--color-text-muted)] truncate">{player.name}</p>
         </div>
@@ -131,9 +129,6 @@ function OmegaShowcaseCard({ player }: { player: OmegaPlayerShowcase }) {
             {player.equipment.relationship === "official-endorsement" ? "공식 후원 라인" : "공식 선수 등록"}
           </span>
         </div>
-        <p className="mt-3 text-[11px] leading-relaxed text-[var(--color-text-muted)]">
-          {player.equipment.disclosure}
-        </p>
       </div>
 
       <div className="bg-amber-50/50 border border-amber-100 rounded-xl p-4 mb-4">
@@ -173,13 +168,27 @@ export function PlayerSynergySection() {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+        {/* 세로 그리드(9장 = 홈 스크롤 절반)를 가로 스냅 레일로 바꾼다.
+            잘린 다음 카드가 보이는 것 자체가 스크롤 어포던스다. */}
+        <ul
+          tabIndex={0}
+          aria-label="프로 선수 카드 — 가로로 스크롤"
+          className="-mx-6 flex snap-x snap-mandatory gap-5 overflow-x-auto px-6 pb-4 focus-visible:outline-2 focus-visible:outline-[var(--color-text)]"
+        >
           {omegaPlayerShowcase.map((player) => (
-            <OmegaShowcaseCard key={player.id} player={player} />
+            <li key={player.id} className="w-[300px] shrink-0 snap-start">
+              <OmegaShowcaseCard player={player} />
+            </li>
           ))}
-        </div>
+        </ul>
 
-        <div className="text-center mt-8">
+        {/* 면책 문구는 카드마다 반복하지 않고 섹션에 한 번만 둔다.
+            문구 자체는 카드와 같은 데이터(equipment.disclosure)를 쓴다. */}
+        <p className="mt-8 text-[11px] leading-relaxed text-[var(--color-text-muted)]">
+          {omegaPlayerShowcase[0]?.equipment.disclosure}
+        </p>
+
+        <div className="text-center mt-6">
           <Link
             href="/players"
             className="text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-text)]"

@@ -29,8 +29,7 @@ export default function KnowledgePage() {
             key={fact.title}
             className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-white)] p-6"
           >
-            <div className="text-3xl" aria-hidden="true">{fact.emoji}</div>
-            <h2 className="mt-4 text-base font-semibold">{fact.title}</h2>
+            <h2 className="text-base font-semibold">{fact.title}</h2>
             <p className="mt-2 text-sm leading-relaxed text-[var(--color-text-secondary)]">
               {fact.description}
             </p>
