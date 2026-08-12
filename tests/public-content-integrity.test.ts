@@ -184,7 +184,7 @@ test("methodology names the evidence basis and its limits", () => {
 });
 
 test("catalog copy does not freeze the expanding model count", () => {
-  const rackets = read("src/app/rackets/page.tsx");
+  const rackets = read("src/app/rackets/(list)/page.tsx");
   const diagnosis = read("src/app/diagnosis/page.tsx");
 
   assert.match(rackets, /현재 카탈로그의/);

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { db } from "@/db";
@@ -76,6 +77,44 @@ export default async function ResultsPage({
     notFound();
   }
 
+  // 존재 확인까지만 막고 응답을 연다. 라우트를 loading.tsx 로 감싸면 이 함수가
+  // 실행되기 전에 200 이 커밋돼서, 없는 결과도 본문만 404 이고 상태 코드는
+  // 200 으로 나갔다. 나머지 무거운 조회는 아래 Suspense 안에서 스트리밍한다.
+  return (
+    <Suspense fallback={<ResultsSkeleton />}>
+      <ResultsBody id={id} run={run} searchParams={searchParams} />
+    </Suspense>
+  );
+}
+
+/** 예전 `loading.tsx` 의 스켈레톤. 이제 라우트가 아니라 본문만 감싼다. */
+function ResultsSkeleton() {
+  return (
+    <main
+      role="status"
+      aria-live="polite"
+      className="min-h-screen bg-white px-6 pb-32 pt-16"
+    >
+      <span className="sr-only">추천 결과를 불러오는 중입니다.</span>
+      <div aria-hidden className="mx-auto max-w-lg space-y-4">
+        <div className="h-24 rounded-xl bg-gray-50" />
+        {Array.from({ length: 3 }, (_, index) => (
+          <div key={index} className="h-48 rounded-xl bg-gray-50" />
+        ))}
+      </div>
+    </main>
+  );
+}
+
+async function ResultsBody({
+  id,
+  run,
+  searchParams,
+}: {
+  id: string;
+  run: typeof recommendationRuns.$inferSelect;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
   const [[profile], results] = await Promise.all([
     db
       .select()
