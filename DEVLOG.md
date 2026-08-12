@@ -31,3 +31,4 @@
 - [Chapter 20 — 홈 개편: 깔때기 통합 · 히어로 재정의 · 5축 노출](devlog/chapter-020.md)
 - [Chapter 21 — 병합 자동화: DEVLOG 분할 · CI · 브랜치 정책](devlog/chapter-021.md)
 - [Chapter 22 — 홈 크리틱 잔여 3건: 면책 1회 · 이모지 제거 · 섹션 질감 차별화](devlog/chapter-022.md)
+- [Chapter 23 — 모바일 실기기 라운드: 능력치 표시 · 정렬 알약 · 히어로 중간 배치](devlog/chapter-023.md)

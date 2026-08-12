@@ -4,7 +4,7 @@ type TrustBadgeProps = {
 
 const config = {
   neutrality: {
-    label: "광고 없는 AI 진단",
+    label: "광고 없는 진단",
     icon: "🛡️",
     className: "bg-green-50 text-green-700 border-green-200",
   },
