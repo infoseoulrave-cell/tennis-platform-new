@@ -36,7 +36,7 @@ export default function AboutPage() {
           </li>
           <li className="rounded-2xl border border-[var(--color-border)] p-5">
             <h3 className="font-semibold text-[var(--color-text)]">
-              AI 추천
+              맞춤 추천
             </h3>
             <p className="mt-2 text-sm text-[var(--color-text-secondary)] leading-relaxed">
               플레이 스타일과 조건을 입력하면 후보 라켓을 좁혀 이유와 함께
