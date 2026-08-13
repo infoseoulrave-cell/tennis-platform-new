@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import { GlobalNav } from "@/components/global-nav";
 import { MobileTabBar } from "@/components/mobile-tab-bar";
@@ -41,6 +42,9 @@ export default function RootLayout({
         <Footer />
         <CompareTray />
         <MobileTabBar />
+        {/* 4개월간 유입 경로도 세그먼트 비중도 측정된 적이 없었다.
+            계측이 없으면 이후의 모든 판단이 추측이 된다. */}
+        <Analytics />
       </body>
     </html>
   );
