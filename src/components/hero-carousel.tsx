@@ -22,6 +22,59 @@ import {
  * 다크 면은 유지한다 — `.impeccable.md` 가 "restrained dark hero" 를 Omega
  * 정체성의 일부로 명시하고 있다. 다만 3단 그라데이션은 평평한 잉크로 바꿨다.
  */
+/**
+ * 히어로의 피치(약속 + 진단 CTA). 데스크톱은 히어로 안에 h1 으로,
+ * 모바일은 TOP 5 아래 별도 배너에 일반 텍스트로 들어간다 —
+ * h1 은 DOM 에 정확히 하나만 존재해야 한다.
+ */
+export function HeroPitch({ asHeading = false }: { asHeading?: boolean }) {
+  return (
+    <div className="space-y-6">
+      {asHeading ? (
+        <h1 className="text-4xl md:text-6xl font-bold tracking-tight leading-[1.05]">
+          라켓을 읽습니다
+        </h1>
+      ) : (
+        <p className="text-3xl font-bold tracking-tight leading-[1.05]">
+          라켓을 읽습니다
+        </p>
+      )}
+      <p className="max-w-md text-base md:text-lg leading-relaxed text-white/70">
+        스펙 다섯 개를 다섯 개의 점수로 옮깁니다.
+        숫자마다 어디서 나온 값인지 함께 답니다.
+      </p>
+
+      <div className="flex flex-col items-stretch gap-4 sm:flex-row sm:items-center">
+        <Link
+          href="/start"
+          className="inline-flex min-h-11 items-center justify-center rounded-xl bg-[var(--color-accent)] px-6 text-sm font-bold text-[var(--color-text)] transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-accent)]"
+        >
+          3분 진단 시작
+        </Link>
+        <Link
+          href="/rackets"
+          className="inline-flex min-h-11 items-center justify-center rounded-xl border border-white/25 px-6 text-sm font-medium text-white transition-colors hover:bg-white/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+        >
+          전체 라켓 보기
+        </Link>
+      </div>
+
+      {/* 정밀 진단은 이미 라켓을 써 본 사람의 길이다. 초심자와 섞지 않는다.
+          `/recommendation` 은 `/diagnosis` 로 가는 307 스텁이라 내부
+          링크는 실제 목적지를 바로 가리킨다. */}
+      <p className="text-sm text-white/50">
+        이미 쓰는 라켓이 있나요?{" "}
+        <Link
+          href="/diagnosis"
+          className="text-white/80 underline underline-offset-4 hover:text-white"
+        >
+          정밀 진단으로 →
+        </Link>
+      </p>
+    </div>
+  );
+}
+
 export function HeroCarousel({ rackets }: { rackets: FeaturedRacket[] }) {
   const [index, setIndex] = useState(0);
   const [rotationPaused, setRotationPaused] = useState(false);
@@ -62,45 +115,13 @@ export function HeroCarousel({ rackets }: { rackets: FeaturedRacket[] }) {
       aria-label="racket LAB 소개"
       className="relative bg-[var(--color-bg-dark)] text-white overflow-hidden"
     >
-      <div className="max-w-6xl mx-auto px-6 py-16 md:py-24">
+      <div className="max-w-6xl mx-auto px-6 py-10 md:py-24">
         <div className="grid gap-12 md:grid-cols-[1fr_0.85fr] md:items-center">
-          {/* 약속 — 회전하지 않는다 */}
-          <div className="space-y-6">
-            <h1 className="text-4xl md:text-6xl font-bold tracking-tight leading-[1.05]">
-              라켓을 읽습니다
-            </h1>
-            <p className="max-w-md text-base md:text-lg leading-relaxed text-white/70">
-              스펙 다섯 개를 다섯 개의 점수로 옮깁니다.
-              숫자마다 어디서 나온 값인지 함께 답니다.
-            </p>
-
-            <div className="flex flex-col items-stretch gap-4 sm:flex-row sm:items-center">
-              <Link
-                href="/start"
-                className="inline-flex min-h-11 items-center justify-center rounded-xl bg-[var(--color-accent)] px-6 text-sm font-bold text-[var(--color-text)] transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-accent)]"
-              >
-                3분 진단 시작
-              </Link>
-              <Link
-                href="/rackets"
-                className="inline-flex min-h-11 items-center justify-center rounded-xl border border-white/25 px-6 text-sm font-medium text-white transition-colors hover:bg-white/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-              >
-                전체 라켓 보기
-              </Link>
-            </div>
-
-            {/* 정밀 진단은 이미 라켓을 써 본 사람의 길이다. 초심자와 섞지 않는다.
-                `/recommendation` 은 `/diagnosis` 로 가는 307 스텁이라 내부
-                링크는 실제 목적지를 바로 가리킨다. */}
-            <p className="text-sm text-white/50">
-              이미 쓰는 라켓이 있나요?{" "}
-              <Link
-                href="/diagnosis"
-                className="text-white/80 underline underline-offset-4 hover:text-white"
-              >
-                정밀 진단으로 →
-              </Link>
-            </p>
+          {/* 약속 — 회전하지 않는다. 모바일에서는 이 피치를 히어로에서 빼고
+              TOP 5 아래 별도 배너(page.tsx 의 HeroPitch)로 내린다 —
+              첫 화면을 광고성 문구가 채우지 않게 한다. */}
+          <div className="hidden md:block">
+            <HeroPitch asHeading />
           </div>
 
           {/* 증거 — 이번 주의 라켓 */}
