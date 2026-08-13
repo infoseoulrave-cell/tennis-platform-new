@@ -9,9 +9,13 @@ import Link from "next/link";
  * 있고 목적지는 두 곳으로 갈렸다. 추천 진입은 히어로 하나로 모으고
  * 여기는 "추천 말고 직접 볼 사람" 을 위한 길만 남긴다.
  *
- * 아이콘 카드였다가 사진 배너로 바꿨다 — 히어로와 같은 촬영 에셋을
- * 재사용하고, 아래쪽 페이드 위에 텍스트를 얹는다. 스트링 가이드는
- * 같은 사진을 스트링 베드 쪽으로 크롭해 주제를 가리킨다.
+ * 아이콘 카드였다가 사진 배너로 바꿨다. 스튜디오 라켓 렌더는 셋 다
+ * 검정 배경이라 생동감이 없다는 피드백을 받아, 코트가 보이는 실사진으로
+ * 교체 — 배너마다 색감이 다르다(클레이 오렌지 / 블루+멀티컬러 / 옐로).
+ * 사진은 Unsplash License(상업 사용 가능, 저작자 표기 불요)이며 파일명의
+ * 숫자가 unsplash.com/photos/ 의 사진 ID 다.
+ * 비교 = 네트가 두 코트를 정확히 가르는 항공 대칭 구도.
+ * DNA = 라켓마다 다른 색·구조. 스트링 = 스트링 베드 클로즈업.
  */
 const links: {
   href: string;
@@ -25,22 +29,22 @@ const links: {
     href: "/compare",
     title: "비교",
     subtitle: "라켓 나란히 비교",
-    image: "/images/rackets/head-radical-mp-2025.png",
-    crop: "object-[50%_23%]",
+    image: "/images/quicklinks/compare-clay-1729923332637.jpg",
+    crop: "object-center",
   },
   {
     href: "/guide/dna",
     title: "라켓 DNA",
     subtitle: "5가지 핵심 능력치",
-    image: "/images/rackets/wilson-ultra-100-v5.png",
-    crop: "object-[50%_30%]",
+    image: "/images/quicklinks/dna-rackets-1615117572888.jpg",
+    crop: "object-[50%_40%]",
   },
   {
     href: "/guide/strings",
     title: "스트링 가이드",
     subtitle: "종류별 완벽 정리",
-    image: "/images/rackets/wilson-shift-99-v1.png",
-    crop: "object-[50%_28%]",
+    image: "/images/quicklinks/strings-closeup-1560012057.jpg",
+    crop: "object-[50%_55%]",
   },
 ];
 
