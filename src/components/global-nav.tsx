@@ -181,10 +181,12 @@ export function GlobalNav() {
 
   return (
     <>
-    <header className="sticky top-0 z-50 bg-[var(--color-bg-white)]/95 backdrop-blur-sm border-b border-[var(--color-border)]">
+    {/* 상단 바는 Court Lime 으로 채운다 — 민호 지정 (reversed-lime lockup).
+        라임 위 텍스트는 전부 잉크 계열. */}
+    <header className="sticky top-0 z-50 bg-[var(--color-accent)]/95 backdrop-blur-sm border-b border-[var(--color-text)]/10">
       <nav className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
         <Link href="/" aria-label="racket lab 홈">
-          <Wordmark className="text-xl" />
+          <Wordmark on="lime" className="text-xl" />
         </Link>
         <div className="hidden md:flex items-center gap-6">
             {links.map((link) => (
@@ -193,8 +195,8 @@ export function GlobalNav() {
                 href={link.href}
                 className={`relative text-sm font-medium transition-colors py-1 ${
                   pathname?.startsWith(link.href)
-                    ? "text-[var(--color-text)] after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-[var(--color-brand)] after:rounded-full"
-                    : "text-[var(--color-text-secondary)] hover:text-[var(--color-text)]"
+                    ? "text-[var(--color-text)] after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-[var(--color-text)] after:rounded-full"
+                    : "text-[var(--color-text)]/60 hover:text-[var(--color-text)]"
                 }`}
               >
                 {link.label}
@@ -206,13 +208,13 @@ export function GlobalNav() {
               aria-label="라켓 검색 열기"
               aria-haspopup="dialog"
               aria-expanded={searchOpen}
-              className="flex items-center gap-2 px-3 py-1.5 text-xs text-[var(--color-text-muted)] border border-[var(--color-border)] rounded-lg hover:border-[var(--color-text-muted)] transition-colors"
+              className="flex items-center gap-2 px-3 py-1.5 text-xs text-[var(--color-text)]/70 border border-[var(--color-text)]/25 rounded-lg hover:border-[var(--color-text)]/60 transition-colors"
             >
               <svg aria-hidden="true" className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                 <circle cx={11} cy={11} r={8} /><path d="m21 21-4.3-4.3" />
               </svg>
               검색
-              <kbd className="hidden lg:inline text-[10px] px-1 py-0.5 bg-[var(--color-bg-subtle)] rounded">⌘K</kbd>
+              <kbd className="hidden lg:inline text-[10px] px-1 py-0.5 bg-[var(--color-text)]/10 rounded">⌘K</kbd>
             </button>
           </div>
           <button
@@ -221,7 +223,7 @@ export function GlobalNav() {
             aria-label="라켓 검색 열기"
             aria-haspopup="dialog"
             aria-expanded={searchOpen}
-            className="md:hidden p-2 text-[var(--color-text-secondary)]"
+            className="md:hidden p-2 text-[var(--color-text)]/70"
           >
             <svg aria-hidden="true" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
               <circle cx={11} cy={11} r={8} /><path d="m21 21-4.3-4.3" />

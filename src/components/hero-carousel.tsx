@@ -126,10 +126,10 @@ export function HeroCarousel({ rackets }: { rackets: FeaturedRacket[] }) {
             alt=""
             fill
             sizes="100vw"
-            className="object-cover object-[55%_16%] opacity-55"
+            className="object-cover object-[58%_12%] opacity-75"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-[var(--color-bg-dark)] via-[var(--color-bg-dark)]/45 to-[var(--color-bg-dark)]/20" />
-          <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-bg-dark)] via-transparent to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[var(--color-bg-dark)] via-[var(--color-bg-dark)]/30 to-transparent" />
+          <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-[var(--color-bg-dark)] to-transparent" />
         </div>
       )}
       <div className="relative max-w-6xl mx-auto px-6 py-10 md:py-24">
