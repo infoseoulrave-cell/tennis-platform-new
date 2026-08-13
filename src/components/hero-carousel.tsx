@@ -112,10 +112,22 @@ export function HeroCarousel({ rackets }: { rackets: FeaturedRacket[] }) {
 
   return (
     <section
-      aria-label="racket LAB 소개"
+      aria-label="racket lab 소개"
       className="relative bg-[var(--color-bg-dark)] text-white overflow-hidden"
     >
-      <div className="max-w-6xl mx-auto px-6 py-10 md:py-24">
+      {/* VI 그래픽 요소 — 16×19 스트링 그리드 텍스처. 라임 도트(스윗스팟)는
+          화면당 라임 1점 원칙상 여기 두지 않는다: 히어로의 1점은 주 CTA 다. */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0"
+        style={{
+          backgroundImage:
+            "repeating-linear-gradient(0deg, rgba(243,240,234,0.05) 0 1px, transparent 1px 44px), repeating-linear-gradient(90deg, rgba(243,240,234,0.05) 0 1px, transparent 1px 38px)",
+          maskImage:
+            "radial-gradient(ellipse 75% 85% at 50% 45%, black 30%, transparent 100%)",
+        }}
+      />
+      <div className="relative max-w-6xl mx-auto px-6 py-10 md:py-24">
         <div className="grid gap-12 md:grid-cols-[1fr_0.85fr] md:items-center">
           {/* 약속 — 회전하지 않는다. 모바일에서는 이 피치를 히어로에서 빼고
               TOP 5 아래 별도 배너(page.tsx 의 HeroPitch)로 내린다 —

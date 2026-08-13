@@ -62,9 +62,9 @@ export function PlayerCard({ player }: { player: Player }) {
         </div>
       </div>
 
-      <div className="bg-amber-50/50 border border-amber-100 rounded-xl p-4 mb-4">
-        <p className="text-xs font-semibold text-amber-900 mb-1">플레이 × 라켓 궁합</p>
-        <p className="text-xs text-amber-900/80 leading-relaxed">{player.synergy}</p>
+      <div className="bg-[var(--color-bg-subtle)] rounded-xl p-4 mb-4">
+        <p className="text-xs font-semibold text-[var(--color-text)] mb-1">플레이 × 라켓 궁합</p>
+        <p className="text-xs text-[var(--color-text-secondary)] leading-relaxed">{player.synergy}</p>
       </div>
 
       <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-[var(--color-text-muted)]">
@@ -131,9 +131,9 @@ function OmegaShowcaseCard({ player }: { player: OmegaPlayerShowcase }) {
         </div>
       </div>
 
-      <div className="bg-amber-50/50 border border-amber-100 rounded-xl p-4 mb-4">
-        <p className="text-xs font-semibold text-amber-900 mb-1">플레이 × 라켓 궁합</p>
-        <p className="text-xs text-amber-900/80 leading-relaxed">{player.synergy}</p>
+      <div className="bg-[var(--color-bg-subtle)] rounded-xl p-4 mb-4">
+        <p className="text-xs font-semibold text-[var(--color-text)] mb-1">플레이 × 라켓 궁합</p>
+        <p className="text-xs text-[var(--color-text-secondary)] leading-relaxed">{player.synergy}</p>
       </div>
 
       <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-[var(--color-text-muted)]">

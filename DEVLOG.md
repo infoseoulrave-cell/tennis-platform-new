@@ -33,3 +33,4 @@
 - [Chapter 22 — 홈 크리틱 잔여 3건: 면책 1회 · 이모지 제거 · 섹션 질감 차별화](devlog/chapter-022.md)
 - [Chapter 23 — 모바일 실기기 라운드: 능력치 표시 · 정렬 알약 · 히어로 중간 배치](devlog/chapter-023.md)
 - [Chapter 24 — 모바일 순서 재지정과 사진 배너 퀵링크](devlog/chapter-024.md)
+- [Chapter 25 — VI 적용: Ink · Court Lime · Chalk](devlog/chapter-025.md)

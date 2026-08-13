@@ -1,28 +1,31 @@
 @import "tailwindcss";
 
 @theme {
-  /* omega palette: navy brand + tennis-ball lime accent */
-  --color-brand: #1E3A5F;
-  --color-brand-light: #2D5A8E;
-  --color-brand-subtle: #EDF2F8;
-  --color-accent: #C4E538;
+  /* VI 시안11 — Ink Black · Court Lime · Chalk (라임은 화면당 강조 1점).
+     기존 네이비 브랜드는 폐기하고 토큰 이름만 유지한 채 잉크/웜그레이로 잇는다. */
+  --color-brand: #141414;
+  --color-brand-light: #52514D;
+  --color-brand-subtle: #ECE8DF;
+  --color-accent: #D8F34E;
 
+  /* 브랜드색이 아닌 콘텐츠 의미색(코트 종류) — VI 교체 대상 아님 */
   --color-court-blue: #1E3A5F;
   --color-court-clay: #C4613A;
   --color-court-grass: #2D7A45;
 
-  --color-bg: #FAFAF7;
-  --color-bg-white: #FFFFFF;
-  --color-bg-subtle: #F5F5F0;
-  --color-bg-dark: #0C0C0C;
-  --color-bg-footer: #111827;
+  --color-bg: #F3F0EA;
+  --color-bg-white: #FBFAF6;
+  --color-bg-subtle: #ECE8DF;
+  --color-bg-dark: #141414;
+  --color-bg-footer: #141414;
 
-  --color-text: #171717;
-  --color-text-secondary: #525252;
-  --color-text-muted: #A3A3A3;
-  --color-border: #E2E2E2;
+  --color-text: #141414;
+  --color-text-secondary: #52514D;
+  --color-text-muted: #9C978C;
+  --color-border: #E0DCD2;
 
-  --font-sans: "Pretendard Variable", "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, "Segoe UI", Roboto, sans-serif;
+  /* 라틴·숫자는 Archivo, 한글은 Pretendard 가 받는다 (layout.tsx next/font) */
+  --font-sans: var(--font-archivo), "Pretendard Variable", "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, "Segoe UI", Roboto, sans-serif;
 }
 
 :root {
