@@ -22,11 +22,10 @@ export function Wordmark({
       >
         racket
       </span>
+      {/* lab 은 배경과 무관하게 항상 라임 — 민호 지정 (primary-dark lockup 느낌) */}
       <span
         style={{ fontFamily: "var(--font-instrument), Georgia, serif" }}
-        className={`italic ml-[0.07em] ${
-          on === "dark" ? "text-[var(--color-accent)]" : "text-[var(--color-text)]"
-        }`}
+        className="italic ml-[0.07em] text-[var(--color-accent)]"
       >
         lab
       </span>

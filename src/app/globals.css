@@ -13,16 +13,18 @@
   --color-court-clay: #C4613A;
   --color-court-grass: #2D7A45;
 
-  --color-bg: #F3F0EA;
-  --color-bg-white: #FBFAF6;
-  --color-bg-subtle: #ECE8DF;
+  /* 지면은 초크 원색이 누렇다는 피드백으로 뉴트럴 오프화이트로 냉각.
+     Chalk #F3F0EA 는 로고·인쇄물용 브랜드 색으로 남기고 UI 지면은 중립. */
+  --color-bg: #F7F7F5;
+  --color-bg-white: #FDFDFC;
+  --color-bg-subtle: #EFEFEC;
   --color-bg-dark: #141414;
   --color-bg-footer: #141414;
 
   --color-text: #141414;
-  --color-text-secondary: #52514D;
-  --color-text-muted: #9C978C;
-  --color-border: #E0DCD2;
+  --color-text-secondary: #545451;
+  --color-text-muted: #A2A19C;
+  --color-border: #E4E3DF;
 
   /* 라틴·숫자는 Archivo, 한글은 Pretendard 가 받는다 (layout.tsx next/font) */
   --font-sans: var(--font-archivo), "Pretendard Variable", "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, "Segoe UI", Roboto, sans-serif;
