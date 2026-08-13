@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { Wordmark } from "@/components/wordmark";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { TabIcon } from "./tab-icons";
@@ -182,14 +183,8 @@ export function GlobalNav() {
     <>
     <header className="sticky top-0 z-50 bg-[var(--color-bg-white)]/95 backdrop-blur-sm border-b border-[var(--color-border)]">
       <nav className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2">
-          <svg width={20} height={20} viewBox="0 0 24 24" fill="var(--color-brand)" className="shrink-0" aria-hidden>
-            <polygon points="12,1 23,8.5 19.5,21 4.5,21 1,8.5" />
-          </svg>
-          <span className="text-base tracking-wide text-[var(--color-text)]">
-            <span className="font-normal">racket</span>
-            <span className="font-bold"> LAB</span>
-          </span>
+        <Link href="/" aria-label="racket lab 홈">
+          <Wordmark className="text-xl" />
         </Link>
         <div className="hidden md:flex items-center gap-6">
             {links.map((link) => (

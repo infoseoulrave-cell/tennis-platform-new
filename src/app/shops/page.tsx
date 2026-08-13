@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "매장 찾기",
   description:
-    "racket LAB에 등록된 테니스 매장 목록입니다. 라켓 구매와 스트링 장착을 상담할 수 있는 매장을 찾아보세요.",
+    "racket lab에 등록된 테니스 매장 목록입니다. 라켓 구매와 스트링 장착을 상담할 수 있는 매장을 찾아보세요.",
 };
 
 /**

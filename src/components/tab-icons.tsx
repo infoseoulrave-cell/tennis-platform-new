@@ -1,5 +1,5 @@
 /**
- * racket LAB 탭 아이콘 — 24 그리드 · stroke 1.75 · round cap
+ * racket lab 탭 아이콘 — 24 그리드 · stroke 1.75 · round cap
  *
  * 조각(JOGAK) BRAND-SPEC §10 의 아이콘 규율을 가져오되 톤은 이쪽으로 옮겼다.
  * 조각은 잉크 바 위의 흰 글리프라 stroke 2 로 눌러 그렸다. 여기는 흰 바 위의

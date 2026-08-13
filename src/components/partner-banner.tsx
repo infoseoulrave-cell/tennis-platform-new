@@ -16,7 +16,7 @@ export function PartnerBanner() {
             테니스샵을 운영하시나요?
           </h2>
           <p className="mt-1 text-sm leading-relaxed text-[var(--color-text-secondary)]">
-            racket LAB에서 라켓·스트링 장착 패키지를 판매할 매장을 찾고
+            racket lab에서 라켓·스트링 장착 패키지를 판매할 매장을 찾고
             있습니다. 재고 관리 시스템 없이, 주문이 오면 링크 하나로 처리하는
             방식을 준비 중입니다.
           </p>
