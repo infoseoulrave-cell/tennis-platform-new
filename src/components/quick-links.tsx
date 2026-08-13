@@ -25,26 +25,28 @@ const links: {
   /* object-position — 배너 비율에서 사진의 어느 부분을 보여줄지 */
   crop: string;
 }[] = [
+  /* 세련화 라운드(민호): 원색 대비 대신 차분한 에디토리얼 무드로 —
+     네이비 항공 / 클레이 그림자 / 세이지 매크로. */
   {
     href: "/compare",
     title: "비교",
     subtitle: "라켓 나란히 비교",
-    image: "/images/quicklinks/compare-clay-1729923332637.jpg",
+    image: "/images/quicklinks/compare-navy-1692288720754.jpg",
     crop: "object-center",
   },
   {
     href: "/guide/dna",
     title: "라켓 DNA",
     subtitle: "5가지 핵심 능력치",
-    image: "/images/quicklinks/dna-rackets-1615117572888.jpg",
-    crop: "object-[50%_40%]",
+    image: "/images/quicklinks/dna-shadow-1750858287221.jpg",
+    crop: "object-[50%_42%]",
   },
   {
     href: "/guide/strings",
     title: "스트링 가이드",
     subtitle: "종류별 완벽 정리",
-    image: "/images/quicklinks/strings-closeup-1560012057.jpg",
-    crop: "object-[50%_55%]",
+    image: "/images/quicklinks/strings-sage-1773452549497.jpg",
+    crop: "object-[50%_65%]",
   },
 ];
 

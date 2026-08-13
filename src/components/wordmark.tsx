@@ -10,7 +10,7 @@ export function Wordmark({
   on = "light",
   className = "",
 }: {
-  on?: "light" | "dark";
+  on?: "light" | "dark" | "lime";
   className?: string;
 }) {
   return (
@@ -22,10 +22,13 @@ export function Wordmark({
       >
         racket
       </span>
-      {/* lab 은 배경과 무관하게 항상 라임 — 민호 지정 (primary-dark lockup 느낌) */}
+      {/* lab 색: 라임 배경(reversed-lime lockup)에서는 잉크, 그 외에는 라임 —
+          민호 지정. 라임 위 라임은 보이지 않는다. */}
       <span
         style={{ fontFamily: "var(--font-instrument), Georgia, serif" }}
-        className="italic ml-[0.07em] text-[var(--color-accent)]"
+        className={`italic ml-[0.07em] ${
+          on === "lime" ? "text-[var(--color-text)]" : "text-[var(--color-accent)]"
+        }`}
       >
         lab
       </span>
