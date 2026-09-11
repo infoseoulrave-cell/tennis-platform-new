@@ -51,6 +51,8 @@ test("every legacy catalog mutator is inventoried and calls the guard first", as
         || relativePath === "scripts/expand-racket-catalog.ts"
         || relativePath === "scripts/reactivate-rackets-2026-08.ts"
         || relativePath === "scripts/legacy-catalog-mutation-disabled.ts"
+        // offers(판매처) 시드 — 카탈로그가 아니라 수익화 테이블만 쓰고, 기본이 dry-run 이다.
+        || relativePath === "scripts/seed-offers.ts"
       ) {
         continue;
       }
