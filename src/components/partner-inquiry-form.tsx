@@ -9,7 +9,20 @@ import {
 
 type Status = "idle" | "submitting" | "done" | "error";
 
-export function PartnerInquiryForm() {
+type InquiryType = (typeof INQUIRY_TYPES)[number];
+
+/**
+ * @param defaultType 진입 지면에 맞는 기본 유형. /advertise 는 "brand",
+ *   /partners 는 첫 항목(shop). 사용자는 언제든 바꿀 수 있다.
+ * @param source 이벤트에 남길 지면 이름.
+ */
+export function PartnerInquiryForm({
+  defaultType = INQUIRY_TYPES[0],
+  source = "partners_page",
+}: {
+  defaultType?: InquiryType;
+  source?: string;
+} = {}) {
   const [status, setStatus] = useState<Status>("idle");
   const [errorMsg, setErrorMsg] = useState("");
 
@@ -39,7 +52,7 @@ export function PartnerInquiryForm() {
       }
       trackEvent("partner_lead_submit", {
         inquiryType: data.get("inquiryType"),
-        source: "partners_page",
+        source,
       });
       setStatus("done");
       form.reset();
@@ -76,6 +89,7 @@ export function PartnerInquiryForm() {
           id="inquiryType"
           name="inquiryType"
           required
+          defaultValue={defaultType}
           className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm"
         >
           {INQUIRY_TYPES.map((t) => (

@@ -45,6 +45,13 @@ export default function PartnersPage() {
           <p className="mt-2 mb-5 text-sm leading-relaxed text-gray-500">
             매장, 코치, 브랜드 제휴를 제안해 주세요. 확인 후 입력하신 연락처로 회신드립니다.
           </p>
+          <p className="mb-5 text-xs text-gray-500">
+            브랜드·유통사라면 지면과 원칙을 정리한{" "}
+            <Link href="/advertise" className="underline underline-offset-4 hover:text-gray-900">
+              브랜드 제휴·광고 안내
+            </Link>
+            를 먼저 봐 주세요.
+          </p>
           <PartnerInquiryForm />
         </section>
       </div>
