@@ -18,7 +18,9 @@ export type EventType =
   | "partner_click"
   | "partner_lead_submit"
   | "page_view"
-  | "search";
+  | "search"
+  | "sponsor_impression"
+  | "sponsor_click";
 
 export interface EventPayloadMap {
   diagnosis_start: { entryPoint: string };
@@ -70,4 +72,8 @@ export interface EventPayloadMap {
     query: string;
     resultCount: number;
   };
+  /** 광고 표기된 슬롯이 화면에 들어왔다 (히어로 슬라이드 전환 시 1회). */
+  sponsor_impression: { slug: string; label: string; placement: string };
+  /** 광고 표기된 슬롯의 링크를 눌렀다. */
+  sponsor_click: { slug: string; label: string; placement: string };
 }

@@ -22,6 +22,9 @@ export const eventTypeEnum = pgEnum("event_type", [
   "affiliate_click",
   "page_view",
   "search",
+  // 광고 슬롯 노출·클릭. 마이그레이션 0005 에서 enum 값 추가.
+  "sponsor_impression",
+  "sponsor_click",
 ]);
 
 export const eventLog = pgTable("event_log", {
