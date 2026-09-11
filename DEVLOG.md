@@ -34,3 +34,4 @@
 - [Chapter 23 — 모바일 실기기 라운드: 능력치 표시 · 정렬 알약 · 히어로 중간 배치](devlog/chapter-023.md)
 - [Chapter 24 — 모바일 순서 재지정과 사진 배너 퀵링크](devlog/chapter-024.md)
 - [Chapter 25 — VI 적용: Ink · Court Lime · Chalk](devlog/chapter-025.md)
+- [Chapter 26 — 스폰서 준비: 계측 · 문의 알림 · 광고 슬롯 · /advertise · 오퍼 시드](devlog/chapter-026.md)
