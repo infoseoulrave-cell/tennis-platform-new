@@ -38,3 +38,4 @@
 - [Chapter 27 — 제휴 제안과 실제 계측 준비](devlog/chapter-027.md)
 - [Chapter 28 — 해외 본사 B2B 제휴 소개](devlog/chapter-028.md)
 - [Chapter 29 — 테니스 의류·용품 탐색과 공급 협력](devlog/chapter-029.md)
+- [Chapter 30 — 홈 배너 사진과 출처 정리](devlog/chapter-030.md)
