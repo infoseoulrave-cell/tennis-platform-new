@@ -149,5 +149,5 @@ test("partners page renders the inquiry form", () => {
     new URL("../src/app/partners/page.tsx", import.meta.url),
     "utf8",
   );
-  assert.match(partners, /<PartnerInquiryForm \/>/);
+  assert.match(partners, /<PartnerInquiryForm\b[^>]*collectCategories[^>]*\/>/);
 });

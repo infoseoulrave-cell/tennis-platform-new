@@ -25,6 +25,9 @@ export const eventTypeEnum = pgEnum("event_type", [
   // 광고 슬롯 노출·클릭. 마이그레이션 0005 에서 enum 값 추가.
   "sponsor_impression",
   "sponsor_click",
+  // 일반 공식몰 탐색은 광고·어필리에이트 실적과 별도로 집계한다.
+  "catalog_filter",
+  "store_click",
 ]);
 
 export const eventLog = pgTable("event_log", {

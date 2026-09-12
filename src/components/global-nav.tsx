@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { TabIcon } from "./tab-icons";
 
-// 뉴스·About은 푸터로 옮겨 상단 메뉴를 5개로 줄였다.
+// 용품 탐색과 기존 라켓·스트링 기능을 함께 노출한다.
 // 초심자가 먼저 눌러야 할 "추천"을 맨 앞에 둔다.
 //
 // "추천"은 홈 히어로와 같은 `/start`(3문항)로 보낸다. 예전에는 여기만
@@ -15,6 +15,7 @@ import { TabIcon } from "./tab-icons";
 const links = [
   { href: "/start", label: "추천" },
   { href: "/rackets", label: "라켓" },
+  { href: "/gear", label: "의류·용품" },
   { href: "/strings", label: "스트링" },
   { href: "/compare", label: "비교" },
   { href: "/guide", label: "가이드" },
@@ -217,6 +218,9 @@ export function GlobalNav() {
               <kbd className="hidden lg:inline text-[10px] px-1 py-0.5 bg-[var(--color-text)]/10 rounded">⌘K</kbd>
             </button>
           </div>
+          <Link href="/gear" className="ml-auto mr-3 inline-flex min-h-11 items-center text-sm font-semibold md:hidden">
+            의류·용품
+          </Link>
           <button
             type="button"
             onClick={openSearch}
