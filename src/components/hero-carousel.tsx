@@ -8,6 +8,11 @@ import {
   featuredRacketTags,
   type FeaturedRacket,
 } from "@/data/featured-rackets";
+import { SponsoredBadge } from "@/components/sponsored-badge";
+import { trackEvent } from "@/lib/track-event";
+
+/** 히어로는 홈에 하나뿐이라 지면 이름을 고정한다. 광고 리포트의 키가 된다. */
+const HERO_PLACEMENT = "home_hero";
 
 /**
  * 홈 히어로.
@@ -107,6 +112,17 @@ export function HeroCarousel({ rackets }: { rackets: FeaturedRacket[] }) {
   // 라켓 데이터가 없어도 약속은 남는다. 예전에는 여기서 히어로 전체가
   // 사라져서 홈 첫 화면이 통째로 비었다.
   const racket = rackets[index];
+
+  // 광고 슬롯이 화면에 들어올 때마다 1회. 광고가 아닌 슬라이드는 아무것도
+  // 남기지 않는다 — 광고 리포트에 자연 노출이 섞이면 안 된다.
+  useEffect(() => {
+    if (!racket?.sponsored) return;
+    trackEvent("sponsor_impression", {
+      slug: racket.slug,
+      label: racket.sponsored.label,
+      placement: HERO_PLACEMENT,
+    });
+  }, [racket?.slug, racket?.sponsored]);
   const tags = racket ? featuredRacketTags(racket) : [];
   const specs = racket ? featuredRacketSpecs(racket) : [];
 
@@ -176,8 +192,16 @@ export function HeroCarousel({ rackets }: { rackets: FeaturedRacket[] }) {
                 />
               </div>
 
-              <h2 className="mt-5 text-xl font-bold tracking-tight">{racket.model}</h2>
+              <div className="mt-5 flex items-center gap-2">
+                <h2 className="text-xl font-bold tracking-tight">{racket.model}</h2>
+                {racket.sponsored && <SponsoredBadge on="dark" />}
+              </div>
               <p className="mt-1 text-sm leading-relaxed text-white/60">{racket.tagline}</p>
+              {racket.sponsored && (
+                <p className="mt-1 text-[11px] leading-relaxed text-white/45">
+                  {racket.sponsored.label} · {racket.sponsored.disclosure}
+                </p>
+              )}
 
               <div className="mt-4 flex flex-wrap gap-2">
                 {tags.map((tag) => (
@@ -205,6 +229,14 @@ export function HeroCarousel({ rackets }: { rackets: FeaturedRacket[] }) {
 
               <Link
                 href={`/rackets/${racket.slug}`}
+                onClick={() => {
+                  if (!racket.sponsored) return;
+                  trackEvent("sponsor_click", {
+                    slug: racket.slug,
+                    label: racket.sponsored.label,
+                    placement: HERO_PLACEMENT,
+                  });
+                }}
                 className="mt-4 inline-flex text-sm font-medium text-white/80 hover:text-white hover:underline"
               >
                 상세 데이터 보기 →

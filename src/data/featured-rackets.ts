@@ -13,6 +13,18 @@ export type FeaturedRacketTag = {
   value: string;
 };
 
+/**
+ * 히어로 슬롯이 유료 노출일 때만 채운다. 표시광고법에 따라 "광고" 배지와
+ * 광고주 고지를 함께 그리며, 점수·추천 순위에는 어떤 영향도 주지 않는다
+ * (CANONICAL.md 불변식). 기본값은 없음 — 아무 라켓도 광고가 아니다.
+ */
+export type FeaturedSponsorship = {
+  /** 광고주 표기. 예) "바볼랏코리아 제공" */
+  label: string;
+  /** 사용자에게 보이는 고지 문구. 예) "이 슬롯은 광고이며 점수에는 반영되지 않습니다." */
+  disclosure: string;
+};
+
 export type FeaturedRacket = {
   brand: string;
   model: string;
@@ -24,6 +36,7 @@ export type FeaturedRacket = {
   specSourceUrl: string;
   verifiedAt: string;
   slug: string;
+  sponsored?: FeaturedSponsorship;
   scores: Scores | null;
   weight: string | null;
   headSize: string | null;

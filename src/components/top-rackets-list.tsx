@@ -88,8 +88,8 @@ export async function TopRacketsList() {
       <div className="mb-6">
         <div className="flex items-end justify-between">
           <div>
-            <p className="text-[10px] font-semibold tracking-[0.15em] text-[var(--color-brand)] uppercase mb-1">Popular</p>
-            <h2 className="text-xl font-bold tracking-tight">인기 라켓 TOP 5</h2>
+            <p className="text-[10px] font-semibold tracking-[0.15em] text-[var(--color-brand)] uppercase mb-1">Explore</p>
+            <h2 className="text-xl font-bold tracking-tight">라켓 둘러보기</h2>
           </div>
           <Link href="/rackets" className="text-xs text-[var(--color-text-muted)] hover:text-[var(--color-text)]">
             전체 보기 →
@@ -101,7 +101,7 @@ export async function TopRacketsList() {
         </p>
       </div>
 
-      <ol className="border border-[var(--color-border)] rounded-xl overflow-hidden">
+      <ul className="border border-[var(--color-border)] rounded-xl overflow-hidden">
         {rackets.map((racket, i) => (
           <li
             key={racket.id}
@@ -109,7 +109,6 @@ export async function TopRacketsList() {
               i !== rackets.length - 1 ? "border-b border-[var(--color-border)]" : ""
             } hover:bg-[var(--color-bg-subtle)] transition-colors`}
           >
-            <span className="text-xl font-bold text-[var(--color-text-muted)] w-6 shrink-0">{i + 1}</span>
             <div className="flex-1 min-w-0">
               <p className="text-xs text-[var(--color-text-muted)]">{racket.brand}</p>
               <Link
@@ -143,7 +142,7 @@ export async function TopRacketsList() {
             </div>
           </li>
         ))}
-      </ol>
+      </ul>
     </section>
   );
 }
