@@ -86,6 +86,7 @@ export default function AdvertisePage() {
         <p className="mt-2 text-sm text-[var(--color-text-muted)]">
           초기 제휴사를 모집하고 있습니다. 확인된 이용 데이터와 측정 범위를 문의 시 공유합니다.
         </p>
+        <Link href="/business" lang="en" className="mt-3 inline-flex min-h-11 items-center text-sm underline underline-offset-4">For global brands · English partnership brief →</Link>
       </header>
 
       <section className="mb-12 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-6">
