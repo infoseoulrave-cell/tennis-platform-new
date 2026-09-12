@@ -24,8 +24,8 @@ const HERO_PLACEMENT = "home_hero";
  * 그래서 왼쪽은 **회전하지 않는 약속**이고, 오른쪽 라켓은 그 약속의
  * **증거**다. h1 은 고정이고 라켓 이름은 h2 로 내렸다.
  *
- * 다크 면은 유지한다 — `.impeccable.md` 가 "restrained dark hero" 를 Omega
- * 정체성의 일부로 명시하고 있다. 다만 3단 그라데이션은 평평한 잉크로 바꿨다.
+ * 코트 배경은 제품과 별개의 고정 연출 이미지다. 실제 제품 사진은 흰 면에
+ * 원래 색으로 보여주고, 점수와 스펙은 canonical 데이터를 그대로 사용한다.
  */
 /**
  * 히어로의 피치(약속 + 진단 CTA). 데스크톱은 히어로 안에 h1 으로,
@@ -131,24 +131,19 @@ export function HeroCarousel({ rackets }: { rackets: FeaturedRacket[] }) {
       aria-label="racket lab 소개"
       className="relative bg-[var(--color-bg-dark)] text-white overflow-hidden"
     >
-      {/* 배경 = 현재 라켓의 광고 촬영 사진을 크게 깔아 포스터처럼.
-          (그리드 텍스처는 민호 피드백으로 제거) 캐러셀이 돌면 배경도 함께
-          바뀐다. 사진 자체가 잉크 톤 스튜디오 샷이라 배경과 자연히 섞이고,
-          왼쪽 그라데이션이 텍스트 가독을 지킨다. */}
-      {racket && (
-        <div aria-hidden="true" className="pointer-events-none absolute inset-0">
-          <Image
-            src={racket.imageUrl}
-            alt=""
-            fill
-            sizes="100vw"
-            className="object-cover object-[58%_12%] opacity-75"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-[var(--color-bg-dark)] via-[var(--color-bg-dark)]/30 to-transparent" />
-          <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-[var(--color-bg-dark)] to-transparent" />
-        </div>
-      )}
-      <div className="relative max-w-6xl mx-auto px-6 py-10 md:py-24">
+      {/* 제품이 없는 고정 코트 장면. 슬라이드가 바뀌어도 배경은 유지한다. */}
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0">
+        <Image
+          src="/images/hero/court-editorial-v1.webp"
+          alt=""
+          fill
+          sizes="100vw"
+          preload
+          className="object-cover object-[65%_center] md:object-center"
+        />
+        <div className="absolute inset-0 bg-black/15 md:bg-gradient-to-r md:from-black/55 md:via-black/15 md:to-transparent" />
+      </div>
+      <div className="relative max-w-6xl mx-auto px-5 pb-6 pt-24 md:px-6 md:py-16">
         <div className="grid gap-12 md:grid-cols-[1fr_0.85fr] md:items-center">
           {/* 약속 — 회전하지 않는다. 모바일에서는 이 피치를 히어로에서 빼고
               TOP 5 아래 별도 배너(page.tsx 의 HeroPitch)로 내린다 —
@@ -170,10 +165,10 @@ export function HeroCarousel({ rackets }: { rackets: FeaturedRacket[] }) {
                   setFocusWithinPaused(false);
                 }
               }}
-              className="rounded-2xl border border-white/10 bg-white/[0.03] p-6"
+              className="min-w-0 overflow-hidden rounded-2xl border border-white/20 bg-[var(--color-bg-dark)] shadow-2xl shadow-black/20"
             >
-              <div className="flex items-center justify-between gap-3">
-                <span className="text-[10px] font-medium tracking-[0.2em] text-white/50">
+              <div className="flex items-center justify-between gap-3 px-5 py-3">
+                <span className="text-[10px] font-medium tracking-[0.2em] text-white/70">
                   {racket.brand.toUpperCase()}
                 </span>
                 <span className="rounded bg-white/10 px-2 py-0.5 text-[10px] text-white/70">
@@ -181,126 +176,131 @@ export function HeroCarousel({ rackets }: { rackets: FeaturedRacket[] }) {
                 </span>
               </div>
 
-              <div className="relative mt-5 flex aspect-[4/3] items-center justify-center">
+              <div className="relative h-52 bg-white md:h-64">
                 <Image
                   src={racket.imageUrl}
                   alt={racket.model}
-                  width={500}
-                  height={500}
+                  fill
+                  sizes="(min-width: 1152px) 480px, (min-width: 768px) 42vw, calc(100vw - 40px)"
                   preload={index === 0}
-                  className="max-h-[260px] object-contain"
+                  className="object-contain p-4"
                 />
               </div>
 
-              <div className="mt-5 flex items-center gap-2">
-                <h2 className="text-xl font-bold tracking-tight">{racket.model}</h2>
-                {racket.sponsored && <SponsoredBadge on="dark" />}
-              </div>
-              <p className="mt-1 text-sm leading-relaxed text-white/60">{racket.tagline}</p>
-              {racket.sponsored && (
-                <p className="mt-1 text-[11px] leading-relaxed text-white/45">
-                  {racket.sponsored.label} · {racket.sponsored.disclosure}
-                </p>
-              )}
+              <div className="px-5 pb-4 pt-4 md:px-6 md:pt-5">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h2 className="text-xl font-bold tracking-tight">{racket.model}</h2>
+                  {racket.sponsored && <SponsoredBadge on="dark" />}
+                </div>
+                <p className="mt-1 text-sm leading-relaxed text-white/70">{racket.tagline}</p>
+                {racket.sponsored && (
+                  <p className="mt-1 text-[11px] leading-relaxed text-white/45">
+                    {racket.sponsored.label} · {racket.sponsored.disclosure}
+                  </p>
+                )}
 
-              <div className="mt-4 flex flex-wrap gap-2">
-                {tags.map((tag) => (
-                  <div
-                    key={tag.label}
-                    className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-1.5"
-                  >
-                    <span aria-hidden="true" className="text-sm text-white/50">{tag.icon}</span>
-                    <span className="text-xs text-white/60">{tag.label}</span>
-                    <span className="text-sm font-semibold">{tag.value}</span>
-                  </div>
-                ))}
-              </div>
-
-              <div className="mt-3 flex flex-wrap gap-2">
-                {specs.map((spec) => (
-                  <span
-                    key={spec}
-                    className="rounded border border-white/10 px-2 py-1 text-xs text-white/40"
-                  >
-                    {spec}
-                  </span>
-                ))}
-              </div>
-
-              <Link
-                href={`/rackets/${racket.slug}`}
-                onClick={() => {
-                  if (!racket.sponsored) return;
-                  trackEvent("sponsor_click", {
-                    slug: racket.slug,
-                    label: racket.sponsored.label,
-                    placement: HERO_PLACEMENT,
-                  });
-                }}
-                className="mt-4 inline-flex text-sm font-medium text-white/80 hover:text-white hover:underline"
-              >
-                상세 데이터 보기 →
-              </Link>
-
-              <div className="mt-3 flex items-center gap-2 text-[10px] text-white/40">
-                <a
-                  href={racket.imageSourceUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="hover:text-white/70 hover:underline"
-                >
-                  이미지 출처
-                </a>
-                <span aria-hidden="true">·</span>
-                <a
-                  href={racket.specSourceUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="hover:text-white/70 hover:underline"
-                >
-                  스펙 확인 {racket.verifiedAt}
-                </a>
-              </div>
-
-              <div className="mt-4 flex items-center justify-between gap-3 border-t border-white/10 pt-4">
-                <div className="flex gap-0.5">
-                  {rackets.map((_, i) => (
-                    <button
-                      key={i}
-                      type="button"
-                      onClick={() => {
-                        setIndex(i);
-                        setRotationPaused(true);
-                      }}
-                      className="flex min-h-6 min-w-6 items-center justify-center rounded-full"
-                      aria-label={`${i + 1}번째 슬라이드 보기`}
-                      aria-current={i === index ? "true" : undefined}
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {tags.map((tag) => (
+                    <div
+                      key={tag.label}
+                      className="flex items-center gap-1.5 rounded-lg border border-white/15 bg-white/5 px-2.5 py-1.5"
                     >
-                      <span
-                        aria-hidden="true"
-                        className={`h-1.5 rounded-full transition-all ${
-                          i === index ? "w-8 bg-white" : "w-1.5 bg-white/30"
-                        }`}
-                      />
-                    </button>
+                      <span aria-hidden="true" className="text-sm text-white/50">{tag.icon}</span>
+                      <span className="text-xs text-white/70">{tag.label}</span>
+                      <span className="text-sm font-semibold">{tag.value}</span>
+                    </div>
                   ))}
                 </div>
-                {prefersReducedMotion ? (
-                  <span role="status" className="text-[10px] text-white/50">자동 회전 꺼짐</span>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => setRotationPaused((paused) => !paused)}
-                    aria-label={rotationPaused ? "슬라이드 자동 회전 재생" : "슬라이드 자동 회전 일시정지"}
-                    className="min-h-6 px-1 text-[10px] text-white/60 hover:text-white"
+
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {specs.map((spec) => (
+                    <span
+                      key={spec}
+                      className="rounded border border-white/15 px-2 py-1 text-xs text-white/70"
+                    >
+                      {spec}
+                    </span>
+                  ))}
+                </div>
+
+                <Link
+                  href={`/rackets/${racket.slug}`}
+                  onClick={() => {
+                    if (!racket.sponsored) return;
+                    trackEvent("sponsor_click", {
+                      slug: racket.slug,
+                      label: racket.sponsored.label,
+                      placement: HERO_PLACEMENT,
+                    });
+                  }}
+                  className="mt-2 inline-flex min-h-10 items-center text-sm font-medium text-white/90 underline-offset-4 hover:text-white hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
+                >
+                  상세 데이터 보기 →
+                </Link>
+
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[10px] text-white/60">
+                  <a
+                    href={racket.imageSourceUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="hover:text-white/70 hover:underline"
                   >
-                    {rotationPaused ? "재생" : "일시정지"}
-                  </button>
-                )}
+                    제품 사진 출처
+                  </a>
+                  <span aria-hidden="true">·</span>
+                  <a
+                    href={racket.specSourceUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="hover:text-white/70 hover:underline"
+                  >
+                    스펙 확인 {racket.verifiedAt}
+                  </a>
+                </div>
+
+                <div className="mt-3 flex items-center justify-between gap-3 border-t border-white/15 pt-3">
+                  <div className="flex gap-0.5">
+                    {rackets.map((_, i) => (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => {
+                          setIndex(i);
+                          setRotationPaused(true);
+                        }}
+                        className="flex min-h-6 min-w-6 items-center justify-center rounded-full"
+                        aria-label={`${i + 1}번째 슬라이드 보기`}
+                        aria-current={i === index ? "true" : undefined}
+                      >
+                        <span
+                          aria-hidden="true"
+                          className={`h-1.5 rounded-full transition-all ${
+                            i === index ? "w-8 bg-white" : "w-1.5 bg-white/30"
+                          }`}
+                        />
+                      </button>
+                    ))}
+                  </div>
+                  {prefersReducedMotion ? (
+                    <span role="status" className="text-[10px] text-white/50">자동 회전 꺼짐</span>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setRotationPaused((paused) => !paused)}
+                      aria-label={rotationPaused ? "슬라이드 자동 회전 재생" : "슬라이드 자동 회전 일시정지"}
+                      className="min-h-6 px-1 text-[10px] text-white/60 hover:text-white"
+                    >
+                      {rotationPaused ? "재생" : "일시정지"}
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           )}
         </div>
+        <p className="mt-4 text-right text-[10px] text-white/70">
+          <span className="rounded bg-black/45 px-2 py-1">배경: AI 연출 이미지</span>
+        </p>
       </div>
     </section>
   );
