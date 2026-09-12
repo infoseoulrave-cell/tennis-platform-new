@@ -24,7 +24,7 @@ test("/advertise 는 원칙 3개·지면 4종·무상 데이터 파트너십·�
   assert.match(html, /데이터 파트너십 \(무상\)/);
   assert.match(html, /시타 라켓 대여/);
   assert.match(html, /href="\/partners"/);
-  assert.match(html, /월간 이용 데이터는 문의 시 최신 수치로 공유합니다/);
+  assert.match(html, /확인된 이용 데이터와 측정 범위/);
 
   // 브랜드가 기본 선택된 문의 폼 (허니팟 포함)
   assert.match(html, /<option value="brand" selected="">/);

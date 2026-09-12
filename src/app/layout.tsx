@@ -7,6 +7,7 @@ import { Footer } from "@/components/footer";
 import { CompareTray } from "@/components/compare-tray";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { PageViewTracker } from "@/components/page-view-tracker";
 
 // VI: Archivo 는 정보(라틴·숫자), Instrument Serif Italic 은 목소리(로고 lab·
 // 시리즈명·인용 전용). 한글 본문은 --font-sans 폴백의 Pretendard 가 받는다.
@@ -60,6 +61,7 @@ export default function RootLayout({
         <Footer />
         <CompareTray />
         <MobileTabBar />
+        <PageViewTracker />
         {/* 방문·경로 집계. Vercel 프로젝트에서 Web Analytics 를 켜야 수집이 시작된다. */}
         <Analytics />
         <SpeedInsights />

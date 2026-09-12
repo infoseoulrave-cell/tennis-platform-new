@@ -48,19 +48,20 @@ export async function POST(request: NextRequest) {
   const { sessionId, eventType, payload, pageUrl, referrer } = parsed.data;
   const userAgent = request.headers.get("user-agent") ?? undefined;
 
-  // Fire-and-forget — don't await so the response is returned immediately
-  db.insert(eventLog)
-    .values({
+  // A successful response means the event was persisted before the function ends.
+  try {
+    await db.insert(eventLog).values({
       sessionId,
       eventType,
       payload: payload ?? null,
       pageUrl: pageUrl ?? null,
       referrer: referrer ?? null,
       userAgent: userAgent ?? null,
-    })
-    .catch((err) => {
-      console.error("[events] insert failed:", err);
     });
+  } catch {
+    console.error("[events] insert failed");
+    return NextResponse.json({ error: "Event storage unavailable" }, { status: 503 });
+  }
 
   return new NextResponse(null, { status: 204 });
 }

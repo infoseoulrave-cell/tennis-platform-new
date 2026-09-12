@@ -80,13 +80,35 @@ export default function AdvertisePage() {
         </h1>
         <p className="mt-4 text-[var(--color-text-secondary)] leading-relaxed">
           racket lab 은 한국에서 실제 판매 중인 테니스 라켓을 5축 점수로 읽고
-          비교하는 곳입니다. 브랜드·유통사와는 두 가지로 만납니다 — 유료 광고
-          지면, 그리고 무상 데이터 파트너십.
+          비교하는 곳입니다. 브랜드·판매점의 고객이 제품을 이해하고 시타·상담·구매로
+          이어지도록 캠페인과 라켓 선택 도구를 함께 만듭니다.
         </p>
         <p className="mt-2 text-sm text-[var(--color-text-muted)]">
-          월간 이용 데이터는 문의 시 최신 수치로 공유합니다.
+          초기 제휴사를 모집하고 있습니다. 확인된 이용 데이터와 측정 범위를 문의 시 공유합니다.
         </p>
       </header>
+
+      <section className="mb-12 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-6">
+        <h2 className="text-xl font-bold text-[var(--color-text)]">4주 라켓 선택·시타 연결 캠페인</h2>
+        <p className="mt-3 text-sm leading-relaxed text-[var(--color-text-secondary)]">
+          기존 고객 채널에서 라켓 진단을 시작하고, 주력 제품 비교와 판매점 상담으로 연결합니다.
+          브랜드 또는 판매점 한 곳, 캠페인 한 개를 대상으로 합니다.
+        </p>
+        <ul className="mt-4 space-y-2 text-sm text-[var(--color-text-secondary)]">
+          <li>캠페인 페이지 1개와 기존 카탈로그의 주력 제품 최대 5종</li>
+          <li>라켓 진단·비교 연결, QR·캠페인 링크, 판매처 또는 상담 접수 연결</li>
+          <li>주간 집계 4회와 종료 보고 1회</li>
+        </ul>
+        <p className="mt-4 font-semibold text-[var(--color-text)]">초기 제안가 250만 원 · 부가세 별도</p>
+        <p className="mt-2 text-sm leading-relaxed text-[var(--color-text-secondary)]">
+          준비 기간·공개일·측정 항목은 상담 후 확정합니다. 공식 자료와 홍보 채널,
+          시타 장비·장소·현장 운영은 제휴사와 협의합니다. 별도 매체비와 행사 운영비는
+          포함하지 않으며 방문·판매 건수를 보장하지 않습니다.
+        </p>
+        <Link href="#inquiry" className="mt-4 inline-flex min-h-11 items-center font-semibold underline underline-offset-4">
+          캠페인 상담하기 →
+        </Link>
+      </section>
 
       <section className="mb-12">
         <h2 className="text-lg font-semibold text-[var(--color-text)] mb-4">
@@ -114,6 +136,9 @@ export default function AdvertisePage() {
         <h2 className="text-lg font-semibold text-[var(--color-text)] mb-4">
           광고 지면
         </h2>
+        <p className="mb-4 text-sm text-[var(--color-text-secondary)]">
+          아래는 협의 가능한 구성입니다. 지면별 구현 범위와 운영 가능 일정은 계약 전에 확인합니다.
+        </p>
         <div className="overflow-x-auto rounded-2xl border border-[var(--color-border)]">
           <table className="w-full min-w-[640px] text-sm">
             <thead className="bg-[var(--color-bg-subtle)] text-left text-xs text-[var(--color-text-secondary)]">
@@ -149,7 +174,7 @@ export default function AdvertisePage() {
         </h2>
         <p className="text-sm text-[var(--color-text-secondary)] leading-relaxed">
           광고와 별개로, 데이터가 정확해지는 일은 무상으로 합니다. 브랜드가
-          아래를 주면 우리는 신제품 상세를 출시일에 맞춰 공개합니다.
+          아래 자료를 제공하면 확인을 거쳐 반영 범위와 공개일을 협의합니다.
         </p>
         <ul className="mt-4 space-y-2">
           {DATA_PARTNERSHIP.map((item) => (
@@ -179,13 +204,16 @@ export default function AdvertisePage() {
         </Link>
       </section>
 
-      <section className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-white)] p-6">
+      <section id="inquiry" className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-white)] p-6">
         <h2 className="text-lg font-bold text-[var(--color-text)]">브랜드 제휴 문의</h2>
         <p className="mt-2 mb-5 text-sm leading-relaxed text-[var(--color-text-secondary)]">
           원하는 지면이나 데이터 파트너십 내용을 적어 주세요. 확인 후 입력하신
           연락처로 회신드립니다.
         </p>
         <PartnerInquiryForm defaultType="brand" source="advertise_page" />
+        <p className="mt-4 text-sm text-[var(--color-text-secondary)]">
+          이메일로도 문의할 수 있습니다: <a className="underline underline-offset-4" href="mailto:info.seoulrave@gmail.com">info.seoulrave@gmail.com</a>
+        </p>
       </section>
     </div>
   );
