@@ -19,9 +19,13 @@ type InquiryType = (typeof INQUIRY_TYPES)[number];
 export function PartnerInquiryForm({
   defaultType = INQUIRY_TYPES[0],
   source = "partners_page",
+  collectCategories = false,
+  messagePlaceholder = "취급 브랜드, 매장 위치, 원하시는 제휴 방식 등",
 }: {
   defaultType?: InquiryType;
   source?: string;
+  collectCategories?: boolean;
+  messagePlaceholder?: string;
 } = {}) {
   const [status, setStatus] = useState<Status>("idle");
   const [errorMsg, setErrorMsg] = useState("");
@@ -30,6 +34,11 @@ export function PartnerInquiryForm({
     e.preventDefault();
     const form = e.currentTarget;
     const data = new FormData(form);
+    const categories = data.getAll("categories").map(String);
+    const message = [
+      ...(collectCategories ? [`[취급 품목] ${categories.join(", ") || "미선택"}`] : []),
+      String(data.get("message") || ""),
+    ].filter(Boolean).join("\n");
 
     setStatus("submitting");
     setErrorMsg("");
@@ -42,7 +51,7 @@ export function PartnerInquiryForm({
           inquiryType: data.get("inquiryType"),
           name: data.get("name"),
           contact: data.get("contact"),
-          message: data.get("message") || undefined,
+          message: message || undefined,
           website: data.get("website"),
         }),
       });
@@ -126,6 +135,19 @@ export function PartnerInquiryForm({
         />
       </div>
       <div>
+        {collectCategories && (
+          <fieldset className="mb-4 rounded-xl border border-gray-200 p-3">
+            <legend className="px-1 text-xs font-medium text-gray-700">취급 품목 (복수 선택)</legend>
+            <div className="flex flex-wrap gap-x-4 gap-y-2">
+              {["라켓", "스트링", "의류", "테니스 공", "가방", "그립·액세서리", "기타 용품"].map((category) => (
+                <label key={category} className="flex min-h-9 items-center gap-2 text-sm">
+                  <input type="checkbox" name="categories" value={category} className="accent-gray-900" />
+                  {category}
+                </label>
+              ))}
+            </div>
+          </fieldset>
+        )}
         <label htmlFor="message" className="mb-1 block text-xs font-medium text-gray-700">
           문의 내용 (선택)
         </label>
@@ -133,9 +155,9 @@ export function PartnerInquiryForm({
           id="message"
           name="message"
           rows={3}
-          maxLength={2000}
+          maxLength={collectCategories ? 1500 : 2000}
           className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm"
-          placeholder="취급 브랜드, 매장 위치, 원하시는 제휴 방식 등"
+          placeholder={messagePlaceholder}
         />
       </div>
       {status === "error" && (

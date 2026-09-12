@@ -20,7 +20,9 @@ export type EventType =
   | "page_view"
   | "search"
   | "sponsor_impression"
-  | "sponsor_click";
+  | "sponsor_click"
+  | "catalog_filter"
+  | "store_click";
 
 export interface EventPayloadMap {
   diagnosis_start: { entryPoint: string };
@@ -76,4 +78,8 @@ export interface EventPayloadMap {
   sponsor_impression: { slug: string; label: string; placement: string };
   /** 광고 표기된 슬롯의 링크를 눌렀다. */
   sponsor_click: { slug: string; label: string; placement: string };
+  /** 카테고리 탐색 신호이며 구매 의사나 주문 확정이 아니다. */
+  catalog_filter: { category: string; brand: string; subcategory: string; resultCount: number; action: "view" | "change" };
+  /** 제휴 계약이 없는 공식몰 이동을 affiliate_click과 구분한다. */
+  store_click: { collectionId: string; category: string; subcategory: string; collectionCategories: readonly string[]; brand: string; destinationHost: string; commercialRelationship: "none" };
 }

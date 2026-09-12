@@ -43,6 +43,13 @@
       "when": 1789164492396,
       "tag": "0005_sponsor_events",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1789253736087,
+      "tag": "0006_gear_discovery_events",
+      "breakpoints": true
     }
   ]
 }

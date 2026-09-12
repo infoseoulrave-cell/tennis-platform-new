@@ -27,17 +27,17 @@ const instrumentSerif = Instrument_Serif({
 
 export const metadata: Metadata = {
   title: {
-    default: "racket lab — 라켓을 읽다",
+    default: "racket lab — 라켓부터 테니스 의류·용품까지",
     template: "%s | racket lab",
   },
   description:
-    "데이터 기반 5축 분석으로 당신에게 맞는 테니스 라켓을 찾아드립니다. 비교, 추천, 구매까지.",
+    "나에게 맞는 라켓을 추천·비교하고 테니스 의류, 공, 액세서리의 공식 구매처를 찾아보세요.",
   openGraph: {
     type: "website",
     locale: "ko_KR",
     siteName: "racket lab",
-    title: "racket lab — 라켓을 읽다",
-    description: "데이터 기반 5축 분석으로 당신에게 맞는 테니스 라켓을 찾아드립니다.",
+    title: "racket lab — 라켓부터 테니스 의류·용품까지",
+    description: "라켓 추천·비교와 여러 브랜드의 테니스 의류·공·액세서리 탐색을 한곳에서.",
   },
   robots: { index: true, follow: true },
 };

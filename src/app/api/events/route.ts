@@ -19,6 +19,8 @@ const EVENT_TYPES = [
   "search",
   "sponsor_impression",
   "sponsor_click",
+  "catalog_filter",
+  "store_click",
 ] as const;
 
 const eventSchema = z.object({

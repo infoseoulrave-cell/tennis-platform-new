@@ -34,7 +34,7 @@ test("recommendation detail links use canonical racket pages instead of deleted 
 test("public partner page does not publish placeholder stores or fake reservations", () => {
   const partners = read("src/app/partners/page.tsx");
   assert.doesNotMatch(partners, /MOCK_PARTNERS|역삼동 123-4|시타 예약하기/);
-  assert.match(partners, /제휴 매장 준비 중/);
+  assert.match(partners, /공식몰 컬렉션 탐색과 외부 구매처 연결 단계/);
 });
 
 test("medical and string copy stays non-diagnostic", () => {

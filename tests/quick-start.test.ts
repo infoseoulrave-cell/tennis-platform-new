@@ -165,7 +165,7 @@ test("홈 h1 은 회전하지 않는 사이트의 약속이다", () => {
   assert.match(hero, /<h2[^>]*>\{racket\.model\}<\/h2>/);
 });
 
-test("primary navigation stays at five items and leads with 추천", () => {
+test("primary navigation adds gear discovery and still leads with 추천", () => {
   const nav = read("src/components/global-nav.tsx");
   const block = nav.slice(nav.indexOf("const links = ["));
   const hrefs = [...block.slice(0, block.indexOf("];")).matchAll(/href: "([^"]+)"/g)]
@@ -176,6 +176,7 @@ test("primary navigation stays at five items and leads with 추천", () => {
   assert.deepEqual(hrefs, [
     "/start",
     "/rackets",
+    "/gear",
     "/strings",
     "/compare",
     "/guide",

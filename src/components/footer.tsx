@@ -5,6 +5,7 @@ import { DATA_VERIFIED_AT } from "@/data/data-freshness";
 const productLinks = [
   { href: "/rackets", label: "전체 라켓" },
   { href: "/strings", label: "스트링" },
+  { href: "/gear", label: "테니스 의류·용품" },
   { href: "/rackets?sort=newest", label: "신상품" },
   { href: "/rackets?sort=price_asc", label: "가격순" },
   // 상단 메뉴·히어로와 같은 곳으로 보낸다. 같은 라벨이 서로 다른 진단으로
@@ -22,7 +23,7 @@ const guideLinks = [
 const moreLinks = [
   { href: "/updates", label: "뉴스" },
   { href: "/shops", label: "매장 찾기" },
-  { href: "/partners", label: "매장 입점 문의" },
+  { href: "/partners", label: "브랜드·판매점 입점 문의" },
   { href: "/advertise", label: "브랜드 제휴" },
   { href: "/about", label: "About" },
 ];
@@ -40,7 +41,7 @@ export function Footer() {
             </span>
             <p className="text-xs text-[#6F6A60] tracking-wide mt-1">Read your racket.</p>
             <p className="text-sm leading-relaxed mt-3">
-              데이터 기반 5축 분석으로 당신에게 맞는 라켓을 찾아드립니다.
+              라켓을 비교하고, 코트에서 입고 쓸 테니스 의류와 용품을 찾아보세요.
             </p>
           </div>
 
@@ -93,7 +94,7 @@ export function Footer() {
               최신인 것처럼 보인다. 데이터에서 직접 계산한다. */}
           {DATA_VERIFIED_AT && (
             <p className="text-xs text-[#6F6A60]">
-              데이터 확인 기준일 {DATA_VERIFIED_AT}
+              라켓 데이터 확인 기준일 {DATA_VERIFIED_AT}
             </p>
           )}
         </div>
