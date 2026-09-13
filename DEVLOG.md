@@ -42,3 +42,4 @@
 - [Chapter 31 — 광고 포스터 구도의 홈 캠페인](devlog/chapter-031.md)
 - [Chapter 32 — 모바일 라켓 필터와 URL 상태 정리](devlog/chapter-032.md)
 - [Chapter 33 — 테니스 스커트·원피스 구매 가이드](devlog/chapter-033.md)
+- [Chapter 34 — 공개 페이지 사이트맵과 robots 안내](devlog/chapter-034.md)
