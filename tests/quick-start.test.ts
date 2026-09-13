@@ -119,14 +119,14 @@ test("quick start page reuses the existing recommendation endpoint", () => {
   assert.match(page, /href="\/diagnosis"/);
 });
 
-test("초심자 진입점은 홈 맨 위 히어로의 주 CTA 다", () => {
+test("초심자 진입점은 홈의 고정 진단 안내에서 /start 로 연결된다", () => {
   const home = read("src/app/page.tsx");
-  // 히어로가 홈의 첫 섹션이고, 초심자 배너는 그 안으로 접혔다.
+  // 제품 캠페인과 고정 진단 안내가 있어도 진단 입구는 하나다.
   assert.match(home, /<HeroCarousel/);
   assert.doesNotMatch(home, /BeginnerBanner/);
 
   const hero = read("src/components/hero-carousel.tsx");
-  assert.match(hero, /href="\/start"/, "히어로 주 CTA 가 /start 여야 합니다");
+  assert.match(hero, /href="\/start"/, "진단 안내의 주 CTA 가 /start 여야 합니다");
   // 주 CTA 는 브랜드 액션 색(라임)을 쓴다. 부 CTA 와 무게가 같으면 안 된다.
   assert.match(hero, /href="\/start"[\s\S]{0,240}bg-\[var\(--color-accent\)\]/);
 });
@@ -135,7 +135,7 @@ test("추천 깔때기는 하나다 — /start 가 주 경로, /recommendation �
   const hero = read("src/components/hero-carousel.tsx");
   const quickLinks = read("src/components/quick-links.tsx");
 
-  // 정밀 진단은 히어로 안에 부차 링크로만 남는다.
+  // 정밀 진단은 고정 진단 안내의 부차 링크로 남는다.
   // `/recommendation` 은 `/diagnosis` 로 가는 307 스텁이므로 내부 링크는
   // 한 번 튀지 않고 실제 목적지를 가리킨다.
   assert.match(hero, /href="\/diagnosis"/);

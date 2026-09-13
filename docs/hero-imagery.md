@@ -1,5 +1,8 @@
 # Home hero imagery
 
+Historical record of PR #20. This treatment was superseded after owner feedback;
+see [the current campaign imagery](hero-campaign-imagery.md).
+
 Updated 2026-09-13 KST following the owner's screenshot feedback.
 
 The previous hero used the same unverified local racket render both as a large

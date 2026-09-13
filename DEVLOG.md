@@ -39,3 +39,4 @@
 - [Chapter 28 — 해외 본사 B2B 제휴 소개](devlog/chapter-028.md)
 - [Chapter 29 — 테니스 의류·용품 탐색과 공급 협력](devlog/chapter-029.md)
 - [Chapter 30 — 홈 배너 사진과 출처 정리](devlog/chapter-030.md)
+- [Chapter 31 — 광고 포스터 구도의 홈 캠페인](devlog/chapter-031.md)
