@@ -33,10 +33,15 @@ export default async function GearPage({ searchParams }: {
         </div>
       </header>
 
-      <aside className="mb-12 rounded-xl bg-[var(--color-bg-subtle)] px-5 py-4 text-xs leading-6 text-[var(--color-text-secondary)]">
+      <aside className="mb-5 rounded-xl bg-[var(--color-bg-subtle)] px-5 py-4 text-xs leading-6 text-[var(--color-text-secondary)]">
         <p>현재는 공식몰 컬렉션을 안내하는 서비스입니다. 아래 브랜드와 입점·광고·수수료 제휴가 체결된 상태는 아닙니다.</p>
         <p>가격, 사이즈, 재고, 배송·교환 조건은 이동한 공식몰에서 확인하세요. 구매와 결제도 각 공식몰에서 진행됩니다.</p>
       </aside>
+
+      <Link href="/guide/tennis-apparel" className="mb-10 flex min-h-11 flex-wrap items-center justify-between gap-x-6 gap-y-2 border-y border-[var(--color-border)] px-1 py-4 text-sm focus-visible:outline-2 focus-visible:outline-offset-4">
+        <span className="text-[var(--color-text-secondary)]">스커트·원피스의 이너, 공 수납, 기장이 궁금하다면</span>
+        <span className="font-semibold underline underline-offset-4">고르는 법 보기 <span aria-hidden="true">→</span></span>
+      </Link>
 
       <GearExplorer filters={filters} searchParams={params} />
 

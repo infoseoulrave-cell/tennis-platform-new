@@ -20,6 +20,12 @@ const guides = [
     description: "G1~G5 기준과 재는 방법",
   },
   {
+    href: "/guide/tennis-apparel",
+    emoji: "👕",
+    title: "테니스 스커트·원피스 고르는 법",
+    description: "이너·공 수납·기장과 구매 전 확인할 것",
+  },
+  {
     href: "/guide/terms",
     emoji: "📖",
     title: "용어사전",
@@ -35,7 +41,7 @@ export default function GuideHubPage() {
           테니스 가이드
         </h1>
         <p className="mt-3 text-[var(--color-text-secondary)] leading-relaxed">
-          라켓 선택부터 스트링 세팅까지, 알면 달라지는 테니스 지식
+          라켓 선택과 스트링 세팅부터, 코트에서 입을 옷을 고르는 법까지
         </p>
       </header>
 
