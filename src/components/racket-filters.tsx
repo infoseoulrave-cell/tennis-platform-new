@@ -1,18 +1,10 @@
-"use client";
-
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-
-type FilterParams = {
-  brand?: string | string[];
-  q?: string;
-  sort?: string;
-  minWeight?: string;
-  maxWeight?: string;
-  minHead?: string;
-  maxHead?: string;
-  segment?: string;
-};
+import Link from "next/link";
+import {
+  activeRacketFilterCount,
+  racketFilterHref,
+  resetRacketFiltersHref,
+  type RacketSearchParams,
+} from "@/lib/racket-filter-urls";
 
 const WEIGHT_RANGES = [
   { label: "전체", min: "", max: "" },
@@ -24,9 +16,9 @@ const WEIGHT_RANGES = [
 
 const HEAD_RANGES = [
   { label: "전체", min: "", max: "" },
-  { label: "~97\" (소형)", min: "", max: "97" },
-  { label: "98-100\" (표준)", min: "98", max: "100" },
-  { label: "100\"+ (대형)", min: "100", max: "" },
+  { label: '~97" (소형)', min: "", max: "97" },
+  { label: '98-100" (표준)', min: "98", max: "100" },
+  { label: '100"+ (대형)', min: "100", max: "" },
 ];
 
 const SEGMENTS = [
@@ -37,122 +29,187 @@ const SEGMENTS = [
   { value: "pro", label: "프로" },
 ];
 
-export function RacketFiltersPanel({ currentParams }: { currentParams: FilterParams }) {
-  const router = useRouter();
-  const [selectedWeight, setSelectedWeight] = useState(() => {
-    if (currentParams.minWeight || currentParams.maxWeight) {
-      return WEIGHT_RANGES.findIndex(
-        (r) => r.min === (currentParams.minWeight ?? "") && r.max === (currentParams.maxWeight ?? "")
-      );
-    }
-    return 0;
-  });
-  const [selectedHead, setSelectedHead] = useState(() => {
-    if (currentParams.minHead || currentParams.maxHead) {
-      return HEAD_RANGES.findIndex(
-        (r) => r.min === (currentParams.minHead ?? "") && r.max === (currentParams.maxHead ?? "")
-      );
-    }
-    return 0;
-  });
-  const [selectedSegment, setSelectedSegment] = useState(currentParams.segment ?? "");
+function filterLinkClass(selected: boolean): string {
+  return `flex min-h-11 items-center rounded px-2 py-2 text-sm transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-text)] ${
+    selected
+      ? "bg-[var(--color-accent)] text-[var(--color-text)] font-semibold"
+      : "text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-subtle)] hover:text-[var(--color-text)]"
+  }`;
+}
 
-  function applyFilters(overrides: Partial<FilterParams> = {}) {
-    const wr = WEIGHT_RANGES[selectedWeight];
-    const hr = HEAD_RANGES[selectedHead];
-    const params = new URLSearchParams();
-
-    const brand = overrides.brand ?? currentParams.brand;
-    if (brand) {
-      const b = Array.isArray(brand) ? brand[0] : brand;
-      if (b) params.set("brand", b);
-    }
-    if (currentParams.sort) params.set("sort", currentParams.sort);
-    if (currentParams.q) params.set("q", currentParams.q);
-
-    const wMin = overrides.minWeight ?? wr.min;
-    const wMax = overrides.maxWeight ?? wr.max;
-    if (wMin) params.set("minWeight", wMin);
-    if (wMax) params.set("maxWeight", wMax);
-
-    const hMin = overrides.minHead ?? hr.min;
-    const hMax = overrides.maxHead ?? hr.max;
-    if (hMin) params.set("minHead", hMin);
-    if (hMax) params.set("maxHead", hMax);
-
-    const seg = overrides.segment ?? selectedSegment;
-    if (seg) params.set("segment", seg);
-
-    router.push(`/rackets?${params.toString()}`);
-  }
+/** URL이 유일한 선택 상태이므로 뒤로가기나 브랜드 변경 뒤에도 표시가 일치한다. */
+export function RacketFiltersPanel({ currentParams }: { currentParams: RacketSearchParams }) {
+  const customWeight = !WEIGHT_RANGES.some((range) =>
+    range.min === (currentParams.minWeight ?? "") && range.max === (currentParams.maxWeight ?? ""),
+  );
+  const customHead = !HEAD_RANGES.some((range) =>
+    range.min === (currentParams.minHead ?? "") && range.max === (currentParams.maxHead ?? ""),
+  );
 
   return (
     <>
       <div>
-        <h3 className="font-semibold text-sm mb-3">무게</h3>
-        <div className="space-y-1">
-          {WEIGHT_RANGES.map((range, i) => (
-            <button
-              key={range.label}
-              onClick={() => {
-                setSelectedWeight(i);
-                applyFilters({ minWeight: range.min, maxWeight: range.max });
-              }}
-              className={`block w-full text-left text-sm py-1.5 px-2 rounded transition-colors ${
-                selectedWeight === i
-                  ? "text-[var(--color-text)] font-medium bg-[var(--color-bg-subtle)]"
-                  : "text-[var(--color-text-secondary)] hover:text-[var(--color-text)]"
-              }`}
-            >
-              {range.label}
-            </button>
-          ))}
-        </div>
+        <h3 className="mb-3 text-sm font-semibold">무게</h3>
+        {customWeight && (
+          <p className="mb-2 text-xs text-[var(--color-text-secondary)]">
+            적용 범위: {currentParams.minWeight || "제한 없음"} ~ {currentParams.maxWeight || "제한 없음"}g
+          </p>
+        )}
+        <ul className="space-y-1">
+          {WEIGHT_RANGES.map((range) => {
+            const selected = range.min === (currentParams.minWeight ?? "")
+              && range.max === (currentParams.maxWeight ?? "");
+            return (
+              <li key={range.label}>
+                <Link
+                  prefetch={false}
+                  href={racketFilterHref(currentParams, { minWeight: range.min, maxWeight: range.max })}
+                  aria-current={selected ? "true" : undefined}
+                  className={filterLinkClass(selected)}
+                >
+                  {range.label}
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
       </div>
 
       <div>
-        <h3 className="font-semibold text-sm mb-3">헤드사이즈</h3>
-        <div className="space-y-1">
-          {HEAD_RANGES.map((range, i) => (
-            <button
-              key={range.label}
-              onClick={() => {
-                setSelectedHead(i);
-                applyFilters({ minHead: range.min, maxHead: range.max });
-              }}
-              className={`block w-full text-left text-sm py-1.5 px-2 rounded transition-colors ${
-                selectedHead === i
-                  ? "text-[var(--color-text)] font-medium bg-[var(--color-bg-subtle)]"
-                  : "text-[var(--color-text-secondary)] hover:text-[var(--color-text)]"
-              }`}
-            >
-              {range.label}
-            </button>
-          ))}
-        </div>
+        <h3 className="mb-3 text-sm font-semibold">헤드사이즈</h3>
+        {customHead && (
+          <p className="mb-2 text-xs text-[var(--color-text-secondary)]">
+            적용 범위: {currentParams.minHead || "제한 없음"} ~ {currentParams.maxHead || "제한 없음"} in²
+          </p>
+        )}
+        <ul className="space-y-1">
+          {HEAD_RANGES.map((range) => {
+            const selected = range.min === (currentParams.minHead ?? "")
+              && range.max === (currentParams.maxHead ?? "");
+            return (
+              <li key={range.label}>
+                <Link
+                  prefetch={false}
+                  href={racketFilterHref(currentParams, { minHead: range.min, maxHead: range.max })}
+                  aria-current={selected ? "true" : undefined}
+                  className={filterLinkClass(selected)}
+                >
+                  {range.label}
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
       </div>
 
       <div>
-        <h3 className="font-semibold text-sm mb-3">레벨</h3>
-        <div className="space-y-1">
-          {SEGMENTS.map((seg) => (
-            <button
-              key={seg.value}
-              onClick={() => {
-                setSelectedSegment(seg.value);
-                applyFilters({ segment: seg.value });
-              }}
-              className={`block w-full text-left text-sm py-1.5 px-2 rounded transition-colors ${
-                selectedSegment === seg.value
-                  ? "text-[var(--color-text)] font-medium bg-[var(--color-bg-subtle)]"
-                  : "text-[var(--color-text-secondary)] hover:text-[var(--color-text)]"
-              }`}
-            >
-              {seg.label}
-            </button>
-          ))}
-        </div>
+        <h3 className="mb-3 text-sm font-semibold">레벨</h3>
+        <ul className="space-y-1">
+          {SEGMENTS.map((segment) => {
+            const selected = (currentParams.segment ?? "") === segment.value;
+            return (
+              <li key={segment.value}>
+                <Link
+                  prefetch={false}
+                  href={racketFilterHref(currentParams, { segment: segment.value })}
+                  aria-current={selected ? "true" : undefined}
+                  className={filterLinkClass(selected)}
+                >
+                  {segment.label}
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
       </div>
+    </>
+  );
+}
+
+type CatalogFilterProps = {
+  brands: readonly { name: string }[];
+  currentParams: RacketSearchParams;
+};
+
+function CatalogFilterOptions({ brands, currentParams }: CatalogFilterProps) {
+  const selectedBrands = Array.isArray(currentParams.brand)
+    ? currentParams.brand.filter(Boolean)
+    : currentParams.brand ? [currentParams.brand] : [];
+  const activeCount = activeRacketFilterCount(currentParams);
+
+  return (
+    <>
+      {activeCount > 0 && (
+        <Link
+          prefetch={false}
+          href={resetRacketFiltersHref(currentParams)}
+          className="mb-4 inline-flex min-h-11 items-center text-xs text-[var(--color-text-secondary)] underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-text)]"
+        >
+          조건 초기화
+        </Link>
+      )}
+      <div className="grid gap-7 sm:grid-cols-2 lg:grid-cols-1">
+        <div>
+          <h3 className="mb-3 text-sm font-semibold">브랜드</h3>
+          <ul className="flex flex-wrap gap-1.5 lg:block lg:space-y-1">
+            <li>
+              <Link
+                prefetch={false}
+                href={racketFilterHref(currentParams, { brand: undefined })}
+                aria-current={selectedBrands.length === 0 ? "true" : undefined}
+                className={filterLinkClass(selectedBrands.length === 0)}
+              >
+                전체
+              </Link>
+            </li>
+            {brands.map((brand) => (
+              <li key={brand.name}>
+                <Link
+                  prefetch={false}
+                  href={racketFilterHref(currentParams, { brand: brand.name })}
+                  aria-current={selectedBrands.includes(brand.name) ? "true" : undefined}
+                  className={filterLinkClass(selectedBrands.includes(brand.name))}
+                >
+                  {brand.name}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+        <RacketFiltersPanel currentParams={currentParams} />
+      </div>
+    </>
+  );
+}
+
+export function RacketCatalogFilters(props: CatalogFilterProps) {
+  const activeCount = activeRacketFilterCount(props.currentParams);
+
+  return (
+    <>
+      <aside aria-label="라켓 필터" className="hidden lg:block">
+        <div className="sticky top-20 max-h-[calc(100dvh-6rem)] overflow-y-auto pr-2">
+          <CatalogFilterOptions {...props} />
+        </div>
+      </aside>
+
+      <details className="group rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-white)] lg:hidden">
+        <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-3 rounded-xl px-4 py-3 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-text)] [&::-webkit-details-marker]:hidden">
+          <span className="flex items-center gap-2">
+            필터
+            {activeCount > 0 && (
+              <span className="rounded-full bg-[var(--color-accent)] px-2 py-0.5 text-xs text-[var(--color-text)]">
+                {activeCount}개 적용
+              </span>
+            )}
+          </span>
+          <span aria-hidden="true" className="text-lg leading-none group-open:hidden">+</span>
+          <span aria-hidden="true" className="hidden text-lg leading-none group-open:inline">−</span>
+        </summary>
+        <div className="border-t border-[var(--color-border)] p-4">
+          <CatalogFilterOptions {...props} />
+        </div>
+      </details>
     </>
   );
 }
