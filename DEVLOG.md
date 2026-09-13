@@ -40,3 +40,4 @@
 - [Chapter 29 — 테니스 의류·용품 탐색과 공급 협력](devlog/chapter-029.md)
 - [Chapter 30 — 홈 배너 사진과 출처 정리](devlog/chapter-030.md)
 - [Chapter 31 — 광고 포스터 구도의 홈 캠페인](devlog/chapter-031.md)
+- [Chapter 32 — 모바일 라켓 필터와 URL 상태 정리](devlog/chapter-032.md)

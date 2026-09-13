@@ -1,7 +1,8 @@
 import { Suspense } from "react";
 import { getRackets, getAllBrands } from "@/lib/queries";
 import { RacketCard } from "@/components/racket-card";
-import { RacketFiltersPanel } from "@/components/racket-filters";
+import { RacketCatalogFilters } from "@/components/racket-filters";
+import { racketsHref, type RacketSearchParams } from "@/lib/racket-filter-urls";
 import type { Metadata } from "next";
 import Link from "next/link";
 
@@ -12,35 +13,9 @@ export const metadata: Metadata = {
   description: "현재 카탈로그의 테니스 라켓을 5축 점수와 스펙으로 비교해 보세요.",
 };
 
-type SearchParams = {
-  brand?: string | string[];
-  q?: string;
-  sort?: string;
-  page?: string;
-  minWeight?: string;
-  maxWeight?: string;
-  minHead?: string;
-  maxHead?: string;
-  segment?: string;
-};
+type SearchParams = RacketSearchParams;
 
 const PAGE_SIZE = 24;
-
-function racketsHref(
-  current: SearchParams,
-  overrides: Partial<Record<keyof SearchParams, string | undefined>>,
-): string {
-  const params = new URLSearchParams();
-  for (const [key, rawValue] of Object.entries(current)) {
-    const value = Array.isArray(rawValue) ? rawValue[0] : rawValue;
-    if (value) params.set(key, value);
-  }
-  for (const [key, value] of Object.entries(overrides)) {
-    if (value) params.set(key, value);
-    else params.delete(key);
-  }
-  return `/rackets${params.size ? `?${params.toString()}` : ""}`;
-}
 
 async function RacketGrid({ searchParams }: { searchParams: SearchParams }) {
   const brandFilter = Array.isArray(searchParams.brand)
@@ -88,45 +63,9 @@ async function RacketGrid({ searchParams }: { searchParams: SearchParams }) {
 
   return (
     <div className="grid lg:grid-cols-[260px_1fr] gap-8">
-      <aside className="hidden lg:block">
-        <div className="sticky top-20 space-y-8">
-          <div>
-            <h3 className="font-semibold text-sm mb-3">브랜드</h3>
-            <ul className="space-y-1.5">
-              <li>
-                <Link
-                  href={racketsHref(searchParams, { brand: undefined, page: undefined })}
-                  className={`text-sm block py-1 ${
-                    !brandFilter
-                      ? "text-[var(--color-text)] font-semibold"
-                      : "text-[var(--color-text-secondary)] hover:text-[var(--color-text)]"
-                  }`}
-                >
-                  전체
-                </Link>
-              </li>
-              {brandsList.map((brand) => (
-                <li key={brand.name}>
-                  <Link
-                    href={racketsHref(searchParams, { brand: brand.name, page: undefined })}
-                    className={`text-sm block py-1 ${
-                      brandFilter?.includes(brand.name)
-                        ? "text-[var(--color-text)] font-semibold"
-                        : "text-[var(--color-text-secondary)] hover:text-[var(--color-text)]"
-                    }`}
-                  >
-                    {brand.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
+      <RacketCatalogFilters brands={brandsList} currentParams={searchParams} />
 
-          <RacketFiltersPanel currentParams={searchParams} />
-        </div>
-      </aside>
-
-      <div>
+      <div className="min-w-0">
         {/* 정렬 알약 6개는 모바일 폭에 안 들어간다. 줄바꿈 없이 짓누르면
             한글이 세로로 꺾이므로, 좁은 화면은 개수를 윗줄로 올리고 알약을
             한 줄 가로 스크롤로 둔다. */}
