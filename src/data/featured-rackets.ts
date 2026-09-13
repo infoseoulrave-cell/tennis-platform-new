@@ -33,6 +33,9 @@ export type FeaturedRacket = {
   fallbackTags: FeaturedRacketTag[];
   imageUrl: string;
   imageSourceUrl: string;
+  /** 상품 사진과 분리된 AI 캠페인 연출. 실제 프레임·스펙의 증거가 아니다. */
+  campaignImageUrl: string;
+  campaignHeadline: readonly [string, string];
   specSourceUrl: string;
   verifiedAt: string;
   slug: string;
@@ -93,6 +96,8 @@ const featuredRacketTemplates: FeaturedRacketTemplate[] = [
     ],
     imageUrl: "/images/customizer/babolat-pure-aero-2026.jpg",
     imageSourceUrl: "https://www.tennis-warehouse.com/Babolat_Pure_Aero_2026/descpageRCBAB-BPAR26.html",
+    campaignImageUrl: "/images/hero/pure-aero-campaign-v1.webp",
+    campaignHeadline: ["MAKE", "IT SPIN."],
     specSourceUrl: "https://www.babolat.com/us/pure-aero-gen9-unstrung/101569.html",
     verifiedAt: "2026-07-21",
     slug: "babolat-pure-aero-2026",
@@ -100,7 +105,7 @@ const featuredRacketTemplates: FeaturedRacketTemplate[] = [
   {
     brand: "Head",
     model: "SPEED MP 2026",
-    tagline: "시너 × 조코비치가 선택한 균형의 정점",
+    tagline: "빠른 랠리를 위한 파워와 컨트롤의 균형",
     scoreAxes: [
       { icon: "⊕", axis: "stability" },
       { icon: "◎", axis: "control" },
@@ -112,6 +117,8 @@ const featuredRacketTemplates: FeaturedRacketTemplate[] = [
     ],
     imageUrl: "/images/customizer/head-speed-mp-2026.jpg",
     imageSourceUrl: "https://www.tennis-warehouse.com/Head_Speed_MP_2026/descpageRCHEAD-HSPMP6.html",
+    campaignImageUrl: "/images/hero/speed-campaign-v1.webp",
+    campaignHeadline: ["FIND", "YOUR FLOW."],
     specSourceUrl: "https://www.head.com/en_US/product/speed-mp-2026-232026",
     verifiedAt: "2026-07-21",
     slug: "head-speed-mp-2026",
@@ -131,6 +138,8 @@ const featuredRacketTemplates: FeaturedRacketTemplate[] = [
     ],
     imageUrl: "/images/customizer/yonex-vcore-100-2026.jpg",
     imageSourceUrl: "https://www.tennis-warehouse.com/Yonex_VCORE_100_8th_Gen/descpageRCYONEX-VC108G.html",
+    campaignImageUrl: "/images/hero/vcore-campaign-v1.webp",
+    campaignHeadline: ["FEEL", "THE SPIN."],
     specSourceUrl: "https://www.yonex.com/tennis/racquets/vcore",
     verifiedAt: "2026-07-21",
     slug: "yonex-vcore-100-2026",
