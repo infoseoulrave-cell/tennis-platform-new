@@ -14,9 +14,11 @@ import {
   initialCustomizerState,
   reduceCustomizerState,
   STRING_COLOR_OPTIONS,
+  type CustomizerAction,
 } from "@/data/racket-customizer";
 import type { CustomizerPhoto } from "@/data/racket-customizer-photos.generated";
 import type { SchematicGeometry } from "@/lib/racket-schematic";
+import { applyCustomizerInteraction } from "@/lib/product-interaction-tracking";
 
 /** 색을 고르기 전 도식에 쓰는 기본값. */
 const DEFAULT_STRING_HEX = "#8B8F96";
@@ -49,6 +51,12 @@ export function RacketVisualCustomizer({
     initialCustomizerState,
   );
   const groupId = useId();
+  function handleAction(action: CustomizerAction) {
+    applyCustomizerInteraction(state, action, {
+      racketSlug: slug,
+      renderMode: photo && slug ? "photo" : "schematic",
+    }, dispatch);
+  }
 
   const stringColor = STRING_COLOR_OPTIONS.find(
     ({ id }) => id === state.stringColorId,
@@ -117,7 +125,7 @@ export function RacketVisualCustomizer({
           <button
             type="button"
             disabled={!state.stringColorId && !state.gripColorId}
-            onClick={() => dispatch({ type: "reset" })}
+            onClick={() => handleAction({ type: "reset" })}
             className="min-h-11 shrink-0 rounded-lg border border-[var(--color-border)] px-3 text-xs font-medium hover:border-[var(--color-text-muted)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-40"
           >
             처음으로
@@ -130,7 +138,7 @@ export function RacketVisualCustomizer({
           options={STRING_COLOR_OPTIONS}
           selectedId={state.stringColorId}
           onSelect={(colorId) =>
-            dispatch({
+            handleAction({
               type: "select-string",
               colorId: colorId as typeof STRING_COLOR_OPTIONS[number]["id"],
             })
@@ -143,7 +151,7 @@ export function RacketVisualCustomizer({
           options={GRIP_COLOR_OPTIONS}
           selectedId={state.gripColorId}
           onSelect={(colorId) =>
-            dispatch({
+            handleAction({
               type: "select-grip",
               colorId: colorId as typeof GRIP_COLOR_OPTIONS[number]["id"],
             })

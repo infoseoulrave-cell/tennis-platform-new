@@ -7,6 +7,7 @@ import {
   type OmegaPlayerShowcase,
 } from "@/data/omega-player-showcase";
 import { playerThumbnailUrl } from "@/lib/player-images";
+import { ProductInteractionLink } from "@/components/product-interaction-link";
 
 export function buildPlayerRacketHref(brand: string, line: string): string {
   const catalogBrand = brand === brand.toUpperCase()
@@ -75,12 +76,13 @@ export function PlayerCard({ player }: { player: Player }) {
           사진 {player.photo.credit} · {player.photo.license}
         </a>
       </div>
-      <Link
+      <ProductInteractionLink
         href={buildPlayerRacketHref(player.equipment.brand, player.equipment.line)}
         className="mt-3 inline-block text-xs text-[var(--color-text-secondary)] hover:text-[var(--color-text)] hover:underline"
+        interaction={{ eventType: "player_racket_click", payload: { source: "players", playerId: player.id } }}
       >
         대응 리테일 라인 검색 →
-      </Link>
+      </ProductInteractionLink>
     </article>
   );
 }
@@ -144,12 +146,13 @@ function OmegaShowcaseCard({ player }: { player: OmegaPlayerShowcase }) {
           사진 {player.photo.credit} · {player.photo.license}
         </a>
       </div>
-      <Link
+      <ProductInteractionLink
         href={buildPlayerRacketHref(player.equipment.brand, player.equipment.line)}
         className="mt-3 inline-block text-xs text-[var(--color-text-secondary)] hover:text-[var(--color-text)] hover:underline"
+        interaction={{ eventType: "player_racket_click", payload: { source: "home", playerId: player.id } }}
       >
         대응 리테일 라인 검색 →
-      </Link>
+      </ProductInteractionLink>
     </article>
   );
 }

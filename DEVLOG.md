@@ -43,3 +43,4 @@
 - [Chapter 32 — 모바일 라켓 필터와 URL 상태 정리](devlog/chapter-032.md)
 - [Chapter 33 — 테니스 스커트·원피스 구매 가이드](devlog/chapter-033.md)
 - [Chapter 34 — 공개 페이지 사이트맵과 robots 안내](devlog/chapter-034.md)
+- [Chapter 35 — 스트링·색상·선수 카드의 실제 이용 이벤트](devlog/chapter-035.md)
