@@ -50,6 +50,13 @@
       "when": 1789253736087,
       "tag": "0006_gear_discovery_events",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1789416479111,
+      "tag": "0007_product_interaction_events",
+      "breakpoints": true
     }
   ]
 }

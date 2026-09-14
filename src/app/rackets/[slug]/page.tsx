@@ -22,6 +22,7 @@ import {
 } from "@/lib/score-display";
 import { formatRacketName } from "@/lib/racket-name";
 import { recommendStringPairings } from "@/lib/string-pairing";
+import { ProductInteractionLink } from "@/components/product-interaction-link";
 import { stringOfferId } from "@/data/strings";
 import { racketCustomizerPath } from "@/lib/racket-customizer";
 import { schematicFromSpec } from "@/lib/racket-schematic";
@@ -283,12 +284,21 @@ export default async function RacketDetailPage({
               <p className="text-[10px] font-semibold tracking-wider text-[var(--color-text-muted)] uppercase">
                 {pairing.modeLabel}
               </p>
-              <Link
+              <ProductInteractionLink
                 href={`/strings#${stringOfferId(pairing.product.offerKey)}`}
                 className="mt-1 inline-flex text-sm font-semibold hover:underline"
+                interaction={{
+                  eventType: "string_pairing_click",
+                  payload: {
+                    source: "racket_detail",
+                    racketSlug: racket.slug,
+                    stringOfferKey: pairing.product.offerKey,
+                    mode: pairing.mode,
+                  },
+                }}
               >
                 {pairing.product.brand} {pairing.product.name}
-              </Link>
+              </ProductInteractionLink>
               <p className="mt-2 text-xs font-medium">
                 편집 시작값 {pairing.tensionLbs.min}–{pairing.tensionLbs.max} lbs
               </p>

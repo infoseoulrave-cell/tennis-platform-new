@@ -1,35 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { z } from "zod";
 import { db } from "@/db";
 import { eventLog } from "@/db/schema";
-
-const EVENT_TYPES = [
-  "diagnosis_start",
-  "diagnosis_step_complete",
-  "diagnosis_complete",
-  "recommendation_view",
-  "recommendation_detail_view",
-  "compare_add",
-  "compare_view",
-  "save_result",
-  "partner_click",
-  "partner_lead_submit",
-  "affiliate_click",
-  "page_view",
-  "search",
-  "sponsor_impression",
-  "sponsor_click",
-  "catalog_filter",
-  "store_click",
-] as const;
-
-const eventSchema = z.object({
-  sessionId: z.string().min(1).max(100),
-  eventType: z.enum(EVENT_TYPES),
-  payload: z.record(z.unknown()).optional(),
-  pageUrl: z.string().optional(),
-  referrer: z.string().optional(),
-});
+import { eventSchema } from "@/events/product-interaction-schema";
 
 export async function POST(request: NextRequest) {
   let body: unknown;

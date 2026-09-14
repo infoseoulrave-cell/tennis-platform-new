@@ -28,6 +28,10 @@ export const eventTypeEnum = pgEnum("event_type", [
   // 일반 공식몰 탐색은 광고·어필리에이트 실적과 별도로 집계한다.
   "catalog_filter",
   "store_click",
+  // 제품 탐색 동작이며 구매·성과 확정을 의미하지 않는다.
+  "string_pairing_click",
+  "customizer_change",
+  "player_racket_click",
 ]);
 
 export const eventLog = pgTable("event_log", {

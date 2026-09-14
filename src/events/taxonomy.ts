@@ -1,3 +1,5 @@
+import type { ProductInteractionPayloadMap } from "./product-interactions";
+
 /**
  * Event Taxonomy — tennis-platform v0.1
  *
@@ -6,25 +8,32 @@
  * Events are logged to the event_log table via the track() helper.
  */
 
-export type EventType =
-  | "diagnosis_start"
-  | "diagnosis_step_complete"
-  | "diagnosis_complete"
-  | "recommendation_view"
-  | "recommendation_detail_view"
-  | "compare_add"
-  | "compare_view"
-  | "save_result"
-  | "partner_click"
-  | "partner_lead_submit"
-  | "page_view"
-  | "search"
-  | "sponsor_impression"
-  | "sponsor_click"
-  | "catalog_filter"
-  | "store_click";
+export const EVENT_TYPES = [
+  "diagnosis_start",
+  "diagnosis_step_complete",
+  "diagnosis_complete",
+  "recommendation_view",
+  "recommendation_detail_view",
+  "compare_add",
+  "compare_view",
+  "save_result",
+  "partner_click",
+  "partner_lead_submit",
+  "affiliate_click",
+  "page_view",
+  "search",
+  "sponsor_impression",
+  "sponsor_click",
+  "catalog_filter",
+  "store_click",
+  "string_pairing_click",
+  "customizer_change",
+  "player_racket_click",
+] as const;
 
-export interface EventPayloadMap {
+export type EventType = (typeof EVENT_TYPES)[number];
+
+export interface EventPayloadMap extends ProductInteractionPayloadMap {
   diagnosis_start: { entryPoint: string };
   diagnosis_step_complete: {
     stepNumber: number;
@@ -65,6 +74,12 @@ export interface EventPayloadMap {
     partnerOfferId: string;
     racketModelId: string;
     leadType: string;
+  };
+  affiliate_click: {
+    offerId: string;
+    racketSlug: string | null;
+    vendor: string;
+    priceKrw: number | null;
   };
   page_view: {
     path: string;

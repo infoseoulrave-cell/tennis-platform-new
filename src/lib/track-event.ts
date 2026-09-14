@@ -53,10 +53,13 @@ export function getTrackingContext(): Record<string, unknown> {
   return { campaign, trafficType: internal ? "internal" : "unclassified" };
 }
 
-function withoutQuery(value: string): string | undefined {
+function withoutQuery(value: string, redactResultId = false): string | undefined {
   try {
     const url = new URL(value);
-    return `${url.origin}${url.pathname}`;
+    const pathname = redactResultId
+      ? url.pathname.replace(/^\/results\/[^/]+(?=\/|$)/, "/results/[id]")
+      : url.pathname;
+    return `${url.origin}${pathname}`;
   } catch {
     return undefined;
   }
@@ -65,6 +68,7 @@ function withoutQuery(value: string): string | undefined {
 export function trackEvent(
   eventType: string,
   payload?: Record<string, unknown>,
+  options?: { redactResultId?: boolean },
 ) {
   if (typeof window === "undefined") return;
   fetch("/api/events", {
@@ -74,9 +78,11 @@ export function trackEvent(
       sessionId: getSessionId(),
       eventType,
       payload: { ...payload, ...getTrackingContext() },
-      pageUrl: withoutQuery(window.location.href),
+      pageUrl: withoutQuery(window.location.href, options?.redactResultId),
       referrer:
-        typeof document !== "undefined" ? withoutQuery(document.referrer) : undefined,
+        typeof document !== "undefined"
+          ? withoutQuery(document.referrer, options?.redactResultId)
+          : undefined,
     }),
     keepalive: true,
   }).catch(() => {

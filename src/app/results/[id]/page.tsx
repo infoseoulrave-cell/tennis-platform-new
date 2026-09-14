@@ -23,6 +23,7 @@ import {
   type StringPairingInput,
 } from "@/lib/string-pairing";
 import { stringOfferId } from "@/data/strings";
+import { ProductInteractionLink } from "@/components/product-interaction-link";
 import type { RawAxisScores100 } from "@/lib/score-display";
 import {
   canViewPersonalNarrative,
@@ -328,12 +329,21 @@ async function ResultsBody({
                               편집 시작값 {suggestion.tensionLbs.min}–{suggestion.tensionLbs.max} lbs
                             </span>
                           </div>
-                          <Link
+                          <ProductInteractionLink
                             href={`/strings#${stringOfferId(suggestion.product.offerKey)}`}
                             className="mt-1 inline-flex text-sm font-medium text-blue-600 hover:underline"
+                            interaction={racket?.brandName ? {
+                              eventType: "string_pairing_click",
+                              payload: {
+                                source: "diagnosis_result",
+                                racketSlug: generateSlug(racket.brandName, racket.name, racket.releaseYear),
+                                stringOfferKey: suggestion.product.offerKey,
+                                mode: suggestion.mode,
+                              },
+                            } : null}
                           >
                             {suggestion.product.brand} {suggestion.product.name}
-                          </Link>
+                          </ProductInteractionLink>
                           <p className="mt-1 text-xs leading-relaxed text-gray-500">
                             {suggestion.reason}
                           </p>

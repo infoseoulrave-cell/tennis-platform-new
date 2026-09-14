@@ -5,6 +5,8 @@ import { renderToStaticMarkup } from "react-dom/server";
 
 import { SponsoredBadge } from "../src/components/sponsored-badge";
 import { featuredRackets, hydrateFeaturedRackets } from "../src/data/featured-rackets";
+import { eventSchema } from "../src/events/product-interaction-schema";
+import { EVENT_TYPES } from "../src/events/taxonomy";
 
 const read = (path: string) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 
@@ -40,10 +42,13 @@ test("히어로는 sponsored 가 있을 때만 배지·고지·이벤트를 그�
 
 test("스폰서 이벤트는 분류표와 수집 API 양쪽에 등록돼 있다", () => {
   const taxonomy = read("src/events/taxonomy.ts");
-  const eventsRoute = read("src/app/api/events/route.ts");
-  for (const name of ["sponsor_impression", "sponsor_click"]) {
-    assert.match(taxonomy, new RegExp(`"${name}"`), name);
-    assert.match(eventsRoute, new RegExp(`"${name}",`), name);
+  for (const name of ["sponsor_impression", "sponsor_click"] as const) {
+    assert.ok(EVENT_TYPES.includes(name), name);
+    assert.equal(eventSchema.safeParse({
+      sessionId: "sponsor-event-test",
+      eventType: name,
+      payload: { slug: "babolat-pure-aero-2026", label: "test", placement: "hero" },
+    }).success, true, name);
   }
   assert.match(taxonomy, /sponsor_impression: \{ slug: string; label: string; placement: string \}/);
 });
